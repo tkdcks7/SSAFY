@@ -11,30 +11,31 @@ services:
       - "443:443"
     environment:
       - TZ=Asia/Seoul
-    volumes:
-      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
-      - /home/ubuntu/data/certbot/www:/var/www/certbot
+    # volumes:
+    #   - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+    #   - /home/ubuntu/data/certbot/www:/var/www/certbot
     networks:
       - backend-network
     depends_on:
       - ${DOCKER_TAG_SPRING}
-      - ${DOCKER_TAG_DJANGO}
+      # - ${DOCKER_TAG_DJANGO}
 
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
-      - /home/ubuntu/data/certbot/www:/var/www/certbot
-    depends_on:
-      - nginx
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot sleep 60d & wait $${!}; done;'"
+  # certbot:
+  #   image: certbot/certbot
+  #   container_name: certbot
+  #   volumes:
+  #     - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+  #     - /home/ubuntu/data/certbot/www:/var/www/certbot
+  #   depends_on:
+  #     - nginx
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot sleep 60d & wait $${!}; done;'"
 
   springboot:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_SPRING}-latest
     container_name: ${DOCKER_TAG_SPRING}
     environment:
       - TZ=Asia/Seoul
+      - BACKEND_PORT=${BACKEND_PORT}
     expose:
       - backend-network
     depends_on:
@@ -42,17 +43,17 @@ services:
       - redis
       - mongodb
   
-  django:
-    image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
-    container_name: ${DOCKER_TAG_DJANGO}
-    environment:
-      - TZ=Asia/Seoul
-    expose:
-      - backend-network
-    depends_on:
-      - mysql
-      - redis
-      - mongodb
+  # django:
+  #   image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
+  #   container_name: ${DOCKER_TAG_DJANGO}
+  #   environment:
+  #     - TZ=Asia/Seoul
+  #   expose:
+  #     - backend-network
+  #   depends_on:
+  #     - mysql
+  #     - redis
+  #     - mongodb
 
   
   # db 컨테이너
@@ -99,57 +100,57 @@ services:
       - backend-network
 
   # 기타 컨테이너
-  zookeeper:
-    image: wurstmeister/zookeeper
-    container_name: zookeeper
-    ports:
-      - "${ZOOKEEPER_BINDING_PORT}:2181"
-    networks:
-      - backend-network
+  # zookeeper:
+  #   image: wurstmeister/zookeeper
+  #   container_name: zookeeper
+  #   ports:
+  #     - "${ZOOKEEPER_BINDING_PORT}:2181"
+  #   networks:
+  #     - backend-network
   
-  kafka:
-    image: wurstmeister/kafka
-    container_name: kafka
-    ports:
-      - "${KAFKA_BINDING_PORT}:9092"
-    environment:
-      - KAFKA_ADVERTISED_HOST_NAME=127.0.0.1
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - backend-network
+  # kafka:
+  #   image: wurstmeister/kafka
+  #   container_name: kafka
+  #   ports:
+  #     - "${KAFKA_BINDING_PORT}:9092"
+  #   environment:
+  #     - KAFKA_ADVERTISED_HOST_NAME=127.0.0.1
+  #     - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - backend-network
 
   # Elastic search
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
-    container_name: elasticsearch
-    ports:
-      - "${ELASTIC_BINDING_PORT}:9200"
-    environment:
-      - node.name=elasticsearch
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    networks:
-      - backend-network
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es-vol:/usr/share/elasticsearch/data
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
+  #   container_name: elasticsearch
+  #   ports:
+  #     - "${ELASTIC_BINDING_PORT}:9200"
+  #   environment:
+  #     - node.name=elasticsearch
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   networks:
+  #     - backend-network
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - es-vol:/usr/share/elasticsearch/data
   
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.0
-    container_name: kibana
-    ports:
-      - "${KIBANA_BINDING_PORT}:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
-    networks:
-      - backend-network
-    depends_on:
-      - elasticsearch
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.6.0
+  #   container_name: kibana
+  #   ports:
+  #     - "${KIBANA_BINDING_PORT}:5601"
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
+  #   networks:
+  #     - backend-network
+  #   depends_on:
+  #     - elasticsearch
   
 
   # 전역 설정
@@ -160,8 +161,8 @@ services:
       external: true
     mongo-vol:
       external: true
-    es-vol:
-      external: true
+    # es-vol:
+    #   external: true
 
   networks:
     backend-network:
