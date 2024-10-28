@@ -1,0 +1,150 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-jenkins'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-jenkins')
+        DOCKER_IMAGE = 'jihye9807/audisay'
+        
+        DOCKER_TAG_NGINX = "nginx"
+        DOCKER_TAG_SPRING = "springboot"
+        DOCKER_TAG_DJANGO = "django"
+        springDockerImage = ''
+        nginxDockerImage = ''
+        djangoDockerImage = ''        
+    }
+    tools {
+        jdk 'JDK 21'
+    }
+    
+    stages {
+        stage('GitLab-Clone') {
+            steps {
+                git branch: 'develop', credentialsId: 'gitlab_access_token', url: 'https://lab.ssafy.com/s11-final/S11P31D208'
+            }
+        }
+        stage('Build') {
+            parallel {
+                stage('Spring-Build') {
+                    steps {
+                        echo "Spring build"
+                        dir("./backend") {
+                            sh "chmod +x ./gradlew"
+                            sh "./gradlew clean build -x test --stacktrace"
+                        }
+                    }
+                }
+                stage('FE-Build') {
+                    steps {
+                        echo "FE-Build stage: 프론트엔드 빌드"
+                        dir("./frontend/moreroom") {
+                            sh 'npm install'
+                            sh 'CI=false npm run build'
+                        }
+                    }
+                }
+            }
+        }
+        stage('Build-Docker-Images') {
+            parallel {
+                stage('BE-Docker-Build') {
+                    steps {
+                        echo "BE Docker Build"
+                        dir('./backend') {
+                            script {
+                                backDockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG_BE}-latest")
+                            }
+                        }
+                    }
+                }
+                stage('FE-Docker-Build') {
+                    steps {
+                        echo "FE Docker Build"
+                        script {
+                            frontDockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG_FE}-latest")
+                        }
+                    }
+                }
+                stage('FastAPI-Docker-Build') {
+                    steps {
+                        echo "FastAPI Docker Build"
+                        dir('./bigdata/fastapi') {
+                            script {
+                                fastapiDockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG_FASTAPI}-latest")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push-Docker-Images') {
+            steps {
+                script {
+                    docker.withRegistry("", env.DOCKERHUB_CREDENTIALS_ID) {
+                        backDockerImage.push()
+                        frontDockerImage.push()
+                        fastapiDockerImage.push()
+                        backDockerImage.push("${DOCKER_TAG_BE}-${env.BUILD_NUMBER}")
+                        frontDockerImage.push("${DOCKER_TAG_FE}-${env.BUILD_NUMBER}")
+                        fastapiDockerImage.push("${DOCKER_TAG_FASTAPI}-${env.BUILD_NUMBER}")
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploy stage'
+
+                withCredentials([file(credentialsId: 'docker-env-file', variable: 'DOCKER_ENV_FILE')]) {
+                    sh '''
+                        # Secret File을 .env로 복사
+                        # .env 파일의 권한을 600으로 설정
+                        cp ${DOCKER_ENV_FILE} .env
+                        chmod 600 .env
+                        # 컨테이너 재시작, 기존 데이터 유지
+                        docker compose up -d
+                    '''
+                }
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                echo 'cleanup docker image'
+                script {
+                    sh "docker image prune -f"
+                    [env.DOCKER_TAG_BE, env.DOCKER_TAG_FE, env.DOCKER_TAG_FASTAPI].each { service ->
+                        sh "docker rmi ${DOCKER_IMAGE}:${service}-${env.BUILD_NUMBER} || true"
+                    }
+                }
+            }
+        }
+    }
+    post { 
+        always { 
+            echo 'I complete CI/CD'
+        }
+        success{
+            echo 'I success CI/CD'
+            script {
+                def Author_ID = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
+                def Author_Name = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                mattermostSend (color: 'good', 
+                message: "빌드 성공: ${env.JOB_NAME} #${env.BUILD_NUMBER} by ${Author_ID}(${Author_Name})\n(<${env.BUILD_URL}|Details>)",  
+                endpoint: 'https://meeting.ssafy.com/hooks/6jwxhq8653b19pewoahacg1hwy', 
+                channel: 'cicd'
+                )
+            }
+        }
+        failure{
+            echo 'I fail CI/CD'
+            script {
+                def Author_ID = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
+                def Author_Name = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                mattermostSend (color: 'danger', 
+                message: "빌드 실패: ${env.JOB_NAME} #${env.BUILD_NUMBER} by ${Author_ID}(${Author_Name})\n(<${env.BUILD_URL}|Details>)", 
+                endpoint: 'https://meeting.ssafy.com/hooks/6jwxhq8653b19pewoahacg1hwy', 
+                channel: 'cicd'
+                )
+            }
+        }
+    }
+}
