@@ -1,0 +1,31 @@
+package com.palja.audisay.global.exception;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum GlobalExceptionConstants implements ExceptionConstants {
+	// MEMBER
+	MEMBER_NOT_FOUND("M001", "사용자를 찾을 수 없습니다."),
+	MEMBER_EMAIL_DUPLICATED("M002", "중복된 이메일입니다."),
+	MEMBER_NICKNAME_DUPLICATED("M003", "중복된 닉네임입니다."),
+	MEMBER_INVALID_PARAMETER("M004", "입력 형식이 잘못되었습니다."),
+	MEMBER_ACCESS_DENIED("M005", "페이지에 접근할 수 있는 권한이 없습니다."),
+	MEMBER_INSUFFICIENT_PARAMETER("M006", "필수 입력 값이 누락되었습니다."),
+	// PUBLISHED BOOK
+	PUBLISHED_BOOK_NOT_FOUND("P001", "출판 도서를 찾을 수 없습니다."),
+	// BOOK REGISTRAION
+	REGISTRATION_FILE_TYPE_INVALID("G001", "파일 형식이 잘못되었습니다."),
+	REGISTRATION_FILE_EMPTY("G002", "파일이 비어있습니다."),
+	// REVIEW
+	REVIEW_INVALID_PARAMETER("R001", "입력 형식이 잘못되었습니다."),
+	REVIEW_NOT_FOUND("R002", "리뷰를 찾을 수 없습니다."),
+	// NOTE
+	NOTE_NOT_FOUND("N001", "독서 노트를 찾을 수 없습니다."),
+	// SERVER ERROR
+	SERVER_ERROR("X001", "서버에서 오류가 발생하였습니다.");
+
+	private final String code;
+	private final String message;
+}
