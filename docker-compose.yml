@@ -153,18 +153,18 @@ services:
   #     - elasticsearch
   
 
-  # 전역 설정
-  volumes:
-    mysql-vol:
-      external: true
-    redis-vol:
-      external: true
-    mongo-vol:
-      external: true
-    # es-vol:
-    #   external: true
+# 전역 설정
+volumes:
+  mysql-vol:
+    external: true
+  redis-vol:
+    external: true
+  mongo-vol:
+    external: true
+  # es-vol:
+  #   external: true
 
-  networks:
-    backend-network:
-      name: backend-network
-      driver: bridge
+networks:
+  backend-network:
+    name: backend-network
+    driver: bridge
