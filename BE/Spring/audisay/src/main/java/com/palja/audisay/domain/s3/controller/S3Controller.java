@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.s3.dto.S3ResponseDto;
-import com.palja.audisay.domain.s3.service.AWSS3Service;
+import com.palja.audisay.domain.s3.service.S3Service;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/file")
 @RequiredArgsConstructor
-public class AWSS3Controller {
+public class S3Controller {
 
-	private final AWSS3Service awsS3Service;
+	private final S3Service awsS3Service;
 
 	@GetMapping("/presigned/upload")
 	public S3ResponseDto getPresignedUrlToUpload(@RequestParam(value = "filename") String fileName) throws IOException {
