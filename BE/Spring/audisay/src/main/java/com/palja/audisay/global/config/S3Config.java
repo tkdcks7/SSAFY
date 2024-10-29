@@ -23,7 +23,6 @@ public class S3Config {
 	@Bean
 	public AmazonS3Client amazonS3Client() {
 		BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-		System.out.println("Regions.AP_NORTHEAST_2 = " + Regions.AP_NORTHEAST_2);
 		return (AmazonS3Client) AmazonS3ClientBuilder
 			.standard()
 			.withRegion(region)

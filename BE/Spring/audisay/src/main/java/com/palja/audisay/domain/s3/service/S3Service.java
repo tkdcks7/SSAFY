@@ -50,9 +50,6 @@ public class S3Service {
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileName)
 			.withMethod(HttpMethod.GET)
 			.withExpiration(expiration);
-		System.out.println("bucket+fileName = " + bucket+fileName);
-
-		System.out.println("amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString() = " + amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString());
 		return S3ResponseDto.builder()
 			.url(amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString())
 			.build();
