@@ -191,8 +191,7 @@ services:
       - "${KIBANA_BINDING_PORT}:5601"
     environment:
       - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_TOKEN}
     networks:
       - backend-network
     depends_on:
