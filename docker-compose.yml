@@ -17,24 +17,24 @@ services:
       - DJANGO_PORT=${DJANGO_PORT}
       - DOCKER_TAG_SPRING=${DOCKER_TAG_SPRING}
       - DOCKER_TAG_DJANGO=${DOCKER_TAG_DJANGO}
-    # volumes:
-    #   - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
-    #   - /home/ubuntu/data/certbot/www:/var/www/certbot
+    volumes:
+      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+      - /home/ubuntu/data/certbot/www:/var/www/certbot
     networks:
       - backend-network
     depends_on:
       - ${DOCKER_TAG_SPRING}
       - ${DOCKER_TAG_DJANGO}
 
-  # certbot:
-  #   image: certbot/certbot
-  #   container_name: certbot
-  #   volumes:
-  #     - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
-  #     - /home/ubuntu/data/certbot/www:/var/www/certbot
-  #   depends_on:
-  #     - nginx
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot sleep 60d & wait $${!}; done;'"
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+      - /home/ubuntu/data/certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot sleep 60d & wait $${!}; done;'"
 
   springboot:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_SPRING}-latest
