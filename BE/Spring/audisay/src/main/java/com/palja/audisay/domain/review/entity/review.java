@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.like.entity.LikeId;
 import com.palja.audisay.domain.member.entity.Member;
 
 import jakarta.persistence.Column;
@@ -15,10 +14,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -37,7 +34,7 @@ import lombok.NoArgsConstructor;
 public class review {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "long", nullable = false)
+	@Column(nullable = false)
 	private Long reviewId;
 
 	@ManyToOne(fetch = FetchType.LAZY)

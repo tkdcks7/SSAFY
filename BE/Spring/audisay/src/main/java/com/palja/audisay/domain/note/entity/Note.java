@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 public class Note {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "long", nullable = false)
+	@Column(nullable = false)
 	private Long noteId;
 
 	@ManyToOne(fetch = FetchType.LAZY)

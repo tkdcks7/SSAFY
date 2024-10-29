@@ -37,7 +37,7 @@ public class Book {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "long", nullable = false)
+	@Column(nullable = false)
 	private Long bookId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -72,7 +72,7 @@ public class Book {
 	@Column(columnDefinition = "varchar(15)")
 	private String isbn;
 
-	@Column(columnDefinition = "varchar(50)", nullable = false)
+	@Column(columnDefinition = "tinyint(1)", nullable = false)
 	private Boolean myTtsFlag;
 
 	@Column(columnDefinition = "text", nullable = false)
