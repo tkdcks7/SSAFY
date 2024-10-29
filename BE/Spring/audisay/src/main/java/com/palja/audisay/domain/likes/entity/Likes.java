@@ -1,9 +1,8 @@
-package com.palja.audisay.domain.like.entity;
+package com.palja.audisay.domain.likes.entity;
 
 import org.hibernate.annotations.DynamicInsert;
 
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.cart.entity.BookCartId;
 import com.palja.audisay.domain.member.entity.Member;
 
 import jakarta.persistence.Entity;
@@ -20,14 +19,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "like")
+@Table(name = "likes")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@IdClass(LikeId.class)
+@IdClass(LikesId.class)
 @DynamicInsert
 @Builder
-public class Like {
+public class Likes {
 	@Id
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "book_id", nullable = false)
