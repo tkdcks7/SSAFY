@@ -23,8 +23,8 @@ services:
     networks:
       - backend-network
     depends_on:
-      - ${DOCKER_TAG_SPRING}
-      - ${DOCKER_TAG_DJANGO}
+      - springboot
+      - django
 
   certbot:
     image: certbot/certbot
