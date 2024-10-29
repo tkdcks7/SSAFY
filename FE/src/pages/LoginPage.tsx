@@ -16,7 +16,7 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
       <Text style={styles.title}>Login Page</Text>
       <Button
         title="Go to Home"
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home')} // 'Main' 대신 'Home'으로 변경
       />
     </View>
   );
