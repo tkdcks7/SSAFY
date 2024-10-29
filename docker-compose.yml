@@ -11,6 +11,12 @@ services:
       - "443:443"
     environment:
       - TZ=Asia/Seoul
+      - SERVER_NAME=${SERVER_NAME}
+      - CONTEXT_PATH=${CONTEXT_PATH}
+      - BACKEND_PORT=${BACKEND_PORT}
+      - DJANGO_PORT=${DJANGO_PORT}
+      - DOCKER_TAG_SPRING=${DOCKER_TAG_SPRING}
+      - DOCKER_TAG_DJANGO=${DOCKER_TAG_DJANGO}
     # volumes:
     #   - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
     #   - /home/ubuntu/data/certbot/www:/var/www/certbot
@@ -18,7 +24,7 @@ services:
       - backend-network
     depends_on:
       - ${DOCKER_TAG_SPRING}
-      # - ${DOCKER_TAG_DJANGO}
+      - ${DOCKER_TAG_DJANGO}
 
   # certbot:
   #   image: certbot/certbot
@@ -43,17 +49,21 @@ services:
       - redis
       - mongodb
   
-  # django:
-  #   image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
-  #   container_name: ${DOCKER_TAG_DJANGO}
-  #   environment:
-  #     - TZ=Asia/Seoul
-  #   expose:
-  #     - backend-network
-  #   depends_on:
-  #     - mysql
-  #     - redis
-  #     - mongodb
+  django:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
+    container_name: ${DOCKER_TAG_DJANGO}
+    environment:
+      - TZ=Asia/Seoul
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
+      - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
+      - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
+    expose:
+      - backend-network
+    depends_on:
+      - mysql
 
   
   # db 컨테이너
