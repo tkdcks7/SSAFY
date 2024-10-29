@@ -69,7 +69,6 @@ services:
       - "${MYSQL_BINDING_PORT}:3306"
     networks:
       - backend-network
-    command: --lower_case_table_names=1
   
   redis:
     image: redis:latest
