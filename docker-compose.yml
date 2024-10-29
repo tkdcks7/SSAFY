@@ -43,6 +43,8 @@ services:
       - TZ=Asia/Seoul
       - BACKEND_PORT=${BACKEND_PORT}
     expose:
+      - ${BACKEND_PORT}
+    networks:
       - backend-network
     depends_on:
       - mysql
@@ -61,6 +63,8 @@ services:
       - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
       - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
     expose:
+      - ${DJANGO_PORT}
+    networks:
       - backend-network
     depends_on:
       - mysql
