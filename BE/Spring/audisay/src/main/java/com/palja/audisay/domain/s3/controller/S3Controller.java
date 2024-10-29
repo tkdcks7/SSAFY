@@ -25,7 +25,7 @@ public class S3Controller {
 	private final S3Service awsS3Service;
 
 	@GetMapping("/presigned/upload")
-	@Operation(summary = "파일 업로드", description = "구현 중")
+	@Operation(summary = "파일 업로드", description = "구현 중...")
 	public S3ResponseDto getPresignedUrlToUpload(@RequestParam(value = "filename") String fileName) throws IOException {
 		return awsS3Service.getPresignedUrlToUpload(fileName);
 	}
