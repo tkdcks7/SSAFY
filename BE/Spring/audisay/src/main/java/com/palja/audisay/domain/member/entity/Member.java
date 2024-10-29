@@ -29,7 +29,7 @@ public class Member {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "long", nullable = false)
+	@Column(nullable = false)
 	private Long memberId;
 
 	@Column(columnDefinition = "varchar(320)", nullable = false, unique = true)

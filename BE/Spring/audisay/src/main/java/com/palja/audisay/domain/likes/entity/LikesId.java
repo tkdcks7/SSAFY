@@ -1,4 +1,4 @@
-package com.palja.audisay.domain.like.entity;
+package com.palja.audisay.domain.likes.entity;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -6,7 +6,7 @@ import java.util.Objects;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.member.entity.Member;
 
-public class LikeId implements Serializable {
+public class LikesId implements Serializable {
 	private Book book;
 	private Member member;
 
@@ -16,7 +16,7 @@ public class LikeId implements Serializable {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		LikeId that = (LikeId)o;
+		LikesId that = (LikesId)o;
 		return Objects.equals(member, that.member) && Objects.equals(book, that.book);
 	}
 

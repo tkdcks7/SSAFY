@@ -34,7 +34,7 @@ public class ViewLog {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "long", nullable = false)
+	@Column(nullable = false)
 	private Long logId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
