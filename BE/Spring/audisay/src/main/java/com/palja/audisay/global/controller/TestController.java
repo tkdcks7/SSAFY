@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.palja.audisay.domain.s3.dto.S3ResponseDto;
 
 @RestController
-@RequestMapping("api/test")
+@RequestMapping("/test")
 public class TestController {
 	@GetMapping()
 	public String test() {

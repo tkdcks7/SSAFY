@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AWSS3Service {
+public class S3Service {
 	private final AmazonS3 amazonS3;
 
 	@Value("${cloud.aws.s3.bucket}")
@@ -50,7 +50,6 @@ public class AWSS3Service {
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileName)
 			.withMethod(HttpMethod.GET)
 			.withExpiration(expiration);
-
 		return S3ResponseDto.builder()
 			.url(amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString())
 			.build();
