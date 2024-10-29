@@ -13,7 +13,7 @@ import com.palja.audisay.domain.s3.service.S3Service;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/file")
+@RequestMapping("/file")
 @RequiredArgsConstructor
 public class S3Controller {
 
