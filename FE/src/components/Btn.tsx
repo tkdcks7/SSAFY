@@ -12,13 +12,16 @@ interface CustomButtonProps {
 }
 
 const Btn: React.FC<CustomButtonProps> = ({ isWhite = false, btnSize = 1, title, onPress, style, textStyle, ...props }) => {
-  let sizeStyle: any = styles.baseTextStyle;
+  let sizeStyle: any = styles.midButton;
+  let sizeFont: number = 36;
   switch (btnSize) {
     case 0:
         sizeStyle = styles.minButton;
+        sizeFont = 24;
         break;
     case 2:
         sizeStyle = styles.bigButton;
+        sizeFont = 48;
         break;
   }
   return (
@@ -38,8 +41,9 @@ const Btn: React.FC<CustomButtonProps> = ({ isWhite = false, btnSize = 1, title,
     >
       <Text 
       style={[ 
-        styles.baseBtnStyle, 
-        isWhite ? { color: 'white' } : { color: '#3943B7' },
+        styles.baseTextStyle, 
+        isWhite ? { color: '#3943B7' } : { color: 'white' },
+        {fontSize: sizeFont},
         textStyle
         ]}
         accessible={false}
@@ -78,14 +82,14 @@ const styles = StyleSheet.create({
 
   midButton: {
     width: '100%',
-    height: '15%',
+    height: '12%',
     minHeight: 80,
   },
 
   bigButton: {
     width: '100%',
     height: '25%',
-    minHeight: 120,
+    minHeight: 150,
   },
 });
 
