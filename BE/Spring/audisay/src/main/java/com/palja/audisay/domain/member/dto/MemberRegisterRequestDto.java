@@ -1,14 +1,20 @@
 package com.palja.audisay.domain.member.dto;
 
+import java.time.LocalDate;
+
 import com.palja.audisay.domain.member.annotation.ValidEmail;
 import com.palja.audisay.domain.member.annotation.ValidName;
 import com.palja.audisay.domain.member.annotation.ValidNickname;
 import com.palja.audisay.domain.member.annotation.ValidPassword;
 import com.palja.audisay.domain.member.entity.Gender;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
 
-import java.time.LocalDate;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @ToString
 @Getter
@@ -17,28 +23,28 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MemberRegisterRequestDto {
 
-    @NotNull
-    @ValidEmail
-    private String email;
+	@NotBlank
+	@ValidEmail
+	private String email;
 
-    @NotNull
-    @ValidPassword
-    private String password;
+	@NotBlank
+	@ValidPassword
+	private String password;
 
-    @NotNull
-    @ValidName
-    private String name;
+	@NotBlank
+	@ValidName
+	private String name;
 
-    @NotNull
-    @ValidNickname
-    private String nickname;
+	@NotBlank
+	@ValidNickname
+	private String nickname;
 
-    @NotNull
-    private LocalDate birth;
+	@NotNull
+	private LocalDate birth;
 
-    @NotNull
-    private Gender gender;
+	@NotNull
+	private Gender gender;
 
-    @NotNull
-    private boolean blindFlag;
+	@NotNull
+	private boolean blindFlag;
 }
