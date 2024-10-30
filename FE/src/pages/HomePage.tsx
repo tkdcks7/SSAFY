@@ -1,8 +1,15 @@
 // src/pages/HomePage.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import MainHeader from '../components/MainHeader';
 import MainFooter from '../components/MainFooter';
+import GeneralCarousel from '../components/Home/GeneralCarousel';
+import AccessibilityCarousel from '../components/Home/AccessibilityCarousel';
+import AccessibilityBookInfo from '../components/Home/AccessibilityBookInfo';
+import RecommendedBooks from '../components/Home/RecommendedBooks';
+import MonthlyPopularBooks from '../components/Home/MonthlyPopularBooks';
+import AgeGenderPopularBooks from '../components/Home/AgeGenderPopularBooks';
+import { handleScrollEndAnnouncement } from '../utils/announceScrollEnd';
 
 const HomePage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
@@ -26,16 +33,26 @@ const HomePage: React.FC = () => {
         isUserVisuallyImpaired={isUserVisuallyImpaired}
         onModeToggle={handleModeToggle}
       />
-      <ScrollView contentContainerStyle={styles.content}>
-        {isAccessibilityMode ? (
-          <View style={styles.accessibilityContent}>
-            <Text style={styles.accessibilityText}>접근성 모드에서 제공되는 콘텐츠</Text>
-          </View>
-        ) : (
-          <View style={styles.normalContent}>
-            <Text>일반 모드 콘텐츠</Text>
-          </View>
-        )}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        onScroll={handleScrollEndAnnouncement}
+        scrollEventThrottle={16} // 스크롤 이벤트 빈도 조절
+      >
+        <View style={styles.innerContainer}>
+          {isAccessibilityMode ? (
+            <>
+              <AccessibilityCarousel />
+              <AccessibilityBookInfo />
+            </>
+          ) : (
+            <>
+              <GeneralCarousel />
+              <RecommendedBooks />
+              <MonthlyPopularBooks />
+              <AgeGenderPopularBooks />
+            </>
+          )}
+        </View>
       </ScrollView>
       <MainFooter />
     </View>
@@ -46,18 +63,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollContent: {
+    flexGrow: 1,
     paddingBottom: 100,
   },
-  normalContent: {
-    padding: 20,
-  },
-  accessibilityContent: {
-    padding: 20,
-    backgroundColor: '#f0f0f0',
-  },
-  accessibilityText: {
-    fontSize: 24,
+  innerContainer: {
+    flex: 1,
   },
 });
 
