@@ -1,9 +1,8 @@
 package com.palja.audisay.global.exception;
 
-import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
-import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -11,8 +10,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
+import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
@@ -46,18 +48,19 @@ public class GlobalExceptionHandler {
 
 	// 입력 값 유효성 검증 실패 시
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public void handleValidationExceptions(MethodArgumentNotValidException ex) {
+	public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
 			String code = error.getCode();
-
+			// 로그 찍기
+			log.error("회원가입 유효성 검증 실패: {}", error.getDefaultMessage());
 			// 회원가입 특정 애너테이션 코드로 MemberInvalidParameterException 던지기
 			if ("ValidEmail".equals(code) || "ValidPassword".equals(code)
-					|| "ValidName".equals(code) || "ValidNickname".equals(code)) {
-				throw new MemberInvalidParameterException();
+				|| "ValidName".equals(code) || "ValidNickname".equals(code)) {
+				return customExceptionHandler(new MemberInvalidParameterException());
 			}
 		}
 		// 기본 입력값 검증 오류는 InsufficientParameterException 던지기
-		throw new InsufficientParameterException();
+		return customExceptionHandler(new InsufficientParameterException());
 	}
 
 	@AllArgsConstructor
