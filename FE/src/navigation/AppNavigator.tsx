@@ -9,10 +9,12 @@ import LibraryPage from '../pages/Main/LibraryPage';
 import SearchPage from '../pages/Main/SearchPage';
 import RegisterBookPage from '../pages/Main/RegisterBookPage';
 import MyPage from '../pages/Main/MyPage';
+import SignupPage from '../pages/SignupPage';
 
 export type RootStackParamList = {
   Landing: undefined;
   Login: undefined;
+  Signup: undefined;
   Home: undefined;
   Library: undefined;
   Search: undefined;
@@ -28,6 +30,7 @@ const AppNavigator = () => {
       <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Login" component={LoginPage} />
+        <Stack.Screen name="Signup" component={SignupPage} />
         <Stack.Screen name="Home" component={HomePage} />
         <Stack.Screen name="Library" component={LibraryPage} />
         <Stack.Screen name="Search" component={SearchPage} />
