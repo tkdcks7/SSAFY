@@ -1,6 +1,6 @@
 // src/components/PageWrapper.tsx
 import React, { ReactNode } from 'react';
-import { StyleSheet, ScrollView, ScrollViewProps, ViewStyle } from 'react-native';
+import { StyleSheet, ScrollView, ScrollViewProps, ViewStyle, KeyboardAvoidingView, Platform } from 'react-native';
 
 interface CustomScrollViewProps extends ScrollViewProps {
     children: ReactNode;
@@ -9,9 +9,15 @@ interface CustomScrollViewProps extends ScrollViewProps {
 
 const PageWrapper: React.FC<CustomScrollViewProps> = ({ children, style, ...props }) => {
   return (
+    <KeyboardAvoidingView 
+    style={{flex: 1}} 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'
+    }
+>
     <ScrollView contentContainerStyle={[styles.scrollContainer, style]} {...props}>
         {children}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
