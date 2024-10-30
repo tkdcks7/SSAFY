@@ -17,6 +17,9 @@ const Btn: React.FC<CustomButtonProps> = ({ isWhite = false, btnSize = 1, title,
     case 0:
         sizeStyle = styles.minButton;
         break;
+    case 1:
+        sizeStyle = styles.midButton;
+        break;
     case 2:
         sizeStyle = styles.bigButton;
         break;
@@ -77,8 +80,8 @@ const styles = StyleSheet.create({
   },
 
   midButton: {
-    width: '100%',
-    height: '15%',
+    width: '90%',
+    height: '10%',
     minHeight: 80,
   },
 
