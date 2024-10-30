@@ -1,7 +1,7 @@
 package com.palja.audisay.domain.member.annotation;
 
+import com.palja.audisay.domain.member.validator.EmailValidator;
 import jakarta.validation.Constraint;
-import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 
 import java.lang.annotation.*;
 
