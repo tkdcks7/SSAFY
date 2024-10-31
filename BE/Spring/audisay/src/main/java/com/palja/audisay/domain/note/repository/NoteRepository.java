@@ -16,5 +16,5 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
 	List<Note> findAllByMemberMemberIdAndBookBookIdOrderByCreatedAt(Long memberId, Long bookId);
 
-	void deleteByNoteIdAndMemberMemberId(Long noteId, Long memberId);
+	Integer deleteByNoteIdAndMemberMemberId(Long noteId, Long memberId);
 }

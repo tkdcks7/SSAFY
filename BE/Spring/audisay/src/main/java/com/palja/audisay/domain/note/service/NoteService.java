@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.palja.audisay.domain.note.dto.response.NoteResponseDto;
 import com.palja.audisay.domain.note.entity.Note;
 import com.palja.audisay.domain.note.repository.NoteRepository;
+import com.palja.audisay.global.exception.exceptions.NoteNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +34,9 @@ public class NoteService {
 
 	@Transactional
 	public void deleteNoteByNoteId(Long memberId, Long noteId) {
-		noteRepository.deleteByNoteIdAndMemberMemberId(noteId, memberId);
+		int deletedCount = noteRepository.deleteByNoteIdAndMemberMemberId(noteId, memberId);
+		if (deletedCount == 0) {
+			throw new NoteNotFoundException();
+		}
 	}
 }
