@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.palja.audisay.domain.book.dto.MemberBookStatusReqDto;
+import com.palja.audisay.domain.book.dto.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,5 +52,13 @@ public class BookController {
 	@GetMapping("/liked-books")
 	public ResponseEntity<MemberPublishedBookListDto> getLikePublishedBookList() {
 		return new ResponseEntity<>(bookService.getLikePublishedBookList(), HttpStatus.OK);
+	}
+
+	@Operation(summary = "출판 도서 담기", description = "bookId 도서 담기")
+	@JsonView(MemberBookStatusReqDto.CartView.class)
+	@PostMapping("/book-cart")
+	public ResponseEntity<?> addPublishedBookToCart(@Valid @RequestBody MemberBookStatusReqDto bookStatusReqDto) {
+		bookService.addPublishedBookToCart(bookStatusReqDto.getBookId(), bookStatusReqDto.getCartFlag());
+		return ResponseEntity.ok().build();
 	}
 }
