@@ -1,8 +1,13 @@
 package com.palja.audisay.domain.likes.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.palja.audisay.domain.book.dto.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.likes.entity.Likes;
@@ -53,5 +58,22 @@ public class LikesService {
 
 	public boolean isCurrentlyLiked(Member member, Book book) {
 		return likesRepository.existsByMemberAndBook(member, book);
+	}
+
+	// 좋아요한 도서 조회
+	public MemberPublishedBookListDto findLikedPublishedBookList(Long memberId) {
+		// 사용자 검증
+		Member member = memberService.validateMember(memberId);
+		// 좋아요한 도서 조회
+		List<PublishedBookInfoDto> bookList = likesRepository.findLikedBooksByMemberId(member.getMemberId()).stream()
+			.map(book -> PublishedBookInfoDto.builder()
+				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
+				.title(book.getTitle())
+				.author(book.getAuthor())
+				.bookId(book.getBookId())
+				.dtype(book.getDtype())
+				.build())
+			.collect(Collectors.toList());
+		return MemberPublishedBookListDto.builder().bookList(bookList).build();
 	}
 }
