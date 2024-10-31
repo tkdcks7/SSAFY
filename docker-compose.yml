@@ -56,6 +56,8 @@ services:
       - AWS_S3_BUCKET=${AWS_S3_BUCKET}
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - CURRENT_SERVER_URL=${CURRENT_SERVER_URL}
+      - PROD_SERVER_URL=${PROD_SERVER_URL}
     expose:
       - ${BACKEND_PORT}
     networks:
