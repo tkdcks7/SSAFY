@@ -11,10 +11,10 @@ import com.palja.audisay.domain.note.entity.Note;
 
 @Repository
 public interface NoteRepository extends JpaRepository<Note, Long> {
-	@Query("SELECT n FROM Note n JOIN FETCH n.book WHERE n.member.memberId = :memberId ORDER BY n.createdAt")
+	@Query("SELECT n FROM Note n JOIN FETCH n.book WHERE n.member.memberId = :memberId ORDER BY n.createdAt DESC")
 	List<Note> findAllByMemberIdWithBook(@Param("memberId") Long memberId);
 
-	List<Note> findAllByMemberMemberIdAndBookBookIdOrderByCreatedAt(Long memberId, Long bookId);
+	List<Note> findAllByMemberMemberIdAndBookBookIdOrderByCreatedAtDesc(Long memberId, Long bookId);
 
 	Integer deleteByNoteIdAndMemberMemberId(Long noteId, Long memberId);
 }
