@@ -43,4 +43,10 @@ public class BookController {
 		bookService.updateLikeStatus(bookStatusReqDto.getBookId(), bookStatusReqDto.getLikedFlag());
 		return ResponseEntity.ok().build();
 	}
+
+	@Operation(summary = "좋아요한 도서 조회", description = "사용자의 좋아요한 도서 리스트 반환")
+	@GetMapping("/liked-books")
+	public ResponseEntity<MemberPublishedBookListDto> getLikePublishedBookList() {
+		return new ResponseEntity<>(bookService.getLikePublishedBookList(), HttpStatus.OK);
+	}
 }
