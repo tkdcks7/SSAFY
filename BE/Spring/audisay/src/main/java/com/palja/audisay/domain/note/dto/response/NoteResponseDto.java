@@ -28,6 +28,7 @@ public class NoteResponseDto {
 		private String sentenceId;
 
 		public static NoteComponentDto toDto(Note note) {
+			// TODO: title 조회
 			return NoteComponentDto.builder()
 				.noteId(note.getNoteId())
 				.bookId(note.getBook().getBookId())

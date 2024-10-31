@@ -2,6 +2,7 @@ package com.palja.audisay.domain.note.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,5 +31,12 @@ public class NoteController {
 		long memberId = 1L;
 		NoteResponseDto noteResponseDto = noteService.findNotesByMemberAndBook(memberId, bookId);
 		return new ResponseEntity<>(noteResponseDto, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{noteId}")
+	public ResponseEntity<?> deleteByNoteId(@PathVariable Long noteId) {
+		long memberId = 1L;
+		noteService.deleteNoteByNoteId(memberId, noteId);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

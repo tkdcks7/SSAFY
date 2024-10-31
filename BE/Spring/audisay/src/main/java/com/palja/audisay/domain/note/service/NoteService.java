@@ -3,6 +3,7 @@ package com.palja.audisay.domain.note.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.note.dto.response.NoteResponseDto;
 import com.palja.audisay.domain.note.entity.Note;
@@ -28,5 +29,10 @@ public class NoteService {
 		return NoteResponseDto.builder()
 			.noteList(noteList.stream().map(NoteResponseDto.NoteComponentDto::toDtoForViewer).toList())
 			.build();
+	}
+
+	@Transactional
+	public void deleteNoteByNoteId(Long memberId, Long noteId) {
+		noteRepository.deleteByNoteIdAndMemberMemberId(noteId, memberId);
 	}
 }
