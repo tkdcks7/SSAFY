@@ -22,6 +22,7 @@ public enum GlobalExceptionConstants implements ExceptionConstants {
 	REVIEW_NOT_FOUND("R002", "리뷰를 찾을 수 없습니다."),
 	// NOTE
 	NOTE_NOT_FOUND("N001", "독서 노트를 찾을 수 없습니다."),
+	NOTE_INVALID_PARAMETER("N002", "입력 형식이 잘못되었습니다."),
 	// COMMON ERROR
 	INSUFFICIENT_PARAMETER("C001", "필수 입력 값이 누락되었습니다."),
 	INVALID_DATETIME("C002", "날짜 형식이 잘못되었습니다."),
