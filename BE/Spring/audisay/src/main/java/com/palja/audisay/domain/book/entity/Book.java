@@ -78,7 +78,7 @@ public class Book {
 	@Column(columnDefinition = "text", nullable = false)
 	private String epub;
 
-	@Column(columnDefinition = "enum('PUBLISHED, REGISTERED')", nullable = false)
+	@Column(columnDefinition = "enum('PUBLISHED', 'REGISTERED')", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Dtype dtype;
 
