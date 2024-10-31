@@ -61,4 +61,11 @@ public class BookController {
 		bookService.addPublishedBookToCart(bookStatusReqDto.getBookId(), bookStatusReqDto.getCartFlag());
 		return ResponseEntity.ok().build();
 	}
+
+	@Operation(summary = "담은 출판 도서 조회", description = "담은 출판 도서 조회")
+	@GetMapping("/book-cart")
+	public ResponseEntity<MemberPublishedBookListDto> getPublishedBookToCartList() {
+		return new ResponseEntity<>(bookService.getPublishedBookToCartList(), HttpStatus.OK);
+	}
+
 }
