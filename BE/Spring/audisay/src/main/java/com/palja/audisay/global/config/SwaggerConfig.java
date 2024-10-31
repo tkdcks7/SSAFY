@@ -1,15 +1,16 @@
 package com.palja.audisay.global.config;
 
-import java.util.List;
-
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -21,8 +22,17 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
+        // Security scheme 설정 추가
+        SecurityScheme auth = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.COOKIE)
+                .name("JSESSIONID"); // 쿠키 이름을 JSESSIONID로 설정
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("cookieAuth"); // swagger에서 사용할 인증 스키마 이름
         return new OpenAPI()
-                .components(new Components())
+                .components(new Components().addSecuritySchemes("cookieAuth", auth)) // SecurityScheme 이름과 함께 추가
+                .addSecurityItem(securityRequirement)
             .info(apiInfo())
             .servers(servers());
     }
