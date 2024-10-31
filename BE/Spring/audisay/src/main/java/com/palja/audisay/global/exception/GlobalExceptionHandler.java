@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
 import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
+import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +63,13 @@ public class GlobalExceptionHandler {
 		}
 		// 기본 입력값 검증 오류는 InsufficientParameterException 던지기
 		return customExceptionHandler(new InsufficientParameterException());
+	}
+
+	// BadCredentialsException -> MemberNotFoundException으로 변환
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<Map<String, String>> handleBadCredentialsException(BadCredentialsException ex) {
+		// MemberNotFoundException을 통해 예외를 변환하여 전달
+		return customExceptionHandler(new MemberNotFoundException());
 	}
 
 	@AllArgsConstructor
