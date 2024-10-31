@@ -7,12 +7,15 @@ const { width, height } = Dimensions.get('window');
 
 const CurrentReadingStatus: React.FC = () => {
   return (
-    <View style={styles.container}>
-      <Image source={currentBook.coverImage} style={styles.bookImage} />
-      <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{currentBook.title}</Text>
-        <View style={styles.progressContainer}>
-          <Text style={styles.readingProgress}>{currentBook.progress}%</Text>
+    <View style={styles.containerWrapper}>
+      <Text style={styles.headerText}>현재 읽고 있는 책</Text>
+      <View style={styles.container}>
+        <Image source={currentBook.coverImage} style={styles.bookImage} />
+        <View style={styles.bookInfo}>
+          <Text style={styles.bookTitle}>{currentBook.title}</Text>
+          <View style={styles.progressContainer}>
+            <Text style={styles.readingProgress}>{currentBook.progress}%</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -20,11 +23,19 @@ const CurrentReadingStatus: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  containerWrapper: {
+    margin: width * 0.03,
+  },
+  headerText: {
+    fontSize: width * 0.06,
+    fontWeight: 'bold',
+    color: '#3943B7',
+    marginBottom: height * 0.01,
+  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: width * 0.02,
-    margin: width * 0.03,
     backgroundColor: '#3943B7',
     marginVertical: height * 0.02,
     borderRadius: 8,

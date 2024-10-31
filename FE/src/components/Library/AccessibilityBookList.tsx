@@ -12,7 +12,6 @@ const AccessibilityBookList: React.FC = () => {
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
         <View>
-          <Text style={styles.title}>접근성 모드 도서 목록</Text>
           <View style={styles.currentBookContainer}>
             <Text style={styles.currentBookTitle}>현재 읽고 있는 책</Text>
             <View style={styles.bookItem}>
@@ -24,7 +23,7 @@ const AccessibilityBookList: React.FC = () => {
               </View>
             </View>
           </View>
-          <Text style={styles.remainingBooksTitle}>나머지 도서 목록</Text>
+          <Text style={styles.remainingBooksTitle}>내 서재 도서 목록</Text>
         </View>
       }
       renderItem={({ item }) => (
@@ -57,20 +56,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
   },
   currentBookContainer: {
-    marginBottom: height * 0.04,
+    marginBottom: height * 0.02,
     paddingHorizontal: width * 0.04,
   },
   currentBookTitle: {
-    fontSize: width * 0.06,
+    fontSize: width * 0.1,
     fontWeight: 'bold',
     color: '#3943B7',
     marginBottom: height * 0.02,
   },
   remainingBooksTitle: {
-    fontSize: width * 0.06,
+    fontSize: width * 0.1,
     fontWeight: 'bold',
     color: '#3943B7',
-    marginBottom: height * 0.02,
     paddingHorizontal: width * 0.04,
   },
   flatListContent: {
@@ -106,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.01,
   },
   bookAuthor: {
-    fontSize: width * 0.05,
+    fontSize: width * 0.07,
     color: '#666666',
     marginBottom: height * 0.01,
   },
