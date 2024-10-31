@@ -47,7 +47,7 @@ public class AuthController {
 	// 회원 Id 가져오는 테스트 코드
 	@GetMapping("/test")
 	@Operation(summary = "memberId를 가져올 수 있는 테스트코드", description = "로그인을 해서 세션에 memberId 있어야 정상 작동됨 - swagger에 자동 저장되어 있음")
-	public ResponseEntity<String> someMethod(HttpSession session) {
+	public ResponseEntity<String> someMethod() {
 		// 유틸리티 메서드 호출로 memberId 가져오기
 		Long memberId = SessionUtil.getMemberId();
 		return ResponseEntity.ok("memberId: " + memberId);
