@@ -12,7 +12,6 @@ public enum GlobalExceptionConstants implements ExceptionConstants {
 	MEMBER_NICKNAME_DUPLICATED("M003", "중복된 닉네임입니다."),
 	MEMBER_INVALID_PARAMETER("M004", "입력 형식이 잘못되었습니다."),
 	MEMBER_ACCESS_DENIED("M005", "페이지에 접근할 수 있는 권한이 없습니다."),
-	MEMBER_INSUFFICIENT_PARAMETER("M006", "필수 입력 값이 누락되었습니다."),
 	// PUBLISHED BOOK
 	PUBLISHED_BOOK_NOT_FOUND("P001", "출판 도서를 찾을 수 없습니다."),
 	// BOOK REGISTRAION
@@ -23,9 +22,12 @@ public enum GlobalExceptionConstants implements ExceptionConstants {
 	REVIEW_NOT_FOUND("R002", "리뷰를 찾을 수 없습니다."),
 	// NOTE
 	NOTE_NOT_FOUND("N001", "독서 노트를 찾을 수 없습니다."),
+	NOTE_INVALID_PARAMETER("N002", "입력 형식이 잘못되었습니다."),
+	// COMMON ERROR
+	INSUFFICIENT_PARAMETER("C001", "필수 입력 값이 누락되었습니다."),
+	INVALID_DATETIME("C002", "날짜 형식이 잘못되었습니다."),
 	// SERVER ERROR
 	SERVER_ERROR("X001", "서버에서 오류가 발생하였습니다.");
-
 	private final String code;
 	private final String message;
 }
