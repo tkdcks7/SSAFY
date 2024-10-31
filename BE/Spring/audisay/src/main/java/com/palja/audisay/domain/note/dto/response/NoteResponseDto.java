@@ -28,10 +28,10 @@ public class NoteResponseDto {
 		private String sentenceId;
 
 		public static NoteComponentDto toDto(Note note) {
-			// TODO: title 조회
 			return NoteComponentDto.builder()
 				.noteId(note.getNoteId())
 				.bookId(note.getBook().getBookId())
+				.title(note.getBook().getTitle())
 				.progressRate(note.getProgressRate())
 				.createdAt(StringUtil.datetimeToString(note.getCreatedAt()))
 				.sentence(note.getSentence())

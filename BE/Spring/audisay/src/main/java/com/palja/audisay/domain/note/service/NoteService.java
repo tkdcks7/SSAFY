@@ -18,7 +18,7 @@ public class NoteService {
 	private final NoteRepository noteRepository;
 
 	public NoteResponseDto findNotesByMember(Long memberId) {
-		List<Note> noteList = noteRepository.findAllByMemberMemberIdOrderByCreatedAt(memberId);
+		List<Note> noteList = noteRepository.findAllByMemberIdWithBook(memberId);
 		return NoteResponseDto.builder()
 			.noteList(noteList.stream().map(NoteResponseDto.NoteComponentDto::toDto).toList())
 			.build();
