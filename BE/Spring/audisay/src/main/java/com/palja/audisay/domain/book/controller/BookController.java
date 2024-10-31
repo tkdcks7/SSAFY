@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class BookController {
 
 	private final BookService bookService;
+	// 임시 memberId
+	private final Long tempMemberId = 1L;
 
 	@Operation(summary = "도서 상세 내용 조회",
 		description = "도서(bookId)의 상세 내용**(제목, 표지, 표지설명, 저자, 출판사, 카테고리(장르), 출판년도, 줄거리, ISBN, 자체TTS여부, 리뷰평점, 사용자 담은/좋아요 여부)** 반환")
@@ -31,7 +33,7 @@ public class BookController {
 	})
 	@GetMapping("/{bookId}")
 	public ResponseEntity<PublishedBookInfoDto> getPublishedBookDetail(@PathVariable("bookId") Long bookId) {
-		return new ResponseEntity<>(bookService.findPublishedBookDetail(bookId), HttpStatus.OK);
+		return new ResponseEntity<>(bookService.findPublishedBookDetail(tempMemberId, bookId), HttpStatus.OK);
 	}
 
 }
