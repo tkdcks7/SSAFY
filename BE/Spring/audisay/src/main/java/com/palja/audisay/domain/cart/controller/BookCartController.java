@@ -30,7 +30,7 @@ public class BookCartController {
 
 	@Operation(summary = "출판 도서 담기", description = "bookId 도서 담기")
 	@JsonView(MemberBookStatusReqDto.CartView.class)
-	@PostMapping("")
+	@PostMapping()
 	public ResponseEntity<?> addPublishedBookToCart(@Valid @RequestBody MemberBookStatusReqDto bookStatusReqDto) {
 		bookCartService.savePublishedBookToCart(tempMemberId, bookStatusReqDto.getBookId(),
 			bookStatusReqDto.getCartFlag());
@@ -38,7 +38,7 @@ public class BookCartController {
 	}
 
 	@Operation(summary = "담은 출판 도서 조회", description = "담은 출판 도서 조회")
-	@GetMapping("/book-cart")
+	@GetMapping()
 	public ResponseEntity<MemberPublishedBookListDto> getPublishedBookToCartList() {
 		return new ResponseEntity<>(bookCartService.findCartPublishedBookList(tempMemberId), HttpStatus.OK);
 	}
