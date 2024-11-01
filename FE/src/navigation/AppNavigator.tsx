@@ -10,6 +10,13 @@ import SearchPage from '../pages/Main/SearchPage';
 import RegisterBookPage from '../pages/Main/RegisterBookPage';
 import MyPage from '../pages/Main/MyPage';
 import SignupPage from '../pages/SignupPage';
+import UserInfoPage from '../pages/MyPage/UserInfoPage';
+import PasswordEditPage from '../pages/MyPage/PasswordEditPage';
+import GeneralInfoEditPage from '../pages/MyPage/GeneralInfoEditPage';
+import MyReviewPage from '../pages/MyPage/MyReviewPage';
+import MyReviewEditPage from '../pages/MyPage/MyReviewEditPage';
+import MyBooksPage from '../pages/MyPage/MyBooksPage';
+import MyLikedBooksPage from '../pages/MyPage/MyLikedBooksPage';
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -20,6 +27,19 @@ export type RootStackParamList = {
   Search: undefined;
   RegisterBook: undefined;
   MyPage: undefined;
+  UserInfo: undefined;
+  PasswordEdit: undefined;
+  GeneralInfoEdit: { nickname: string; birth: string; blindFlag: boolean };
+  MyReview: undefined;
+  MyReviewEdit: {
+    reviewId: number;
+    title: string;
+    content: string;
+    score: number;
+    updatedAt: string
+  };
+  MyBooks: undefined;
+  MyLikedBooks: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -36,6 +56,13 @@ const AppNavigator = () => {
         <Stack.Screen name="Search" component={SearchPage} />
         <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
         <Stack.Screen name="MyPage" component={MyPage} />
+        <Stack.Screen name="UserInfo" component={UserInfoPage} />
+        <Stack.Screen name="PasswordEdit" component={PasswordEditPage} />
+        <Stack.Screen name="GeneralInfoEdit" component={GeneralInfoEditPage} />
+        <Stack.Screen name="MyReview" component={MyReviewPage} />
+        <Stack.Screen name="MyReviewEdit" component={MyReviewEditPage} />
+        <Stack.Screen name="MyBooks" component={MyBooksPage} />
+        <Stack.Screen name="MyLikedBooks" component={MyLikedBooksPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

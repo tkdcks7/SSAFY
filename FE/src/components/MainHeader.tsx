@@ -15,17 +15,21 @@ type MainHeaderProps = {
 const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isUserVisuallyImpaired, onModeToggle }) => {
   return (
     <View style={styles.container}>
-      {!isUserVisuallyImpaired && (
-        <TouchableOpacity style={styles.modeToggleButton} onPress={onModeToggle}>
-          <Image source={accessbilityicon} style={styles.icon} />
-        </TouchableOpacity>
-      )}
+      <View style={styles.leftContainer}>
+        {!isUserVisuallyImpaired && (
+          <TouchableOpacity style={styles.modeToggleButton} onPress={onModeToggle}>
+            <Image source={accessbilityicon} style={styles.icon} />
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>
       </View>
-      <TouchableOpacity style={styles.bookmarkButton}>
-        <Image source={notesicon} style={styles.icon} />
-      </TouchableOpacity>
+      <View style={styles.rightContainer}>
+        <TouchableOpacity style={styles.bookmarkButton}>
+          <Image source={notesicon} style={styles.icon} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -38,6 +42,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#3943B7',
     paddingHorizontal: width * 0.03,
+  },
+  leftContainer: {
+    width: width * 0.15,
+    alignItems: 'flex-start',
+  },
+  rightContainer: {
+    width: width * 0.15,
+    alignItems: 'flex-end',
   },
   modeToggleButton: {
     padding: width * 0.02,

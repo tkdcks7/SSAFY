@@ -21,3 +21,95 @@ export const currentBook = {
   progress: 45, // 진행도 (% 표시)
   publisher: 'RHK',
 };
+
+export const myBooks = [
+  {
+    bookId: 1,
+    title: '1984',
+    author: '조지 오웰',
+    cover: require('../assets/images/books/book1.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 2,
+    title: '멋진 신세계',
+    author: '올더스 헉슬리',
+    cover: require('../assets/images/books/book2.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 3,
+    title: '동물 농장',
+    author: '조지 오웰',
+    cover: require('../assets/images/books/book3.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 4,
+    title: '앤디 위어 - 헤일 메리',
+    author: '앤디 위어',
+    cover: require('../assets/images/books/book4.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 5,
+    title: '채식주의자',
+    author: '한강',
+    cover: require('../assets/images/books/book5.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 6,
+    title: '연금술사',
+    author: '파울로 코엘료',
+    cover: require('../assets/images/books/book6.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 7,
+    title: '도둑맞은 집중력',
+    author: '요한 하리',
+    cover: require('../assets/images/books/book7.png'),
+    dtype: 'REGISTERED',
+  },
+  {
+    bookId: 8,
+    title: '총, 균, 쇠',
+    author: '재레드 다이아몬드',
+    cover: require('../assets/images/books/book8.png'),
+    dtype: 'PUBLISHED',
+  },
+  {
+    bookId: 9,
+    title: '거인의 노트',
+    author: '팀 페리스',
+    cover: require('../assets/images/books/book9.png'),
+    dtype: 'REGISTERED',
+  },
+];
+
+export const myLikedBooks = {
+  bookList: [
+    {
+      cover: require('../assets/images/books/book1.png'),
+      title: '1984',
+      author: '조지 오웰',
+      bookId: 1,
+      dtype: 'PUBLISHED',
+    },
+    {
+      cover: require('../assets/images/books/book2.png'),
+      title: '멋진 신세계',
+      author: '올더스 헉슬리',
+      bookId: 2,
+      dtype: 'PUBLISHED',
+    },
+    {
+      cover: require('../assets/images/books/book3.png'),
+      title: '동물 농장',
+      author: '조지 오웰',
+      bookId: 3,
+      dtype: 'PUBLISHED',
+    },
+  ],
+};
