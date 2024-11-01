@@ -49,7 +49,7 @@ public class Note {
 
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
 	@CreationTimestamp
-	private LocalDateTime created_at;
+	private LocalDateTime createdAt;
 
 	@Column(columnDefinition = "double", nullable = false)
 	private Double progressRate;
