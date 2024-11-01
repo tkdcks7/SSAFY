@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomBookRepositoryImpl implements CustomBookRepository {
 	private final JPAQueryFactory jpaQueryFactory;
+	public final int ROUND_SCALE = 3;
 
 	@Override
 	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long bookId, Long memberId) {
@@ -54,12 +55,12 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 				book.myTtsFlag,
 				// 도서 리뷰 통계
 				Projections.fields(PublishedBookInfoDto.ReviewDistribution.class,
-					review.score.avg().coalesce(0.0).as("average"),
-					calculateScorePercentage(review.score, 5).as("five"),
-					calculateScorePercentage(review.score, 4).as("four"),
-					calculateScorePercentage(review.score, 3).as("three"),
-					calculateScorePercentage(review.score, 2).as("two"),
-					calculateScorePercentage(review.score, 1).as("one")
+					roundTo(review.score.avg().coalesce(0.0)).as("average"),
+					roundTo(calculateScorePercentage(review.score, 5)).as("five"),
+					roundTo(calculateScorePercentage(review.score, 4)).as("four"),
+					roundTo(calculateScorePercentage(review.score, 3)).as("three"),
+					roundTo(calculateScorePercentage(review.score, 2)).as("two"),
+					roundTo(calculateScorePercentage(review.score, 1)).as("one")
 				).as("reviewDistribution"),
 				// 사용자가 좋아요/담은 상태
 				Projections.fields(PublishedBookInfoDto.MemberInfo.class,
@@ -78,5 +79,12 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 					.multiply(100.0)
 					.divide(scorePath.count())
 			).coalesce(0.0);
+	}
+
+	private NumberExpression<Double> roundTo(NumberExpression<Double> expression) {
+		return expression
+			.multiply(Math.pow(10, ROUND_SCALE)) // scale에 따라 10의 제곱을 곱함
+			.round() // 반올림
+			.divide(Math.pow(10, ROUND_SCALE)); // 다시 scale에 따라 나눔
 	}
 }
