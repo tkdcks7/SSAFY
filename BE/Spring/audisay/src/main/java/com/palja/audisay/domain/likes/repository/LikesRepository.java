@@ -18,7 +18,7 @@ public interface LikesRepository extends JpaRepository<Likes, Long> {
 	@Query("""
 		SELECT b
 		FROM Likes l JOIN l.book b
-		WHERE l.member.memberId = :memberId
+		on l.member.memberId = :memberId and l.book.bookId = b.bookId
 		""")
 	List<Book> findLikedBooksByMemberId(@Param("memberId") Long memberId);
 
