@@ -87,3 +87,29 @@ export const myBooks = [
     dtype: 'REGISTERED',
   },
 ];
+
+export const myLikedBooks = {
+  bookList: [
+    {
+      cover: require('../assets/images/books/book1.png'),
+      title: '1984',
+      author: '조지 오웰',
+      bookId: 1,
+      dtype: 'PUBLISHED',
+    },
+    {
+      cover: require('../assets/images/books/book2.png'),
+      title: '멋진 신세계',
+      author: '올더스 헉슬리',
+      bookId: 2,
+      dtype: 'PUBLISHED',
+    },
+    {
+      cover: require('../assets/images/books/book3.png'),
+      title: '동물 농장',
+      author: '조지 오웰',
+      bookId: 3,
+      dtype: 'PUBLISHED',
+    },
+  ],
+};

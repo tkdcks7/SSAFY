@@ -1,6 +1,6 @@
 // src/components/MyPage/MyBooksTab.tsx
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Image, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Image, TextInput, Dimensions, AccessibilityInfo } from 'react-native';
 import SearchIcon from '../../assets/icons/search.png';
 
 const { width, height } = Dimensions.get('window');
@@ -17,6 +17,7 @@ const MyBooksTab: React.FC<MyBooksTabProps> = ({ onTabClick, onSearch }) => {
   const handleTabPress = (tab: '출판도서' | '등록도서') => {
     setSelectedTab(tab);
     onTabClick(tab);
+    AccessibilityInfo.announceForAccessibility(`${tab} 탭 선택됨`);
   };
 
   const handleSearchChange = (text: string) => {
@@ -30,24 +31,30 @@ const MyBooksTab: React.FC<MyBooksTabProps> = ({ onTabClick, onSearch }) => {
         <TouchableOpacity
           style={[styles.tabButton, selectedTab === '출판도서' && styles.selectedTabButton]}
           onPress={() => handleTabPress('출판도서')}
+          accessibilityLabel="출판도서 탭 버튼"
+          accessibilityState={{ selected: selectedTab === '출판도서' }}
         >
           <Text style={[styles.tabButtonText, selectedTab === '출판도서' && styles.selectedTabButtonText]}>출판도서</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, selectedTab === '등록도서' && styles.selectedTabButton]}
           onPress={() => handleTabPress('등록도서')}
+          accessibilityLabel="등록도서 탭 버튼"
+          accessibilityState={{ selected: selectedTab === '등록도서' }}
         >
           <Text style={[styles.tabButtonText, selectedTab === '등록도서' && styles.selectedTabButtonText]}>등록도서</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.searchContainer}>
-        <Image source={SearchIcon} style={styles.icon} />
+        <Image source={SearchIcon} style={styles.icon} accessibilityLabel="검색 아이콘" />
         <TextInput
           placeholder="제목, 저자, 출판사 검색"
           style={styles.searchInput}
           placeholderTextColor="#888"
           value={searchText}
           onChangeText={handleSearchChange}
+          accessibilityLabel="검색 입력란"
+          accessibilityHint="검색어를 입력하세요"
         />
       </View>
     </View>
@@ -78,13 +85,13 @@ const styles = StyleSheet.create({
   },
   tabButtonText: {
     color: '#3943B7',
-    fontSize: width * 0.04,
+    fontSize: width * 0.05,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   selectedTabButtonText: {
     color: '#ffffff',
-    fontSize: width * 0.04,
+    fontSize: width * 0.05,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -104,8 +111,8 @@ const styles = StyleSheet.create({
     fontSize: width * 0.045,
   },
   icon: {
-    width: width * 0.1,
-    height: width * 0.1,
+    width: width * 0.08,
+    height: width * 0.08,
   },
 });
 

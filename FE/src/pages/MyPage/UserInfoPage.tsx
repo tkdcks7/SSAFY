@@ -1,4 +1,6 @@
 // src/pages/Mypage/UserInfoPage.tsx
+// 미구현기능 : api 연동(유저 정보 조회, 비밀번호 수정, 일반정보 수정 요청)
+
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, AccessibilityInfo } from 'react-native';
 import MyPageHeader from '../../components/MyPage/MyPageHeader';
