@@ -60,12 +60,12 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 					calculateScorePercentage(review.score, 3).as("three"),
 					calculateScorePercentage(review.score, 2).as("two"),
 					calculateScorePercentage(review.score, 1).as("one")
-				),
+				).as("reviewDistribution"),
 				// 사용자가 좋아요/담은 상태
 				Projections.fields(PublishedBookInfoDto.MemberInfo.class,
 					bookCart.book.bookId.isNotNull().as("cartFlag"),
 					likes.book.bookId.isNotNull().as("likedFlag")
-				)
+				).as("memberInfo")
 			));
 		return Optional.ofNullable(query.fetchOne());
 	}
