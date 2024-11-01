@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/published-books")
-@Tag(name = "출판 도서", description = "출판 도서 검색 목록 / 상세 정보 관련 API")
+@Tag(name = "출판 도서 조회", description = "출판 도서 검색 목록 / 상세 정보 관련 API")
 public class BookController {
 
 	private final BookService bookService;
