@@ -2,6 +2,7 @@ package com.palja.audisay.domain.book.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.palja.audisay.domain.book.entity.Dtype;
