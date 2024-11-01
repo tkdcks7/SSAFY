@@ -25,17 +25,21 @@ public class PublishedBookInfoDto {
 	private Long bookId;
 	private String title;
 	private String cover;
-	private String category;
 	private String coverAlt;
+	private String category;
 	private String author;
 	private String publisher;
-	private LocalDate publishedAt;
+	private String publishedAt;
 	private String story;
 	private String isbn;
-	private Boolean myTtsFlag;
 	private Dtype dtype;
+	private Boolean myTtsFlag;
 	private ReviewDistribution reviewDistribution;
 	private MemberInfo memberInfo;
+	@JsonIgnore
+	private LocalDate publishedDate;
+	@JsonIgnore
+	private String coverRaw;
 
 	@Getter
 	@Setter
