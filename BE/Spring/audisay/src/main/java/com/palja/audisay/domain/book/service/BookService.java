@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
+import com.palja.audisay.domain.book.entity.Dtype;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
@@ -42,7 +43,15 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public Book validateBook(Long bookId) {
+	public Book validatePublishedBook(Long bookId) {
+		Book book = validateExistBook(bookId);
+		if (!book.getDtype().equals(Dtype.PUBLISHED)) {
+			throw new PublishedBookNotFoundException();
+		}
+		return book;
+	}
+
+	public Book validateExistBook(Long bookId) {
 		return bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
 	}
 }
