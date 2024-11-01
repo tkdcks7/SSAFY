@@ -48,17 +48,17 @@ public class PublishedBookInfoDto {
 	@NoArgsConstructor
 	@Builder
 	public static class ReviewDistribution {
-		private Float average;
+		private Double average;
 		@JsonProperty("5")
-		private Float five;
+		private Double five;
 		@JsonProperty("4")
-		private Float four;
+		private Double four;
 		@JsonProperty("3")
-		private Float three;
+		private Double three;
 		@JsonProperty("2")
-		private Float two;
+		private Double two;
 		@JsonProperty("1")
-		private Float one;
+		private Double one;
 	}
 
 	@Getter
