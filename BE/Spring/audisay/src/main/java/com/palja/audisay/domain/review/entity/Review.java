@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @DynamicInsert
 @Builder
-public class review {
+public class Review {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(nullable = false)
