@@ -58,6 +58,7 @@ services:
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - CURRENT_SERVER_URL=${CURRENT_SERVER_URL}
       - PROD_SERVER_URL=${PROD_SERVER_URL}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
     expose:
       - ${BACKEND_PORT}
     networks:
