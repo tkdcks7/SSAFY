@@ -10,6 +10,8 @@ import SearchPage from '../pages/Main/SearchPage';
 import RegisterBookPage from '../pages/Main/RegisterBookPage';
 import MyPage from '../pages/Main/MyPage';
 import SignupPage from '../pages/SignupPage';
+import EBookViewerPage from '../pages/Ebook/EBookViewerPage';
+
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -20,6 +22,7 @@ export type RootStackParamList = {
   Search: undefined;
   RegisterBook: undefined;
   MyPage: undefined;
+  EBookViewer: { bookId: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -36,6 +39,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Search" component={SearchPage} />
         <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
         <Stack.Screen name="MyPage" component={MyPage} />
+        <Stack.Screen name="EBookViewer" component={EBookViewerPage} options={{ title: 'E-Book 뷰어' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
