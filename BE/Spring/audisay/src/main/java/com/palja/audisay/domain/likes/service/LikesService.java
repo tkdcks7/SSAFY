@@ -35,7 +35,7 @@ public class LikesService {
 		// 사용자 검증
 		Member member = memberService.validateMember(memberId);
 		// 도서 검증
-		Book book = bookService.validateBook(bookId);
+		Book book = bookService.validatePublishedBook(bookId);
 		// 좋아요 상태 확인
 		boolean isCurLike = isCurrentlyLiked(member, book);
 		if (isLike && !isCurLike) {
