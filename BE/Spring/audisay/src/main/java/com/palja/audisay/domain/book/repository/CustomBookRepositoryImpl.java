@@ -41,7 +41,6 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.where(book.bookId.eq(bookId))
 			.groupBy(book.bookId, category.categoryName)
 			.select(Projections.fields(PublishedBookInfoDto.class,
-				book.bookId,
 				book.title,
 				book.cover.as("coverRaw"),
 				book.coverAlt,
