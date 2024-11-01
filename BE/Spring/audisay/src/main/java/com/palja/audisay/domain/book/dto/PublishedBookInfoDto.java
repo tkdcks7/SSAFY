@@ -42,7 +42,7 @@ public class PublishedBookInfoDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Builder
-	static class ReviewDistribution {
+	public static class ReviewDistribution {
 		private Float average;
 		@JsonProperty("5")
 		private Float five;
@@ -61,7 +61,7 @@ public class PublishedBookInfoDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Builder
-	static class MemberInfo {
+	public static class MemberInfo {
 		private Boolean cartFlag;
 		private Boolean likedFlag;
 	}
