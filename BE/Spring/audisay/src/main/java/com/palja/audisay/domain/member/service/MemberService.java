@@ -1,20 +1,24 @@
 package com.palja.audisay.domain.member.service;
 
-import com.palja.audisay.domain.member.dto.LoginRequestDto;
-import com.palja.audisay.domain.member.dto.MemberRegisterRequestDto;
-import com.palja.audisay.domain.member.entity.Member;
-import com.palja.audisay.domain.member.repository.MemberRepository;
-import com.palja.audisay.global.exception.exceptions.MemberEmailDuplicatedException;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.palja.audisay.domain.member.dto.LoginRequestDto;
+import com.palja.audisay.domain.member.dto.MemberRegisterRequestDto;
+import com.palja.audisay.domain.member.entity.Member;
+import com.palja.audisay.domain.member.repository.MemberRepository;
+import com.palja.audisay.global.exception.exceptions.MemberAccessDeniedException;
+import com.palja.audisay.global.exception.exceptions.MemberEmailDuplicatedException;
+import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
+
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +67,13 @@ public class MemberService {
 		// SecurityContext에서 CustomUserDetails를 통해 memberId 추출
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		return userDetails.getId();
+	}
+
+	public Member validateMember(Long memberId) {
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
+		if (member.isDeleteFlag()) {
+			throw new MemberAccessDeniedException();
+		}
+		return member;
 	}
 }
