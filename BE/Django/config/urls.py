@@ -15,8 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 urlpatterns = [
+    # Django 관리자 페이지 URL
     path('admin/', admin.site.urls),
+
+    # api/registration/으로 시작하는 모든 요청을 main/urls.py로 전달
+    path('api/registration/', include('main.urls')),
 ]

@@ -6,3 +6,4 @@ class Metadata(serializers.Serializer):
     cover_alt = serializers.CharField(required=False)
     cover = serializers.ImageField()
     created_at = serializers.DateTimeField()
+    category_id = serializers.CharField
