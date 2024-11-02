@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .common import Metadata
 
 class Content(serializers.Serializer):
-    title = serializers.CharField(required=False)
     texts = serializers.ListField(
         child=serializers.CharField(),
         allow_empty=True,
