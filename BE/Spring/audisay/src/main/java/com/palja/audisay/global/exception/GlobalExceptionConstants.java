@@ -17,6 +17,7 @@ public enum GlobalExceptionConstants implements ExceptionConstants {
 	// BOOK REGISTRAION
 	REGISTRATION_FILE_TYPE_INVALID("G001", "파일 형식이 잘못되었습니다."),
 	REGISTRATION_FILE_EMPTY("G002", "파일이 비어있습니다."),
+	REGISTERED_BOOK_NOT_FOUND("G003", "등록 도서를 찾을 수 없습니다."),
 	// REVIEW
 	REVIEW_INVALID_PARAMETER("R001", "입력 형식이 잘못되었습니다."),
 	REVIEW_NOT_FOUND("R002", "리뷰를 찾을 수 없습니다."),
