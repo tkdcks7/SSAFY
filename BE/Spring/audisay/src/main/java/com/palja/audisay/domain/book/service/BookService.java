@@ -44,14 +44,18 @@ public class BookService {
 	}
 
 	public Book validatePublishedBook(Long bookId) {
-		Book book = validateExistBook(bookId);
+		Book book = bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
 		if (!book.getDtype().equals(Dtype.PUBLISHED)) {
 			throw new PublishedBookNotFoundException();
 		}
 		return book;
 	}
 
-	public Book validateExistBook(Long bookId) {
-		return bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
+	public Book validateRegisteredBook(Long bookId) {
+		Book book = bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
+		if (!book.getDtype().equals(Dtype.REGISTERED)) {
+			throw new PublishedBookNotFoundException();
+		}
+		return book;
 	}
 }
