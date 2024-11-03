@@ -25,4 +25,6 @@ public interface BookCartRepository extends JpaRepository<BookCart, BookCartId> 
 		""")
 	List<Book> findBookCartByMemberId(@Param("memberId") Long memberId);
 
+	int countByMember(Member member);
+
 }
