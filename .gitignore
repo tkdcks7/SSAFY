@@ -675,3 +675,4 @@ gradle-app.setting
 .env
 pipeline.groovy
 *.epub
+.vscode/
