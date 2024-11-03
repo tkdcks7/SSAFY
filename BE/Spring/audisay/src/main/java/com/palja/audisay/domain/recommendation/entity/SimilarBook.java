@@ -16,5 +16,5 @@ public class SimilarBook {
 	@Id
 	private String id;
 	private Long bookId;
-	private List<Integer> bookList;
+	private List<Long> bookList;
 }

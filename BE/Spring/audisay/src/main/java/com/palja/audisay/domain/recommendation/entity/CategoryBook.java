@@ -16,5 +16,5 @@ public class CategoryBook {
 	@Id
 	private String id;
 	private String groupId;
-	private List<Integer> bookList;
+	private List<Long> bookList;
 }

@@ -16,5 +16,5 @@ public class SimilarMemberBook {
 	@Id
 	private String id;
 	private Long memberId;
-	private List<Integer> bookList;
+	private List<Long> bookList;
 }
