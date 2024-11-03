@@ -10,12 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.member.dto.LoginRequestDto;
-import com.palja.audisay.domain.member.service.MemberService;
+import com.palja.audisay.domain.member.service.AuthService;
 import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -25,16 +24,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
-@Tag(name = "멤버", description = "로그인, 로그아웃")
+@Tag(name = "로그인/로그아웃", description = "로그인, 로그아웃")
 public class AuthController {
-	private final MemberService memberService;
+	private final AuthService authService;
 
 	// 로그인
 	@PostMapping("/login")
 	@Operation(summary = "로그인", description = "회원 이메일과 비밀번호 일치해야 함")
 	public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpSession session,
 		HttpServletRequest request, HttpServletResponse response) {
-		Long memberId = memberService.authenticateUser(loginRequestDto);
+		Long memberId = authService.authenticateUser(loginRequestDto);
 		session.setAttribute("memberId", memberId); // userId 세션에 저장
 		session.setMaxInactiveInterval(6 * 30 * 24 * 60 * 60); // 세션 6개월 유지
 
@@ -54,14 +53,11 @@ public class AuthController {
 	}
 
 	@PostMapping("/logout")
+	@Operation(summary = "로그아웃", description = "현재 로그인 한 세션 삭제")
 	public ResponseEntity<Void> logout(HttpSession session, HttpServletResponse response) {
+		SessionUtil.getMemberId(); // 현재 memberId 세션에 있는지 확인
 		session.invalidate(); // 현재 세션 무효화 (삭제)
-		// JSESSIONID 쿠키 삭제
-		Cookie cookie = new Cookie("JSESSIONID", null);
-		cookie.setPath("/");
-		cookie.setMaxAge(0); // 쿠키 만료
-		cookie.setHttpOnly(true);
-		response.addCookie(cookie);
+		SessionUtil.clearSessionCookie(response); // JSESSIONID 쿠키 삭제
 		return ResponseEntity.ok().build();
 	}
 }
