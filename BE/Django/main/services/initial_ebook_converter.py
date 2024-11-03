@@ -141,7 +141,14 @@ class InitialEbookConverter:
                 elif type == 'text':
                     texts = section.get('content', {}).get('texts', ["본문 없음"])
                     for text in texts:
-                        content += f'<span>{text}</span>'
+                        if text.startswith('"') and text.endswith('"'):
+                            content += f'<p>{text}</p>'
+                        elif text.startswith('"'):
+                            content += f'<p><span>{text}</span>'
+                        elif text.endswith('"'):
+                            content += f'<span>{text}</span></p>'
+                        else:
+                            content += f'<span>{text}</span>'
                 
                 elif type == 'image':
                     image = section.get('content', {}).get('image')
