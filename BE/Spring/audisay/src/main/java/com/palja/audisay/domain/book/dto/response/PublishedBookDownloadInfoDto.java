@@ -1,7 +1,9 @@
-package com.palja.audisay.domain.book.dto.request;
+package com.palja.audisay.domain.book.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.global.util.StringUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +33,21 @@ public class PublishedBookDownloadInfoDto {
 
 	// download
 	private String url;
+
+	public static PublishedBookDownloadInfoDto toDto(Book book) {
+		return PublishedBookDownloadInfoDto.builder()
+			.bookId(book.getBookId())
+			.title(book.getTitle())
+			.cover(book.getCover())
+			.coverAlt(book.getCoverAlt())
+			.author(book.getAuthor())
+			.publisher(book.getPublisher())
+			.publishedAt(StringUtil.dateToString(book.getPublishedDate()))
+			.story(book.getStory())
+			.isbn(book.getIsbn())
+			.dtype(book.getDtype())
+			.myTtsFlag(book.getMyTtsFlag())
+			.category(book.getCategory().getCategoryName())
+			.build();
+	}
 }

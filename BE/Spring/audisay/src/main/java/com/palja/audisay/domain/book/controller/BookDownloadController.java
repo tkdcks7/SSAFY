@@ -7,19 +7,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.palja.audisay.domain.book.dto.request.PublishedBookDownloadInfoDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookDownloadInfoDto;
 import com.palja.audisay.domain.book.service.BookDownloadService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/published-books")
+@Tag(name = "출판 도서 - 다운로드", description = "출판 도서 다운로드 API")
 public class BookDownloadController {
-	private BookDownloadService bookDownloadService;
+	private final BookDownloadService bookDownloadService;
 
 	@Operation(summary = "도서 다운로드",
 		description = "출판 도서(bookId)의 다운로드 링크 및 메타데이터 반환")
