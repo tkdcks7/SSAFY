@@ -19,6 +19,7 @@ public interface LikesRepository extends JpaRepository<Likes, Long> {
 		SELECT b
 		FROM Likes l JOIN l.book b
 		on l.member.memberId = :memberId and l.book.bookId = b.bookId
+		ORDER BY l.createdAt DESC
 		""")
 	List<Book> findLikedBooksByMemberId(@Param("memberId") Long memberId);
 
