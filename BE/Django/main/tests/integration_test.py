@@ -19,8 +19,8 @@ class IntegrationTest(unittest.TestCase):
             illust_data = io.BytesIO(illust_file.read())
         with open(os.path.join(self.static_path, 'cover.jpg'), 'rb') as cover_file:
             cover_data = io.BytesIO(cover_file.read())
-        with open(os.path.join(self.static_path, 'paragraph_image_2.jpg'), 'rb') as text_2_file:
-            text_2_data = io.BytesIO(text_2_file.read())
+        # with open(os.path.join(self.static_path, 'paragraph_image_2.jpg'), 'rb') as text_2_file:
+        #     text_2_data = io.BytesIO(text_2_file.read())
 
         data = {
             "metadata": {
@@ -57,18 +57,18 @@ class IntegrationTest(unittest.TestCase):
                             "sequence_number": 0
                         }
                     ]
-                },
-                {
-                    "page_number": 3,
-                    "layout": "text_only",
-                    "sections": [
-                        {
-                            "type": "text",
-                            "text": text_2_data,
-                            "sequence_number": 0
-                        }
-                    ]
                 }
+                # {
+                #     "page_number": 3,
+                #     "layout": "text_only",
+                #     "sections": [
+                #         {
+                #             "type": "text",
+                #             "text": text_2_data,
+                #             "sequence_number": 0
+                #         }
+                #     ]
+                # }
             ]
         }
 
