@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
 			String code = error.getCode();
 			// 로그 찍기
-			log.error("회원가입 유효성 검증 실패: {}", error.getDefaultMessage());
+			log.error("입력 값 유효성 검증 실패: {}", error.getDefaultMessage());
 			// 회원가입 특정 애너테이션 코드로 MemberInvalidParameterException 던지기
 			if ("ValidEmail".equals(code) || "ValidPassword".equals(code)
 				|| "ValidName".equals(code) || "ValidNickname".equals(code)) {
