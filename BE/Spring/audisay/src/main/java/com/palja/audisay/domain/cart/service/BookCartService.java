@@ -48,7 +48,18 @@ public class BookCartService {
 	// 담은 출판 도서 조회
 	public MemberPublishedBookListDto findCartPublishedBookList(Long memberId) {
 		// 사용자 검증
+		Member member = memberService.validateMember(memberId);
 		// 담은 출판 도서 조회
-		return MemberPublishedBookListDto.builder().build();
+		List<PublishedBookInfoDto> bookList = bookCartRepository.findBookCartByMemberId(member.getMemberId()).stream()
+			.map(book -> PublishedBookInfoDto.builder()
+				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
+				.coverAlt(book.getCoverAlt())
+				.title(book.getTitle())
+				.author(book.getAuthor())
+				.bookId(book.getBookId())
+				.dtype(book.getDtype())
+				.build())
+			.collect(Collectors.toList());
+		return MemberPublishedBookListDto.builder().bookList(bookList).build();
 	}
 }

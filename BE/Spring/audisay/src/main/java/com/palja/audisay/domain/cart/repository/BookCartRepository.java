@@ -16,4 +16,13 @@ public interface BookCartRepository extends JpaRepository<BookCart, BookCartId> 
 	// 회원의 기존 담은 도서 존재 여부 확인 메서드
 	boolean existsByMemberAndBook(Member member, Book book);
 
+	// 회원이 좋아한 책 목록 조회 메서드
+	@Query("""
+		SELECT b
+		FROM BookCart bc JOIN bc.book b
+		on bc.member.memberId = :memberId and bc.book.bookId = b.bookId
+		ORDER BY bc.createdAt DESC
+		""")
+	List<Book> findBookCartByMemberId(@Param("memberId") Long memberId);
+
 }
