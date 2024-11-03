@@ -1,21 +1,18 @@
-from django.test import TestCase
 import unittest
 from main.services.image_text_converter import ImageToTextConverter
-from main.services.ocr_service import NaverOcrClient
-from rest_framework.test import APITestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
 import io
-from datetime import datetime
+from config.settings.base import STATIC_ROOT
+import os
 
 # Create your tests here.
 class TestImageToTextConverter(unittest.TestCase):
     def setUp(self):
         self.converter = ImageToTextConverter()
+        self.static_path = STATIC_ROOT
     
     def test_ocr(self):
-        # 이미지 로드
-        with open('./staticfiles/paragraph_image.jpg', 'rb') as title_file:
+        # 이미지 로드'
+        with open(os.path.join(self.static_path, 'paragraph_image.jpg'), 'rb') as title_file:
             title_data = io.BytesIO(title_file.read())
         
         section = {
@@ -29,13 +26,13 @@ class TestImageToTextConverter(unittest.TestCase):
         print(result['content']['texts'])
 
     def test_book_processor(self):
-        with open('./staticfiles/title_image.jpg', 'rb') as title_file:
+        with open(os.path.join(self.static_path, 'title_image.jpg'), 'rb') as title_file:
             title_data = io.BytesIO(title_file.read())
-        with open('./staticfiles/paragraph_image.jpg', 'rb') as text_file:
+        with open(os.path.join(self.static_path, 'paragraph_image.jpg'), 'rb') as text_file:
             text_data = io.BytesIO(text_file.read())
-        with open('./staticfiles/illust.jpg', 'rb') as illust_file:
+        with open(os.path.join(self.static_path, 'illust.jpg'), 'rb') as illust_file:
             illust_data = io.BytesIO(illust_file.read())
-        with open('./staticfiles/cover.jpg', 'rb') as cover_file:
+        with open(os.path.join(self.static_path, 'cover.jpg'), 'rb') as cover_file:
             cover_data = io.BytesIO(cover_file.read())
 
         data = {

@@ -4,10 +4,21 @@ from PIL import Image
 import io
 import uuid
 import os
-from django.conf import settings
+from config.settings.base import STATIC_ROOT
 from datetime import datetime
+import six
 
 class InitialEbookConverter:
+    def __init__(self):
+        self.cover_template = six.b('''<?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE html>
+            <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+            <head>
+            </head>
+            <body>
+            <img src="" alt="" style="max-width: 100%; max-height: 100%"/>
+            </body>
+            </html>''')
 
     def get_binary(self, image_content) -> Optional[bytes]:
         """
@@ -66,6 +77,7 @@ class InitialEbookConverter:
         """
         # 새 EPUB 책 객체 생성
         book = epub.EpubBook()
+        book.set_template('cover', self.cover_template)
 
         # 메타데이터 설정
         metadata = text_images.get('metadata', {})
@@ -76,11 +88,18 @@ class InitialEbookConverter:
 
         # CSS 스타일 추가
         style = '''
-            body { margin: 20px; }
-            h1 { text-align: center; margin: 20px 0; }
-            p { line-height: 1.6; margin: 10px 0; }
-            .image-container { text-align: center; margin: 20px 0; }
-            .image-container img { max-width: 100% }
+        @namespace epub "http://www.idpf.org/2007/ops";
+        body { margin: 20px; }
+        h1 { text-align: center; margin: 20px 0; }
+        p { line-height: 1.6; margin: 10px 0; }
+        .image-container { margin: 20px 0; width: 100% }
+        .image-container img { 
+            max-width: 100%;
+            display: block;
+            width: 100%;
+            height: auto;
+            margin: 0 auto; 
+        }
         '''
         nav_css = epub.EpubItem(
             uid='style_nav',
@@ -106,7 +125,8 @@ class InitialEbookConverter:
                 if type == 'title':
                     if chapter: 
                         # 이전 챕터 마무리
-                        chapter.set_content(f'<html><head><link rel="stylesheet" href="style/nav.css"/></head><body>{content}</body></html>')
+                        chapter.set_content(f'<html><body>{content}</body></html>')
+                        chapter.add_item(nav_css) # 각 챕터에도 nav_css를 추가해줘야 css가 먹힘
                         book.add_item(chapter)
                         chapters.append(chapter)
                         content = ""
@@ -121,7 +141,7 @@ class InitialEbookConverter:
                 elif type == 'text':
                     texts = section.get('content', {}).get('texts', ["본문 없음"])
                     for text in texts:
-                        content += f'<p>{text}</p>'
+                        content += f'<span>{text}</span>'
                 
                 elif type == 'image':
                     image = section.get('content', {}).get('image')
@@ -131,7 +151,8 @@ class InitialEbookConverter:
 
         # 마지막 챕터 처리
         if chapter and content:
-            chapter.set_content(f'<html><head><link rel="stylesheet" href="style/nav.css"/></head><body>{content}</body></html>')
+            chapter.set_content(f'<html><body>{content}</body></html>')
+            chapter.add_item(nav_css)
             book.add_item(chapter)
             chapters.append(chapter)
         
@@ -145,9 +166,7 @@ class InitialEbookConverter:
             )
             toc.append(chapter_link)
         
-        book.toc = [
-            (epub.Section('Chapters'), tuple(toc))
-        ]
+        book.toc = tuple(toc)
 
         # spine 설정 -> EPUB 리더가 콘텐츠를 표시할 순서 정의
         book.spine = ['nav'] + chapters
@@ -158,7 +177,7 @@ class InitialEbookConverter:
 
         # 파일명 및 경로 설정 - 일단 로컬에 저장 (나중에 s3에 저장하는걸로 수정)
         filename = f'{uuid.uuid4()}.epub'
-        filepath = os.path.join(settings.STATIC_ROOT, filename)
+        filepath = os.path.join(STATIC_ROOT, filename)
 
         # ebook 만들기
         try:
