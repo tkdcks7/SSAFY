@@ -23,12 +23,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "review")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@Setter
 @DynamicInsert
 @Builder
 public class Review {
@@ -53,11 +55,11 @@ public class Review {
 
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
 	@CreationTimestamp
-	private LocalDateTime updated_at;
+	private LocalDateTime updatedAt;
 
 	@PreUpdate
 	protected void onUpdate() {
-		updated_at = LocalDateTime.now(); // 엔티티가 수정될 때 현재 시간으로 설정
+		updatedAt = LocalDateTime.now(); // 엔티티가 수정될 때 현재 시간으로 설정
 	}
 
 }
