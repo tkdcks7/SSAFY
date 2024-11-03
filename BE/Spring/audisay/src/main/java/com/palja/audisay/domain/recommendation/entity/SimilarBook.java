@@ -8,13 +8,13 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.ToString;
 
-@Document(collection = "similarBook")
+@Document(collection = "rec_similarBook")
 @Getter
 @ToString
 public class SimilarBook {
 
 	@Id
 	private String id;
-	private String bookId;
+	private Long bookId;
 	private List<Integer> bookList;
 }

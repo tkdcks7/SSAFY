@@ -8,13 +8,13 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.ToString;
 
-@Document(collection = "famous")
+@Document(collection = "rec_famous")
 @Getter
 @ToString
 public class FamousBook {
 
 	@Id
 	private String id;
-	private String groupId;
-	private List<Integer> bookList;
+	private Long groupId;
+	private List<Long> bookList;
 }

@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.ToString;
 
-@Document(collection = "category")
+@Document(collection = "rec_category")
 @Getter
 @ToString
 public class CategoryBook {
