@@ -24,4 +24,6 @@ public interface LikesRepository extends JpaRepository<Likes, Long> {
 
 	// 좋아요 삭제 메서드
 	void deleteByMemberAndBook(Member member, Book book);
+
+	int countByMember(Member member);
 }
