@@ -1,10 +1,18 @@
 from .ocr_service import NaverOcrClient
-from typing import Dict
+from typing import Dict, List
 import base64
 
 class ImageToTextConverter:
     def __init__(self):
         self.ocr_client = NaverOcrClient()
+
+    def quotation_mark_processor(self, texts: List) -> List:
+        """
+        유효하지 않은 따옴표 쌍을 유효한 따옴표 쌍으로 교정.
+        가정 : ocr이 쌍따옴표를 따옴표로 인식했거나 그 반대로 인식했다고 가정함
+        한계 : ocr이 쌍따옴표 또는 따옴표를 인식하지 못하고 누락하는 경우는 처리하지 못함
+        """
+        
 
     def process_text_section(self, section: Dict, page_number: int) -> Dict:
         """
@@ -33,7 +41,7 @@ class ImageToTextConverter:
                 text = field.get('inferText', '')
                 current_sentences += text + ' '
 
-                if '.' in text:
+                if '.' in text or '?' in text:
                     texts.append(current_sentences.strip())
                     current_sentences = ""
         
