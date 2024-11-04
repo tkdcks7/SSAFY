@@ -1,13 +1,5 @@
 package com.palja.audisay.domain.review.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.member.entity.Member;
@@ -20,9 +12,14 @@ import com.palja.audisay.domain.review.entity.Review;
 import com.palja.audisay.domain.review.repository.ReviewRepository;
 import com.palja.audisay.global.exception.exceptions.ReviewBookDuplicatedException;
 import com.palja.audisay.global.exception.exceptions.ReviewNotFoundException;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,53 +28,54 @@ public class ReviewService {
 	private final BookService bookService;
 	private final ReviewRepository reviewRepository;
 
-	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, String cursor,
-		int pageSize) {
+	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, LocalDateTime lastUpdatedAt, Long lastReviewId, int pageSize) {
 		Member member = memberService.validateMember(memberId);
 		Book book = bookService.validatePublishedBook(bookId);
-		// 본인의 리뷰 조회
-		Review memberReview = reviewRepository.findByMemberAndBook(member, book).orElse(null);
-		ReviewResponseDto memberReviewDto =
-			(memberReview != null) ? ReviewResponseDto.toMemberReviewDto(memberReview) : null;
 
-		// 다른 사용자의 리뷰 조회 (Cursor 기반 페이징)
-		LocalDateTime updatedAtCursor = (cursor != null) ?
-			LocalDateTime.parse(cursor, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")) : LocalDateTime.now();
+		// 첫 요청인지 확인
+		boolean isFirstPage = (lastUpdatedAt == null && lastReviewId == null);
+		// 본인의 리뷰 조회 (첫 요청일 때만 조회)
+		ReviewResponseDto memberReviewDto = null;
+		if (isFirstPage) {
+			Review memberReview = reviewRepository.findMemberReviewForBook(member, book).orElse(null);
+			memberReviewDto = (memberReview != null) ? ReviewResponseDto.toMemberReviewDto(memberReview) : null;
+		}
 
+		// cursor 값 설정
+		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
 		Pageable pageable = PageRequest.of(0, pageSize);
-		List<Review> reviews = reviewRepository.findByBookAndMemberNotAndUpdatedAtLessThanOrderByUpdatedAtDesc(book,
-			member, updatedAtCursor, pageable);
-
+		List<Review> reviews = reviewRepository.findOtherReviewsWithCursor(book, member, updatedAtCursor, lastReviewId, pageable);
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
 
 		// 다음 커서 계산 (다음 페이지가 없다면 null 반환)
-		String nextCursor = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt()
-			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+		LocalDateTime nextUpdatedAt = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt();
+		Long nextReviewId = (reviews.size() < pageSize) ? null : reviews.getLast().getReviewId();
 
 		return ReviewListResponseDto.builder()
 			.memberReview(memberReviewDto)
 			.reviewList(reviewList)
-			.nextCursor(nextCursor)
+				.lastUpdatedAt(nextUpdatedAt)
+				.lastReviewId(nextReviewId)
 			.build();
 	}
 
-	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, String cursor, int pageSize) {
+	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, LocalDateTime lastUpdatedAt, Long lastReviewId, int pageSize) {
 		Member member = memberService.validateMember(memberId);
-		LocalDateTime updatedAtCursor = (cursor != null) ?
-			LocalDateTime.parse(cursor, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")) : LocalDateTime.now();
+		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
 
 		Pageable pageable = PageRequest.of(0, pageSize);
-		List<Review> reviews = reviewRepository.findByMemberAndUpdatedAtLessThanOrderByUpdatedAtDesc(member,
-			updatedAtCursor, pageable);
-
+		List<Review> reviews = reviewRepository.findReviewsWithCursor(member, updatedAtCursor, lastReviewId, pageable);
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toDto).toList();
-		String nextCursor = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt()
-			.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+
+		// 다음 커서 계산
+		LocalDateTime nextUpdatedAt = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt();
+		Long nextReviewId = (reviews.size() < pageSize) ? null : reviews.getLast().getReviewId();
 
 		return MyPageReviewListResponseDto.builder()
-			.reviewList(reviewList)
-			.nextCursor(nextCursor)
-			.build();
+				.reviewList(reviewList)
+				.lastUpdatedAt(nextUpdatedAt)
+				.lastReviewId(nextReviewId)
+				.build();
 	}
 
 	@Transactional
