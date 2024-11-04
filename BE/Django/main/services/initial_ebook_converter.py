@@ -7,6 +7,7 @@ import os
 from config.settings.base import STATIC_ROOT
 from datetime import datetime
 import six
+from .s3_storage import S3Client
 
 class InitialEbookConverter:
     def __init__(self):
@@ -91,6 +92,7 @@ class InitialEbookConverter:
         @namespace epub "http://www.idpf.org/2007/ops";
         body { margin: 20px; }
         h1 { text-align: center; margin: 20px 0; }
+        h2 { text-align: center; margin: 20px 0; }
         p { line-height: 1.6; margin: 10px 0; }
         .image-container { margin: 20px 0; width: 100% }
         .image-container img { 
@@ -164,6 +166,10 @@ class InitialEbookConverter:
             chapters.append(chapter)
         
         # 목차 만들기
+        # nav = epub.EpubNav(title="목차")
+        # nav.add_item(nav_css)
+        # book.add_item(nav)
+
         toc = []
         for chapter in chapters:
             chapter_link = epub.Link(
@@ -185,21 +191,33 @@ class InitialEbookConverter:
         # 파일명 및 경로 설정 - 일단 로컬에 저장 (나중에 s3에 저장하는걸로 수정)
         filename = f'{uuid.uuid4()}.epub'
         filepath = os.path.join(STATIC_ROOT, filename)
+        # try:
+        #     epub.write_epub(filepath, book)
+        # except Exception as e:
+        #     print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
+        #     return None
 
-        # ebook 만들기
+        # s3에 저장
+        buffer = io.BytesIO()
         try:
-            epub.write_epub(filepath, book)
+            epub.write_epub(buffer, book) # 버퍼에 epub 저장
+            buffer.seek(0)
+            s3_key = f'temp/epub/{filename}' # S3 내 저장 경로
+            S3Client.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
+            download_url = S3Client.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
+
+            return {
+                "epub": download_url,
+                "dtype": "REGISTERED",
+                "metadata": {
+                    "title": metadata.get('title', '(제목 미정)'),
+                    "author": metadata.get('author', '(작자 미상)'),
+                    "created_at": metadata.get('created_at', datetime.now().isoformat()),
+                    "cover": metadata.get('cover') #s3 링크로 바꿔야 함..?
+                }
+            }
         except Exception as e:
             print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
             return None
 
-        return {
-            "epub": filepath,
-            "dtype": "REGISTERED",
-            "metadata": {
-                "title": metadata.get('title', '(제목 미정)'),
-                "author": metadata.get('author', '(작자 미상)'),
-                "created_at": metadata.get('created_at', datetime.now().isoformat()),
-                "cover": metadata.get('cover') #s3 링크로 바꿔야 함..?
-            }
-        }
+        
