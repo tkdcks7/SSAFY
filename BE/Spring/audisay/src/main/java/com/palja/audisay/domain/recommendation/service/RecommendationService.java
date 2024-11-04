@@ -163,25 +163,4 @@ public class RecommendationService {
 				.cover(imageUtil.getFullImageUrl(book.getCover()))
 				.build()).toList();
 	}
-
-
-/*
-						"bookId" : 3,
-						"cover" : "s3 주소",
-						"coverAlt" : "아기돼지가 3마리 있다.",
-						"title" : "아기돼지 삼형제",
-						"author" : "미상",
-						"publisher" : "한빛미디어",
-						"story" : "돼지 3마리가 집을 짓는 이야기"
- */
-	/*
-	// 1. 유저 정보 조회
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
-	String groupId = String.format("%d_%d",
-			(LocalDate.now().getYear() - member.getBirth().getYear()) / 10 * 10,
-			member.getGender() == Gender.M? 1 : 0);
-		String totalGroupId = "Total";
-	 */
-
 }
