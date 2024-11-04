@@ -86,6 +86,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.selectFrom(book)
 			.where(searchCondition)
 			.orderBy(
+				book.createdAt.desc(),
 				book.bookId.desc()
 			)
 			.limit(searchReqDto.getPageSize() + 1)
@@ -97,7 +98,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		// 키워드 검색 조건 추가
 		addKeywordCondition(searchReqDto, book, builder);
 		// 커서 조건 추가
-		addSearchCursorCondition(searchReqDto, book, builder);
+		addCursorCondition(searchReqDto, book, builder);
 		// dType이 PUBLISHED인 조건 추가
 		builder.and(book.dtype.eq(Dtype.PUBLISHED));
 		return builder;
@@ -113,9 +114,13 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		}
 	}
 
-	private void addSearchCursorCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
-		if (searchReqDto.getLastId() != null) {
-			builder.and(book.bookId.lt(searchReqDto.getLastId()));
+	private void addCursorCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+		if (searchReqDto.getLastDateTime() != null) {
+			builder.and(
+				book.createdAt.lt(searchReqDto.getLastDateTime())
+					.or(book.createdAt.eq(searchReqDto.getLastDateTime())
+						.and(book.bookId.lt(searchReqDto.getLastId())))
+			);
 		}
 	}
 

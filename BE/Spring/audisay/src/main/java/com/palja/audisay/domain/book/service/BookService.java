@@ -80,6 +80,7 @@ public class BookService {
 		return BookSearchResDto.builder()
 			.keyword(cursorPaginationReqDto.getKeyword())
 			.bookList(bookResultList)
+			.lastDateTime(lastBookInfo.lastCreatedAt())
 			.lastId(lastBookInfo.lastBookId())
 			.build();
 	}
