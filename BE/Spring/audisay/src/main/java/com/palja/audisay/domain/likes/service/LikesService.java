@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.palja.audisay.domain.book.dto.MemberPublishedBookListDto;
-import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.likes.entity.Likes;
