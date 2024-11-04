@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class BookSearchResDto {
 	private String keyword;
 	private List<PublishedBookInfoDto> bookList;
-	private LocalDateTime lastCreatedAt;
-	private Long lastBookId;
+	private LocalDateTime lastDateTime;
+	private Long lastId;
 
 }
