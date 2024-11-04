@@ -676,3 +676,4 @@ gradle-app.setting
 pipeline.groovy
 *.epub
 .vscode/
+BE/Django/.vscode/
