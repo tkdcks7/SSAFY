@@ -44,8 +44,8 @@ public class BookController {
 	@Operation(summary = "도서 검색 및 전체 목록 조회", description = "검색어(keyword) 입력 시 제목, 저자, 출판사와 일치하는 도서 검색")
 	@Parameters({
 		@Parameter(name = "keyword", description = "검색어"),
-		@Parameter(name = "lastCreatedAt", description = "마지막 조회한 도서 등록 일자(ex 2024-10-31T14:08:00)"),
-		@Parameter(name = "lastBookId", description = "마지막 조회한 도서 Id"),
+		@Parameter(name = "lastDateTime", description = "마지막 조회한 도서 등록 일자(ex 2024-10-31T14:08:00)"),
+		@Parameter(name = "lastId", description = "마지막 조회한 도서 Id"),
 		@Parameter(name = "pageSize", description = "페이지 크기(기본값 10)")
 	})
 	@GetMapping
