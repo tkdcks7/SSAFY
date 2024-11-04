@@ -1,10 +1,55 @@
 from .ocr_service import NaverOcrClient
-from typing import Dict
+from typing import Dict, List
 import base64
+from .stack import Stack
 
 class ImageToTextConverter:
     def __init__(self):
         self.ocr_client = NaverOcrClient()
+
+    def quotation_mark_validator(self, texts: List) -> List:
+        """
+        유효하지 않은 따옴표 쌍을 유효한 따옴표 쌍으로 교정.
+        가정 : ocr이 쌍따옴표를 따옴표로 인식했거나 그 반대로 인식했다고 가정함
+        한계 : ocr이 쌍따옴표 또는 따옴표를 인식하지 못하고 누락하는 경우는 처리하지 못함
+        """
+        result = []
+        stack = Stack()
+        for text in texts:
+            # 텍스트를 ""로 감싼 경우
+            if text.startswith('"') and text.endswith('"'):
+                pass
+            # 텍스트를 ''로 감싼 경우
+            elif text.startswith("'") and text.endswith("'"):
+                pass
+            # 텍스트가 "로 시작하는 경우
+            elif text.startswith('"'):
+                stack.push('"')
+            # 텍스트가 '로 시작하는 경우
+            elif text.startswith("'"):
+                stack.push("'")
+            # 텍스트가 "로 끝나는 경우
+            elif text.endswith('"'):
+                if not stack.is_empty() and stack.peek() == '"': # 정상
+                    stack.pop()
+                elif stack.is_empty(): # 뭔가가 누락된 경우인데... 에러 방지 위해 꼼수쓰겠음
+                    text = '"' + text
+                elif stack.peek() == "'": # 잘못 인식한 경우 
+                    text = text[:-1] + "'"
+                    stack.pop()
+            # 텍스트가 '로 끝나는 경우
+            elif text.endswith("'"):
+                if not stack.is_empty() and stack.peek() == "'": # 정상
+                    stack.pop()
+                elif stack.is_empty(): # 뭔가가 누락된 경우...
+                    text = "'" + text
+                elif stack.peek() == '"': # 잘못 인식한 경우
+                    text = text[:-1] + '"'
+                    stack.pop()
+            
+            result.append(text)
+        
+        return result
 
     def process_text_section(self, section: Dict, page_number: int) -> Dict:
         """
@@ -33,13 +78,16 @@ class ImageToTextConverter:
                 text = field.get('inferText', '')
                 current_sentences += text + ' '
 
-                if '.' in text:
+                if '.' in text or '?' in text:
                     texts.append(current_sentences.strip())
                     current_sentences = ""
         
         if current_sentences:
             texts.append(current_sentences.strip())
         
+        # 따옴표, 쌍따옴표 검사, 수정
+        texts = self.quotation_mark_validator(texts)
+
         # 리턴
         return {
             'type': section.get('type', 'text'),

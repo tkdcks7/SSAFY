@@ -12,4 +12,5 @@ import com.palja.audisay.domain.book.entity.Book;
 public interface BookRepository extends JpaRepository<Book, Long>, CustomBookRepository {
 	@EntityGraph(attributePaths = {"category", "member"})
 	Optional<Book> findByBookId(Long bookId);
+
 }

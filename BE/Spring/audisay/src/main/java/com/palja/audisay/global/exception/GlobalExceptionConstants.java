@@ -14,9 +14,11 @@ public enum GlobalExceptionConstants implements ExceptionConstants {
 	MEMBER_ACCESS_DENIED("M005", "페이지에 접근할 수 있는 권한이 없습니다."),
 	// PUBLISHED BOOK
 	PUBLISHED_BOOK_NOT_FOUND("P001", "출판 도서를 찾을 수 없습니다."),
+	PUBLISHED_BOOK_DOWNLOAD_FAILED("P002", "다운로드 링크를 생성할 수 없습니다."),
 	// BOOK REGISTRAION
 	REGISTRATION_FILE_TYPE_INVALID("G001", "파일 형식이 잘못되었습니다."),
 	REGISTRATION_FILE_EMPTY("G002", "파일이 비어있습니다."),
+	REGISTERED_BOOK_NOT_FOUND("G003", "등록 도서를 찾을 수 없습니다."),
 	// REVIEW
 	REVIEW_INVALID_PARAMETER("R001", "입력 형식이 잘못되었습니다."),
 	REVIEW_NOT_FOUND("R002", "리뷰를 찾을 수 없습니다."),

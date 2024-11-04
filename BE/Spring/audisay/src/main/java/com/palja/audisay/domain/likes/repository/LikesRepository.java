@@ -8,9 +8,10 @@ import org.springframework.data.repository.query.Param;
 
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.likes.entity.Likes;
+import com.palja.audisay.domain.likes.entity.LikesId;
 import com.palja.audisay.domain.member.entity.Member;
 
-public interface LikesRepository extends JpaRepository<Likes, Long> {
+public interface LikesRepository extends JpaRepository<Likes, LikesId> {
 	// 회원의 기존 좋아요 존재 여부 확인 메서드
 	boolean existsByMemberAndBook(Member member, Book book);
 
