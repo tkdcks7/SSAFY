@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.palja.audisay.domain.book.dto.MemberPublishedBookListDto;
-import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.likes.entity.Likes;
@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class LikesService {
 
-	private final MemberService memberService;
 	private final LikesRepository likesRepository;
+	private final MemberService memberService;
 	private final BookService bookService;
 	private final ImageUtil imageUtil;
 
@@ -68,6 +68,7 @@ public class LikesService {
 		List<PublishedBookInfoDto> bookList = likesRepository.findLikedBooksByMemberId(member.getMemberId()).stream()
 			.map(book -> PublishedBookInfoDto.builder()
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
+				.coverAlt(book.getCoverAlt())
 				.title(book.getTitle())
 				.author(book.getAuthor())
 				.bookId(book.getBookId())
