@@ -80,8 +80,8 @@ public class BookService {
 		return BookSearchResDto.builder()
 			.keyword(bookSearchReqDto.getKeyword())
 			.bookList(bookResultList)
-			.lastCreatedAt(lastBookInfo.getLastCreatedAt())
-			.lastBookId(lastBookInfo.getLastBookId())
+			.lastCreatedAt(lastBookInfo.lastCreatedAt())
+			.lastBookId(lastBookInfo.lastBookId())
 			.build();
 	}
 

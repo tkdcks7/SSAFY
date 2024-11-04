@@ -2,14 +2,12 @@ package com.palja.audisay.domain.book.dto;
 
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class LastBookInfo {
-	private Long lastBookId; // 마지막 조회한 도서 bookId
-	private LocalDateTime lastCreatedAt; // 마지막 조회한 도서 등록 일시
+public record LastBookInfo(
+	Long lastBookId,
+	LocalDateTime lastCreatedAt
+) {
+	// 기본 생성자는 만들어지지 않아 작성
+	public LastBookInfo() {
+		this(null, null);
+	}
 }
