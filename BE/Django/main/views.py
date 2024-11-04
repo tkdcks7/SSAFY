@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from .serializers import ImageLayouts
+from .serializers import ImageLayouts, Pdf
 from .services import ImageToTextConverter
 from django.http import JsonResponse
 from .services import PdfConverter
@@ -37,10 +37,12 @@ class PdfProcessingView(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        pdf_file = request.data['pdf']
+        pdf_file = Pdf(data=request.data)
+        if not pdf_file.is_valid():
+                return Response(pdf_file.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        try: 
-            images = PdfConverter.convert_pdf_to_images(pdf_file)
+        try:
+            images = PdfConverter.convert_pdf_to_images(pdf_file.validated_data['pdf'])
 
             # base64로 인코딩해 반환
             encoded_images = []

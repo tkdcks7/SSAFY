@@ -7,3 +7,6 @@ class Metadata(serializers.Serializer):
     cover = serializers.ImageField()
     created_at = serializers.DateTimeField()
     category_id = serializers.CharField
+
+class Pdf(serializers.Serializer):
+    pdf = serializers.FileField()
