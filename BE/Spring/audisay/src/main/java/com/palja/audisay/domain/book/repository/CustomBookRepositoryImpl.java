@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
-import com.palja.audisay.domain.book.dto.respose.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.QBook;
 import com.palja.audisay.domain.cart.entity.QBookCart;

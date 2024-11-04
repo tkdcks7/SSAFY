@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.book.dto.LastBookInfo;
 import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
-import com.palja.audisay.domain.book.dto.respose.BookSearchResDto;
-import com.palja.audisay.domain.book.dto.respose.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.Dtype;
 import com.palja.audisay.domain.book.repository.BookRepository;

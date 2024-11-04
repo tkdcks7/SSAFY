@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
-import com.palja.audisay.domain.book.dto.respose.BookSearchResDto;
-import com.palja.audisay.domain.book.dto.respose.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;

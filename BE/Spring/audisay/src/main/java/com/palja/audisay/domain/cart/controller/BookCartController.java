@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.palja.audisay.domain.book.dto.request.MemberBookStatusReqDto;
-import com.palja.audisay.domain.book.dto.respose.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.response.MemberPublishedBookListDto;
 import com.palja.audisay.domain.cart.service.BookCartService;
 
 import io.swagger.v3.oas.annotations.Operation;

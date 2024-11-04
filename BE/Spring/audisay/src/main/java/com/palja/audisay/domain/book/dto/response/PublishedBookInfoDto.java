@@ -1,4 +1,4 @@
-package com.palja.audisay.domain.book.dto.respose;
+package com.palja.audisay.domain.book.dto.response;
 
 import java.time.LocalDate;
 
