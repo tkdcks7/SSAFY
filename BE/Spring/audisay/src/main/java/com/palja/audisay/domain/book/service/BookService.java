@@ -90,7 +90,7 @@ public class BookService {
 	 *
 	 * @param bookRawList DB에서 추출한 원본 리스트.
 	 * @param pageSize 요청한 페이지 크기.
-	 * @return
+	 * @return LastBookInfo 마지막 조회 도서 정보 반환.
 	 */
 	private LastBookInfo processLastBookInfo(List<Book> bookRawList, int pageSize) {
 		boolean hasNext = bookRawList.size() > pageSize;
