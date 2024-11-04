@@ -85,7 +85,6 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.selectFrom(book)
 			.where(searchCondition)
 			.orderBy(
-				book.createdAt.desc(),
 				book.bookId.desc()
 			)
 			.limit(searchReqDto.getPageSize() + 1)
@@ -111,13 +110,9 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		}
 	}
 
-	private void addCursorCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
-		if (searchReqDto.getLastDateTime() != null) {
-			builder.and(
-				book.createdAt.lt(searchReqDto.getLastDateTime())
-					.or(book.createdAt.eq(searchReqDto.getLastDateTime())
-						.and(book.bookId.lt(searchReqDto.getLastId())))
-			);
+	private void addSearchCursorCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+		if (searchReqDto.getLastId() != null) {
+			builder.and(book.bookId.lt(searchReqDto.getLastId()));
 		}
 	}
 

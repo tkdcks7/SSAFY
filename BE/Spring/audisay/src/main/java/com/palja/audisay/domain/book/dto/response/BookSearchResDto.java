@@ -1,6 +1,5 @@
 package com.palja.audisay.domain.book.dto.response;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +14,6 @@ import lombok.NoArgsConstructor;
 public class BookSearchResDto {
 	private String keyword;
 	private List<PublishedBookInfoDto> bookList;
-	private LocalDateTime lastDateTime;
 	private Long lastId;
 
 }
