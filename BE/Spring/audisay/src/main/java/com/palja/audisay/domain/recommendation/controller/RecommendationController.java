@@ -28,6 +28,7 @@ public class RecommendationController {
 		return new ResponseEntity<>(recommendationService.getFamousBooks(), HttpStatus.OK);
 	}
 
+
 	@Operation(summary = "연령대 인기 도서 조회",
 		description = "연령대 인기 도서 목록 조회 ")
 	@GetMapping("/demographics")
@@ -41,7 +42,7 @@ public class RecommendationController {
 	@GetMapping("/favorite-category")
 	public ResponseEntity<RecommendationBookDto> getCategoryPopularBooks() {
 		Long memberId = 1L;
-		return new ResponseEntity<>(recommendationService.getFamousBooks(), HttpStatus.OK);
+		return new ResponseEntity<>(recommendationService.getCategoryBooks(memberId), HttpStatus.OK);
 	}
 
 	@Operation(summary = "최근 유사 도서 조회",
@@ -49,7 +50,7 @@ public class RecommendationController {
 	@GetMapping("/recent")
 	public ResponseEntity<RecommendationBookDto> getSimilarBooks() {
 		Long memberId = 1L;
-		return new ResponseEntity<>(recommendationService.getFamousBooks(), HttpStatus.OK);
+		return new ResponseEntity<>(recommendationService.getSimilarBooks(memberId), HttpStatus.OK);
 	}
 
 	@Operation(summary = "유사한 유저 선호 도서 조회",
@@ -57,6 +58,7 @@ public class RecommendationController {
 	@GetMapping("/similar-members")
 	public ResponseEntity<RecommendationBookDto> getSimilarMemberBooks() {
 		Long memberId = 1L;
-		return new ResponseEntity<>(recommendationService.getFamousBooks(), HttpStatus.OK);
+		return new ResponseEntity<>(recommendationService.getSimilarMemberBooks(memberId), HttpStatus.OK);
 	}
+
 }

@@ -1,5 +1,7 @@
 package com.palja.audisay.domain.recommendation.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,5 +11,5 @@ import com.palja.audisay.domain.recommendation.entity.CategoryBook;
 public interface CategoryBookRepository extends
 	MongoRepository<CategoryBook, String> {
 
-	CategoryBook findByGroupId(String groupId);
+	Optional<CategoryBook> findByGroupId(String groupId);
 }
