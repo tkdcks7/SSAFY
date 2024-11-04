@@ -2,7 +2,7 @@ package com.palja.audisay.domain.recommendation.dto.response;
 
 import java.util.List;
 
-import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

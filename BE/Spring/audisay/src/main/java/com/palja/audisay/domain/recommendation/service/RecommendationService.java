@@ -6,7 +6,7 @@ import org.joda.time.LocalDate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.domain.cart.repository.CustomCartRepository;
