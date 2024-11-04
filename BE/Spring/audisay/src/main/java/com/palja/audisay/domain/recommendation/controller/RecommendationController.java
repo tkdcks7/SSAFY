@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.recommendation.dto.response.RecommendationBookDto;
 import com.palja.audisay.domain.recommendation.service.RecommendationService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +25,7 @@ public class RecommendationController {
 		description = "인기 도서 목록 조회 ")
 	@GetMapping("/popular")
 	public ResponseEntity<RecommendationBookDto> getPopularBooks() {
-		Long memberId = 1L;
+		Long memberId = SessionUtil.getMemberId();
 		return new ResponseEntity<>(recommendationService.getFamousBooks(), HttpStatus.OK);
 	}
 
@@ -33,7 +34,7 @@ public class RecommendationController {
 		description = "연령대 인기 도서 목록 조회 ")
 	@GetMapping("/demographics")
 	public ResponseEntity<RecommendationBookDto> getDemographicsPopularBooks() {
-		Long memberId = 1L;
+		Long memberId = SessionUtil.getMemberId();
 		return new ResponseEntity<>(recommendationService.getDemographicsBooks(memberId), HttpStatus.OK);
 	}
 
@@ -41,7 +42,7 @@ public class RecommendationController {
 		description = "선호 카테고리 인기 도서 목록 조회 ")
 	@GetMapping("/favorite-category")
 	public ResponseEntity<RecommendationBookDto> getCategoryPopularBooks() {
-		Long memberId = 1L;
+		Long memberId = SessionUtil.getMemberId();
 		return new ResponseEntity<>(recommendationService.getCategoryBooks(memberId), HttpStatus.OK);
 	}
 
@@ -49,7 +50,7 @@ public class RecommendationController {
 		description = "가장 최근에 본 도서와 유사한 도서 목록 조회 ")
 	@GetMapping("/recent")
 	public ResponseEntity<RecommendationBookDto> getSimilarBooks() {
-		Long memberId = 1L;
+		Long memberId = SessionUtil.getMemberId();
 		return new ResponseEntity<>(recommendationService.getSimilarBooks(memberId), HttpStatus.OK);
 	}
 
@@ -57,7 +58,7 @@ public class RecommendationController {
 		description = "유사한 유저 선호 도서 목록 조회 ")
 	@GetMapping("/similar-members")
 	public ResponseEntity<RecommendationBookDto> getSimilarMemberBooks() {
-		Long memberId = 1L;
+		Long memberId = SessionUtil.getMemberId();
 		return new ResponseEntity<>(recommendationService.getSimilarMemberBooks(memberId), HttpStatus.OK);
 	}
 
