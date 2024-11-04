@@ -1,9 +1,9 @@
 package com.palja.audisay.global.exception.exceptions;
 
-import com.palja.audisay.global.exception.CustomException;
 import com.palja.audisay.global.exception.GlobalExceptionConstants;
+import com.palja.audisay.global.exception.InternalServerException;
 
-public class PublishedBookDownloadFailedException extends CustomException {
+public class PublishedBookDownloadFailedException extends InternalServerException {
 
 	private static final long serialVersionUID = 1L;
 
