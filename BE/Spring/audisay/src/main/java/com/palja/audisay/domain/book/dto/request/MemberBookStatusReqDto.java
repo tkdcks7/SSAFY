@@ -1,4 +1,4 @@
-package com.palja.audisay.domain.book.dto;
+package com.palja.audisay.domain.book.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -26,8 +26,10 @@ public class MemberBookStatusReqDto {
 	@Schema(description = "담은 도서 ", example = "true", defaultValue = "true")
 	@JsonView(CartView.class)
 	private Boolean cartFlag;
+
 	public interface LikeView {
 	}
+
 	public interface CartView {
 	}
 

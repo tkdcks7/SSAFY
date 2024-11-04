@@ -1,4 +1,4 @@
-package com.palja.audisay.domain.book.dto;
+package com.palja.audisay.domain.book.dto.respose;
 
 import java.util.List;
 
