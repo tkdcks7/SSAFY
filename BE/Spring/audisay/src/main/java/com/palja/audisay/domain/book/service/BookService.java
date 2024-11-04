@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.book.dto.LastBookInfo;
-import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
+import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
@@ -49,11 +49,11 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public BookSearchResDto getSearchPublishedBookResult(Long memberId, BookSearchReqDto bookSearchReqDto) {
+	public BookSearchResDto getSearchPublishedBookResult(Long memberId, CursorPaginationReqDto cursorPaginationReqDto) {
 		// 사용자 검증
 		memberService.validateMember(memberId);
 
-		List<Book> bookRawList = bookRepository.searchBookList(bookSearchReqDto);
+		List<Book> bookRawList = bookRepository.searchBookList(cursorPaginationReqDto);
 
 		if (bookRawList.isEmpty()) {
 			return BookSearchResDto.builder()
@@ -62,7 +62,7 @@ public class BookService {
 		}
 
 		// 도서 목록 후처리
-		LastBookInfo lastBookInfo = processLastBookInfo(bookRawList, bookSearchReqDto.getPageSize());
+		LastBookInfo lastBookInfo = processLastBookInfo(bookRawList, cursorPaginationReqDto.getPageSize());
 
 		List<PublishedBookInfoDto> bookResultList = bookRawList.stream()
 			.map(book -> PublishedBookInfoDto.builder()
@@ -78,7 +78,7 @@ public class BookService {
 			.toList();
 
 		return BookSearchResDto.builder()
-			.keyword(bookSearchReqDto.getKeyword())
+			.keyword(cursorPaginationReqDto.getKeyword())
 			.bookList(bookResultList)
 			.lastCreatedAt(lastBookInfo.lastCreatedAt())
 			.lastBookId(lastBookInfo.lastBookId())

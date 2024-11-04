@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
+import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.service.BookService;
@@ -50,8 +50,8 @@ public class BookController {
 	})
 	@GetMapping
 	public ResponseEntity<BookSearchResDto> getSearchPublishedBookResult(
-		@Schema(hidden = true) @Valid @ModelAttribute BookSearchReqDto bookSearchReqDto) {
-		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(tempMemberId, bookSearchReqDto),
+		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
+		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(tempMemberId, cursorPaginationReqDto),
 			HttpStatus.OK);
 	}
 
