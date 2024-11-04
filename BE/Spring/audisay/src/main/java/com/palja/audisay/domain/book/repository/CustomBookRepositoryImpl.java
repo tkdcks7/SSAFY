@@ -1,15 +1,20 @@
 package com.palja.audisay.domain.book.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.palja.audisay.domain.book.dto.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
+import com.palja.audisay.domain.book.dto.respose.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.QBook;
 import com.palja.audisay.domain.cart.entity.QBookCart;
 import com.palja.audisay.domain.category.entity.QCategory;
 import com.palja.audisay.domain.likes.entity.QLikes;
 import com.palja.audisay.domain.review.entity.QReview;
+import com.palja.audisay.global.util.StringUtil;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -68,6 +73,52 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 				).as("memberInfo")
 			));
 		return Optional.ofNullable(query.fetchOne());
+	}
+
+	@Override
+	public List<Book> searchBookList(BookSearchReqDto searchReqDto) {
+		QBook book = QBook.book;
+		// 검색 조건 생성
+		BooleanBuilder searchCondition = createSearchCondition(searchReqDto, book);
+		// 데이터 조회
+		return jpaQueryFactory
+			.selectFrom(book)
+			.where(searchCondition)
+			.orderBy(
+				book.createdAt.desc(),
+				book.bookId.desc()
+			)
+			.limit(searchReqDto.getPageSize() + 1)
+			.fetch();
+	}
+
+	private BooleanBuilder createSearchCondition(BookSearchReqDto searchReqDto, QBook book) {
+		BooleanBuilder builder = new BooleanBuilder();
+		// 키워드 검색 조건 추가
+		addKeywordCondition(searchReqDto, book, builder);
+		// 커서 조건 추가
+		addCursorCondition(searchReqDto, book, builder);
+		return builder;
+	}
+
+	private void addKeywordCondition(BookSearchReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+		if (!StringUtil.isEmpty(searchReqDto.getKeyword())) {
+			builder.and(
+				book.title.containsIgnoreCase(searchReqDto.getKeyword())
+					.or(book.author.containsIgnoreCase(searchReqDto.getKeyword()))
+					.or(book.publisher.containsIgnoreCase(searchReqDto.getKeyword()))
+			);
+		}
+	}
+
+	private void addCursorCondition(BookSearchReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+		if (searchReqDto.getLastCreatedAt() != null) {
+			builder.and(
+				book.createdAt.lt(searchReqDto.getLastCreatedAt())
+					.or(book.createdAt.eq(searchReqDto.getLastCreatedAt())
+						.and(book.bookId.lt(searchReqDto.getLastBookId())))
+			);
+		}
 	}
 
 	private NumberExpression<Double> calculateScorePercentage(NumberPath<Byte> scorePath, int targetScore) {
