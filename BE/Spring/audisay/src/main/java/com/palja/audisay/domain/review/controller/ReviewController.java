@@ -1,28 +1,20 @@
 package com.palja.audisay.domain.review.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.annotation.JsonView;
 import com.palja.audisay.domain.review.dto.MyPageReviewListResponseDto;
 import com.palja.audisay.domain.review.dto.ReviewListResponseDto;
 import com.palja.audisay.domain.review.dto.ReviewRequestDto;
 import com.palja.audisay.domain.review.service.ReviewService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,23 +31,24 @@ public class ReviewController {
 	})
 	public ResponseEntity<ReviewListResponseDto> getBookReviews(
 		@PathVariable Long bookId,
-		@RequestParam(value = "cursor", required = false) String cursor,
+		@RequestParam(value = "lastDateTime", required = false) LocalDateTime lastUpdatedAt,
+		@RequestParam(value = "lastId", required = false) Long lastReviewId,
 		@RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
 		// Long memberId = SessionUtil.getMemberId();
-		ReviewListResponseDto response = reviewService.getBookReviewsWithMemberReview(memberId, bookId, cursor,
-			pageSize);
+		ReviewListResponseDto response = reviewService.getBookReviewsWithMemberReview(memberId, bookId, lastUpdatedAt, lastReviewId, pageSize);
 		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/mypage")
 	@Operation(summary = "마이페이지 리뷰 조회 (커서 기반)", description = "회원의 최신순 리뷰 목록을 커서 기반으로 조회")
 	public ResponseEntity<MyPageReviewListResponseDto> getMyReviews(
-		@RequestParam(value = "cursor", required = false) String cursor,
+			@RequestParam(value = "lastDateTime", required = false) LocalDateTime lastUpdatedAt,
+			@RequestParam(value = "lastId", required = false) Long lastReviewId,
 		@RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
 		// Long memberId = SessionUtil.getMemberId();
-		MyPageReviewListResponseDto response = reviewService.getMyReviewsAfterCursor(memberId, cursor, pageSize);
+		MyPageReviewListResponseDto response = reviewService.getMyReviewsAfterCursor(memberId, lastUpdatedAt, lastReviewId, pageSize);
 		return ResponseEntity.ok(response);
 	}
 
