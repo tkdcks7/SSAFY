@@ -11,11 +11,11 @@ import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
+import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.domain.note.dto.request.NoteRequestDto;
 import com.palja.audisay.domain.note.dto.response.NoteResponseDto;
 import com.palja.audisay.domain.note.entity.Note;
 import com.palja.audisay.domain.note.repository.NoteRepository;
-import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import com.palja.audisay.global.exception.exceptions.NoteInvalidParameterException;
 import com.palja.audisay.global.exception.exceptions.NoteNotFoundException;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
@@ -29,6 +29,8 @@ public class NoteService {
 	private final NoteRepository noteRepository;
 	private final MemberRepository memberRepository;
 	private final BookRepository bookRepository;
+
+	private final MemberService memberService;
 
 	public NoteResponseDto findNotesByMember(Long memberId) {
 		List<Note> noteList = noteRepository.findAllByMemberIdWithBook(memberId);
@@ -48,7 +50,7 @@ public class NoteService {
 	@Transactional
 	public Boolean saveNote(Long memberId, NoteRequestDto noteRequestDto) {
 		// 1. 삽입할 데이터 생성
-		Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+		Member member = memberService.validateMember(memberId);
 		Book book = bookRepository.findById(noteRequestDto.getBookId())
 			.orElseThrow(PublishedBookNotFoundException::new);
 		LocalDateTime now = LocalDateTime.now();
