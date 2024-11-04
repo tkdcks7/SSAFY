@@ -27,7 +27,7 @@ public class S3Service {
 		/// 제한시간 설정
 		Date expiration = new Date();
 		long expTime = expiration.getTime();
-		expTime += TimeUnit.MINUTES.toMillis(3); // 3 Minute
+		expTime += TimeUnit.MINUTES.toMillis(5); // 5 Minute
 		expiration.setTime(expTime);
 
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileName)
@@ -44,8 +44,8 @@ public class S3Service {
 		/// 제한시간 설정
 		Date expiration = new Date();
 		long expTime = expiration.getTime();
-		expTime += TimeUnit.MINUTES.toMillis(3);
-		expiration.setTime(expTime); // 3 Minute
+		expTime += TimeUnit.MINUTES.toMillis(5);
+		expiration.setTime(expTime); // 5 Minute
 
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, fileName)
 			.withMethod(HttpMethod.GET)

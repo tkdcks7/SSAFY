@@ -1,16 +1,22 @@
 package com.palja.audisay.domain.member.dto;
 
+import java.time.LocalDate;
+
 import com.palja.audisay.domain.member.annotation.ValidEmail;
 import com.palja.audisay.domain.member.annotation.ValidName;
 import com.palja.audisay.domain.member.annotation.ValidNickname;
 import com.palja.audisay.domain.member.annotation.ValidPassword;
 import com.palja.audisay.domain.member.entity.Gender;
+import com.palja.audisay.domain.member.entity.Member;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @ToString
 @Getter
@@ -50,4 +56,17 @@ public class MemberRegisterRequestDto {
 	@NotNull
 	@Schema(description = "blindFlag", example = "true/false", defaultValue = "true")
 	private boolean blindFlag;
+
+	// DTO -> Entity 변환
+	public Member toEntity(String encodedPassword) {
+		return Member.builder()
+			.email(this.email)
+			.password(encodedPassword) // 인코딩된 패스워드
+			.name(this.name)
+			.nickname(this.nickname)
+			.birth(this.birth)
+			.gender(this.gender)
+			.blindFlag(this.blindFlag)
+			.build();
+	}
 }

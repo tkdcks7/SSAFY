@@ -1,4 +1,4 @@
-// src/components/viewer/EbookIndex.tsx
+// src/components/viewer/EbookBookNote.tsx
 import React from 'react';
 import { Text, View, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
@@ -8,7 +8,7 @@ import BookNoteContent from './BookNoteContent';
 // 하위 컴포넌트의 Props 타입 정의
 type SidebarProps = {
   bookNoteSideBarX: SharedValue<number>;
-  toggleBookNote: () => void; // onPress는 반환값이 없는 함수 타입
+  toggleBookNote: () => void;
 };
 
 interface IBookNote {
