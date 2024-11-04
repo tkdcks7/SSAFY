@@ -36,4 +36,14 @@ public class BookController {
 		return new ResponseEntity<>(bookService.findPublishedBookDetail(tempMemberId, bookId), HttpStatus.OK);
 	}
 
+	@Operation(summary = "도서 검색 및 전체 목록 조회",
+		description = "검색어(keyword) 입력 시 제목, 저자, 출판서에 포함하는 ")
+
+	@GetMapping
+	public ResponseEntity<BookSearchResDto> getSearchPublishedBookResult(
+		@Valid @ModelAttribute BookSearchReqDto bookSearchReqDto) {
+		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(tempMemberId, bookSearchReqDto),
+			HttpStatus.OK);
+	}
+
 }
