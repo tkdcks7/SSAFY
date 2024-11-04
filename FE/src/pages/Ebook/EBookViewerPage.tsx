@@ -1,5 +1,5 @@
 // src/pages/Ebook/EBookViewerPage.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions, Button } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -11,11 +11,13 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import searchicon from '../../assets/icons/search.png';
 import ProgressBar from '../../components/viewer/ProgressBar';
+import EbookSearch from '../../components/viewer/EbookSearch';
 
 // 모달 등
 import EbookIndex from '../../components/viewer/EbookIndex';
 import EbookBookNote from '../../components/viewer/EbookBootNote';
 import EbookSetting from '../../components/viewer/EbookSetting';
+import EbookTTSSetting from '../../components/viewer/EbookTTSSetting';
 
 
 // 아이콘
@@ -45,6 +47,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
   const [progress, setProgress] = useState<number>(0);
   const [ isTTSMode, setIsTTSMode ] = useState<boolean>(false);
   const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean>(false);
+  const [ isSearching, setIsSearching ] = useState<boolean>(false);
 
 
   // 화면 크기를 상태로 관리
@@ -67,6 +70,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     const indexSidebarX = useSharedValue(-width);
     const bookNoteSideBarX = useSharedValue(width);
     const settingSideBarX = useSharedValue(width);
+    const settingTTSSideBarX = useSharedValue(width);
 
     // 네비게이션 바의 표시 여부 상태
     const isVisible = useSharedValue(false);
@@ -94,6 +98,10 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     const toggleSetting = useCallback(() => {
       settingSideBarX.value = settingSideBarX.value === 0 ? withTiming(width, { duration: 200 }) : withTiming(0, { duration: 200 });
     }, []);
+    // useCallback을 이용하여 TTS설정창을 토글하는 함수 메모이제이션
+    const toggleTTSSetting = useCallback(() => {
+      settingTTSSideBarX.value = settingTTSSideBarX.value === 0 ? withTiming(width, { duration: 200 }) : withTiming(0, { duration: 200 });
+    }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -106,25 +114,28 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
               <Text style={[styles.navBarText, { color: 'black' }]}>TTS 모드 종료</Text>
             </TouchableOpacity>
           )
-          :(
+          : (
           <>
           <TouchableOpacity>
             <Image source={leftarrowicon} style={styles.icon} />
           </TouchableOpacity>
             <Text style={styles.navBarText}>책 타이틀</Text>
-            <TouchableOpacity>
+          <TouchableOpacity onPress={() => setIsSearching(true)}>
             <Image source={searchicon} style={styles.icon} />
           </TouchableOpacity>
           </>
           )
         }
       </Animated.View>
+      { isSearching ? <EbookSearch /> : null}
       {/* 사이드바 */}
       <EbookIndex indexSidebarX={indexSidebarX} toggleIndex={toggleIndex}/>
       {/* 독서노트 */}
       <EbookBookNote bookNoteSideBarX={bookNoteSideBarX} toggleBookNote={toggleBookNote}/>
       {/* 설정창 */}
       <EbookSetting settingSideBarX={settingSideBarX} toggleSetting={toggleSetting}/>
+      {/* TTS 설정창 */}
+      <EbookTTSSetting settingTTSSideBarX={settingTTSSideBarX} toggleTTSSetting={toggleTTSSetting}/>
       <TouchableOpacity style={{ flex: 1 }} onPress={toggleNav}>
         <Reader
           src="https://s3.amazonaws.com/moby-dick/OPS/package.opf"
@@ -132,7 +143,12 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
         />
   </TouchableOpacity>
   {/* 네비게이션 바 */}
-  <Animated.View style={[styles.footer, animatedStyleFoot]}>
+  <Animated.View style={[styles.footer, animatedStyleFoot, isTTSMode && { height: height * 0.25, paddingTop: 0 }]}>
+    { 
+    isTTSMode 
+    ? <TouchableOpacity style={styles.saveNote}><Text style={styles.saveNoteText}>읽고 있는 문장 저장</Text></TouchableOpacity>
+    : null 
+    }
     <View style={styles.progressview}>
       <View>
       <Text>{progress*100}%</Text>
@@ -157,7 +173,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
             <TouchableOpacity onPress={() => {}}>
               <Image source={prevbuttonicon} style={[styles.footericon, {transform: [{scaleX: -1}]}]} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleSetting}>
+            <TouchableOpacity onPress={toggleTTSSetting}>
               <Image source={settingicon} style={styles.footericon} />
             </TouchableOpacity>
           </>
@@ -170,7 +186,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
             <TouchableOpacity onPress={() => setIsTTSMode(true)}>
               <Image source={headphoneicon} style={styles.footericon} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {toggleBookNote}}>
+            <TouchableOpacity onPress={toggleBookNote}>
               <Image source={noteicon} style={styles.footericon} />
             </TouchableOpacity>
             <TouchableOpacity onPress={toggleSetting}>
@@ -265,7 +281,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '80%',
     backgroundColor: 'white'
-  }
+  },
+  saveNote: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3943B7',
+    width: '100%',
+    height: height * 0.05,
+  },
+  saveNoteText: {
+    fontSize: width * 0.04,
+    color: 'white',
+    fontWeight: 'bold',
+  },
 });
 
 export default EBookViewerPage;
