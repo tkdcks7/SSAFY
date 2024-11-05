@@ -62,6 +62,8 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
 		return queryFactory
 			.selectFrom(review)
+			.join(review.book).fetchJoin()  // book과의 fetch join 추가
+			.join(review.member).fetchJoin() // member와의 fetch join 추가
 			.where(condition)
 			.orderBy(review.updatedAt.desc(), review.reviewId.desc())
 			.limit(pageable.getPageSize())
