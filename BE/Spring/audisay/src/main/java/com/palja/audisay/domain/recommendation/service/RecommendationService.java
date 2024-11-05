@@ -102,7 +102,6 @@ public class RecommendationService {
 		// 1. 유저 선호 카테고리 정보 조회
 		Category category = customCartRepository.findCategoryByMemberIdAndBookCartCount(memberId)
 			.orElseThrow(RecommendationNotFoundException::new);
-		System.out.println("category.getCategoryId() = " + category.getCategoryId());
 		// 2. 카테고리 인기 도서 조회 (MongoDB)
 		CategoryBook categoryBook = categoryBookRepository.findByGroupId(category.getCategoryId())
 			.orElseThrow(RecommendationNotFoundException::new);
@@ -122,7 +121,6 @@ public class RecommendationService {
 		ViewLog viewLog = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
 			.getContent()
 			.getFirst();
-		System.out.println("viewLog.getBookId() = " + viewLog.getBookId());
 		// 2. 유사 인기 도서 조회 (MongoDB)
 		SimilarBook similarBook = similarBookRepository.findByBookId(viewLog.getBookId())
 			.orElseThrow(RecommendationNotFoundException::new);
