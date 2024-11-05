@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y poppler-utils
 
 WORKDIR /app
 
+ENV DJANGO_SETTINGS_MODULE=config.settings.prod
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
