@@ -149,6 +149,14 @@ public class RecommendationService {
 			.build();
 	}
 
+	public RecommendationBookDto getSimilarBookByContext(Long bookId) {
+		return null;
+	}
+
+	public RecommendationBookDto getSimilarBookByLikes(Long bookId) {
+		return null;
+	}
+
 	// entity -> dto 변환
 	// Dto 안에 넣으려다 ImageUtil이 있어 Service 단에서 처리
 	public List<PublishedBookInfoDto> bookToDto(List<Book> bookList) {
