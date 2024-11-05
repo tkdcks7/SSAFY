@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import accessbilityicon from '../assets/icons/accessbility.png';
 import notesicon from '../assets/icons/notes.png';
 
@@ -12,7 +15,11 @@ type MainHeaderProps = {
   onModeToggle?: () => void; // 모드 전환 함수
 };
 
+type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
 const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isUserVisuallyImpaired, onModeToggle }) => {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={styles.container}>
       <View style={styles.leftContainer}>
@@ -26,7 +33,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isU
         <Text style={styles.title}>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
-        <TouchableOpacity style={styles.bookmarkButton}>
+        <TouchableOpacity style={styles.bookmarkButton} onPress={() => navigation.navigate('ReadingNotes')}>
           <Image source={notesicon} style={styles.icon} />
         </TouchableOpacity>
       </View>
