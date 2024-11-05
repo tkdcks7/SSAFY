@@ -1,7 +1,5 @@
 package com.palja.audisay.domain.member.service;
 
-import com.palja.audisay.domain.cart.repository.BookCartRepository;
-import com.palja.audisay.domain.likes.repository.LikesRepository;
 import com.palja.audisay.domain.member.dto.*;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
@@ -25,8 +23,6 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final BookCartRepository bookCartRepository;
-	private final LikesRepository likesRepository;
 
 	public MemberResponseDto getMemberInfo(Long memberId) {
 		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
