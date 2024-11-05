@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.palja.audisay.domain.note.dto.request.NoteRequestDto;
 import com.palja.audisay.domain.note.dto.response.NoteResponseDto;
 import com.palja.audisay.domain.note.service.NoteService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +31,7 @@ public class NoteController {
 	@GetMapping()
 	@Operation(summary = "독서노트 조회", description = "멤버ID로 독서노트 조회")
 	public ResponseEntity<NoteResponseDto> findByMember() {
-		long memberId = 1L;
+		long memberId = SessionUtil.getMemberId();
 		NoteResponseDto noteResponseDto = noteService.findNotesByMember(memberId);
 		return new ResponseEntity<>(noteResponseDto, HttpStatus.OK);
 	}
@@ -41,7 +42,7 @@ public class NoteController {
 		@Parameter(name = "bookId", description = "책 ID (기본값: 1)", example = "1")
 	})
 	public ResponseEntity<NoteResponseDto> findByMemberAndBook(@PathVariable Long bookId) {
-		long memberId = 1L;
+		long memberId = SessionUtil.getMemberId();
 		NoteResponseDto noteResponseDto = noteService.findNotesByMemberAndBook(memberId, bookId);
 		return new ResponseEntity<>(noteResponseDto, HttpStatus.OK);
 	}
@@ -49,7 +50,7 @@ public class NoteController {
 	@PostMapping()
 	@Operation(summary = "독서노트 생성", description = "독서노트 생성")
 	public ResponseEntity<?> saveNote(@RequestBody NoteRequestDto noteRequestDto) {
-		long memberId = 1L;
+		long memberId = SessionUtil.getMemberId();
 		boolean f = noteService.saveNote(memberId, noteRequestDto);
 		if (!f) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -63,7 +64,7 @@ public class NoteController {
 		@Parameter(name = "noteId", description = "노트 ID (기본값: 1)", example = "1")
 	})
 	public ResponseEntity<?> deleteByNoteId(@PathVariable Long noteId) {
-		long memberId = 1L;
+		long memberId = SessionUtil.getMemberId();
 		noteService.deleteNoteByNoteId(memberId, noteId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

@@ -1,18 +1,22 @@
 package com.palja.audisay.domain.s3.controller;
 
-import com.palja.audisay.domain.s3.dto.S3ResponseDto;
-import com.palja.audisay.domain.s3.service.S3Service;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
+import com.palja.audisay.domain.s3.dto.S3ResponseDto;
+import com.palja.audisay.domain.s3.service.S3Service;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/file")
@@ -24,8 +28,9 @@ public class S3Controller {
 
 	@GetMapping("/presigned/upload")
 	@Operation(summary = "파일 업로드", description = "구현 중...")
-	public S3ResponseDto getPresignedUrlToUpload(@RequestParam(value = "filename") String fileName) throws IOException {
-		return awsS3Service.getPresignedUrlToUpload(fileName);
+	public ResponseEntity<S3ResponseDto> getPresignedUrlToUpload(
+		@RequestParam(value = "filename") String fileName) throws IOException {
+		return new ResponseEntity<>(awsS3Service.getPresignedUrlToUpload(fileName), HttpStatus.OK);
 	}
 
 	@GetMapping("/presigned/download")
@@ -33,7 +38,8 @@ public class S3Controller {
 	@Parameters({
 			@Parameter(name = "filename", description = "파일 명", example = "temp/audisay.png")
 	})
-	public S3ResponseDto getPresignedUrlToDownload(@RequestParam(value = "filename") String fileName) throws IOException {
-		return awsS3Service.getPresignedUrlToDownload(fileName);
+	public ResponseEntity<S3ResponseDto> getPresignedUrlToDownload(
+		@RequestParam(value = "filename") String fileName) throws IOException {
+		return new ResponseEntity<>(awsS3Service.getPresignedUrlToDownload(fileName), HttpStatus.OK);
 	}
 }
