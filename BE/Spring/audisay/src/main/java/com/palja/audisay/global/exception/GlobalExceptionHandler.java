@@ -1,23 +1,22 @@
 package com.palja.audisay.global.exception;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
+import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
+import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
+import com.palja.audisay.global.exception.exceptions.ServerErrorException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
-import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
-import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
-import com.palja.audisay.global.exception.exceptions.ServerErrorException;
-
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -78,6 +77,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
 		log.error("예기치 못한 오류 발생: {}", ex.getMessage());
 		return InternalServerExceptionHandler(new ServerErrorException());
+	}
+
+	// 로그인 시 사용하는 CustomUserDetailsService에서 사용자 찾을 수 없는 경우
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<Map<String, String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+		return customExceptionHandler(new MemberNotFoundException());
 	}
 
 	@AllArgsConstructor

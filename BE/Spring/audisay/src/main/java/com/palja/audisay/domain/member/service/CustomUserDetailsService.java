@@ -2,7 +2,6 @@ package com.palja.audisay.domain.member.service;
 
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
-import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(MemberNotFoundException::new);
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
         log.info("인증 중 멤버 id 조회: {}", member.getMemberId());
         // CustomUserDetails 인스턴스 반환, id 포함
         return new CustomUserDetails(member.getMemberId(), member.getEmail(), member.getPassword());
