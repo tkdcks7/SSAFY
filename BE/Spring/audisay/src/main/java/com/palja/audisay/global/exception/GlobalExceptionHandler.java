@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -78,6 +79,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
 		log.error("예기치 못한 오류 발생: {}", ex.getMessage());
 		return InternalServerExceptionHandler(new ServerErrorException());
+	}
+
+	// 로그인 시 사용하는 CustomUserDetailsService에서 사용자 찾을 수 없는 경우
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<Map<String, String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+		return customExceptionHandler(new MemberNotFoundException());
 	}
 
 	@AllArgsConstructor

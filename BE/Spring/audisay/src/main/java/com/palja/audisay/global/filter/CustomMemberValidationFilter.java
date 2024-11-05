@@ -2,6 +2,7 @@ package com.palja.audisay.global.filter;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,15 +31,27 @@ public class CustomMemberValidationFilter extends OncePerRequestFilter {
 	private final MemberRepository memberRepository;
 	private final ObjectMapper objectMapper; // JSON 변환기
 
+	private static final List<String> EXCLUDED_PATHS = List.of(
+		"/auth/login",
+		"/auth/logout",
+		"/members",
+		"/swagger-ui",
+		"/swagger",
+		"/v3/api-docs"
+	);
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
-		String requestURI = request.getRequestURI();
+
+		String requestURI = request.getRequestURI().replace(request.getContextPath(), "");
+
 		// 인증이 필요 없는 경로는 검증 없이 다음 필터로 넘김
 		if (isExcludedUrl(requestURI)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
+
 		try {
 			if (SecurityContextHolder.getContext().getAuthentication() == null) {
 				throw new MemberAccessDeniedException();
@@ -78,7 +91,6 @@ public class CustomMemberValidationFilter extends OncePerRequestFilter {
 
 	// 인증이 필요 없는 경로를 정의하는 메서드
 	private boolean isExcludedUrl(String url) {
-		return url.startsWith("/api/auth/login") || url.startsWith("/api/members") || url.startsWith("/api/swagger-ui")
-			|| url.startsWith("/api/swagger") || url.startsWith("/api/v3/api-docs");
+		return EXCLUDED_PATHS.stream().anyMatch(url::startsWith);
 	}
 }
