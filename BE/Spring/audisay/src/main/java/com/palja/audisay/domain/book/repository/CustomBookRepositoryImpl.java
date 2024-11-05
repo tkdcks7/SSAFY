@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.palja.audisay.domain.book.dto.request.BookSearchReqDto;
+import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.QBook;
@@ -76,7 +76,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 	}
 
 	@Override
-	public List<Book> searchBookList(BookSearchReqDto searchReqDto) {
+	public List<Book> searchBookList(CursorPaginationReqDto searchReqDto) {
 		QBook book = QBook.book;
 		// 검색 조건 생성
 		BooleanBuilder searchCondition = createSearchCondition(searchReqDto, book);
@@ -92,7 +92,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.fetch();
 	}
 
-	private BooleanBuilder createSearchCondition(BookSearchReqDto searchReqDto, QBook book) {
+	private BooleanBuilder createSearchCondition(CursorPaginationReqDto searchReqDto, QBook book) {
 		BooleanBuilder builder = new BooleanBuilder();
 		// 키워드 검색 조건 추가
 		addKeywordCondition(searchReqDto, book, builder);
@@ -101,7 +101,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		return builder;
 	}
 
-	private void addKeywordCondition(BookSearchReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+	private void addKeywordCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
 		if (!StringUtil.isEmpty(searchReqDto.getKeyword())) {
 			builder.and(
 				book.title.containsIgnoreCase(searchReqDto.getKeyword())
@@ -111,12 +111,12 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		}
 	}
 
-	private void addCursorCondition(BookSearchReqDto searchReqDto, QBook book, BooleanBuilder builder) {
-		if (searchReqDto.getLastCreatedAt() != null) {
+	private void addCursorCondition(CursorPaginationReqDto searchReqDto, QBook book, BooleanBuilder builder) {
+		if (searchReqDto.getLastDateTime() != null) {
 			builder.and(
-				book.createdAt.lt(searchReqDto.getLastCreatedAt())
-					.or(book.createdAt.eq(searchReqDto.getLastCreatedAt())
-						.and(book.bookId.lt(searchReqDto.getLastBookId())))
+				book.createdAt.lt(searchReqDto.getLastDateTime())
+					.or(book.createdAt.eq(searchReqDto.getLastDateTime())
+						.and(book.bookId.lt(searchReqDto.getLastId())))
 			);
 		}
 	}

@@ -14,11 +14,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookSearchReqDto {
+public class CursorPaginationReqDto {
 	private String keyword;
-	private LocalDateTime lastCreatedAt;  // 커서로 사용할 마지막 생성 시간
-	private Long lastBookId;              // 같은 시간에 생성된 경우를 위한 보조 커서
+	private LocalDateTime lastDateTime;  // 커서로 사용할 마지막 생성 시간
+	private Long lastId;              // 같은 시간에 생성된 경우를 위한 보조 커서
 	@Min(1)
-	@Builder.Default
 	private Integer pageSize = 10;
 }
