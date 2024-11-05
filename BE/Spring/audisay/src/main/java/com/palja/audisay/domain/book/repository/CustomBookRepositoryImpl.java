@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
+import com.palja.audisay.domain.book.entity.Dtype;
 import com.palja.audisay.domain.book.entity.QBook;
 import com.palja.audisay.domain.cart.entity.QBookCart;
 import com.palja.audisay.domain.category.entity.QCategory;
@@ -98,6 +99,8 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		addKeywordCondition(searchReqDto, book, builder);
 		// 커서 조건 추가
 		addCursorCondition(searchReqDto, book, builder);
+		// dType이 PUBLISHED인 조건 추가
+		builder.and(book.dtype.eq(Dtype.PUBLISHED));
 		return builder;
 	}
 
