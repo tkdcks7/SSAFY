@@ -1,4 +1,4 @@
-package com.palja.audisay.domain.member.service;
+package com.palja.audisay.domain.member.auth;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
