@@ -79,8 +79,9 @@ const styles = StyleSheet.create({
 
   minButton: {
     width: '40%',
-    height: '10%',
+    height: '8%',
     minHeight: 50,
+    maxHeight: 70,
   },
 
   midButton: {

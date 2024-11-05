@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.palja.audisay.global.exception.exceptions.InsufficientParameterException;
 import com.palja.audisay.global.exception.exceptions.MemberInvalidParameterException;
 import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
+import com.palja.audisay.global.exception.exceptions.ServerErrorException;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler {
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
 			String code = error.getCode();
 			// 로그 찍기
-			log.error("회원가입 유효성 검증 실패: {}", error.getDefaultMessage());
+			log.error("입력 값 유효성 검증 실패: {}", error.getDefaultMessage());
 			// 회원가입 특정 애너테이션 코드로 MemberInvalidParameterException 던지기
 			if ("ValidEmail".equals(code) || "ValidPassword".equals(code)
 				|| "ValidName".equals(code) || "ValidNickname".equals(code)) {
@@ -70,6 +71,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<Map<String, String>> handleBadCredentialsException(BadCredentialsException ex) {
 		// MemberNotFoundException을 통해 예외를 변환하여 전달
 		return customExceptionHandler(new MemberNotFoundException());
+	}
+
+	// 알 수 없는 에러 발생(지정된 에러 제외한 모든 에러 처리)
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
+		log.error("예기치 못한 오류 발생: {}", ex.getMessage());
+		return InternalServerExceptionHandler(new ServerErrorException());
 	}
 
 	@AllArgsConstructor

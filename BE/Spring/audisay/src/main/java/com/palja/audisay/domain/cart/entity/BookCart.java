@@ -43,5 +43,5 @@ public class BookCart {
 
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
 	@CreationTimestamp
-	private LocalDateTime created_at;
+	private LocalDateTime createdAt;
 }

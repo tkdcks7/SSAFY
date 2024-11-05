@@ -674,3 +674,7 @@ gradle-app.setting
 # Custom
 .env
 pipeline.groovy
+*.epub
+.vscode/
+BE/Django/.vscode/
+*.pdf

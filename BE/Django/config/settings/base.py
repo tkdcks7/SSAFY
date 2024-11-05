@@ -141,3 +141,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# OCR 시크릿 키
+NAVER_OCR_INVOKE_URL = env('NAVER_OCR_INVOKE_URL')
+NAVER_OCR_SECRET_KEY = env('NAVER_OCR_SECRET_KEY')
+
+# AWS S3 설정
+AWS_ACCESS_KEY = env('AWS_ACCESS_KEY')
+AWS_SECRET_KEY = env('AWS_SECRET_KEY')
+AWS_S3_BUCKET = env('AWS_S3_BUCKET')
+AWS_REGION = env('AWS_REGION')
