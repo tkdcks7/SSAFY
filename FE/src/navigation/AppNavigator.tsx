@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
+import ReadingNotesPage from '../pages/ReadingNotesPage';
 import LibraryPage from '../pages/Main/LibraryPage';
 import SearchPage from '../pages/Main/SearchPage';
 import RegisterBookPage from '../pages/Main/RegisterBookPage';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   Home: undefined;
+  ReadingNotes: undefined;
   Library: undefined;
   Search: undefined;
   RegisterBook: undefined;
@@ -52,6 +54,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Login" component={LoginPage} />
         <Stack.Screen name="Signup" component={SignupPage} />
         <Stack.Screen name="Home" component={HomePage} />
+        <Stack.Screen name="ReadingNotes" component={ReadingNotesPage} />
         <Stack.Screen name="Library" component={LibraryPage} />
         <Stack.Screen name="Search" component={SearchPage} />
         <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
