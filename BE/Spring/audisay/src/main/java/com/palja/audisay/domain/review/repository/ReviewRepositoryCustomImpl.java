@@ -1,7 +1,6 @@
 package com.palja.audisay.domain.review.repository;
 
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.review.entity.Review;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -26,22 +25,22 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
     }
 
     @Override
-    public List<Review> findReviewsWithCursor(Member member, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
-        return findReviews(null, member, true, updatedAtCursor, lastReviewId, pageable);
+    public List<Review> findReviewsWithCursor(Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
+        return findReviews(null, memberId, true, updatedAtCursor, lastReviewId, pageable);
     }
 
     @Override
-    public Optional<Review> findMemberReviewForBook(Member member, Book book) {
+    public Optional<Review> findMemberIdReviewForBook(Long memberId, Book book) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(review)
                 .where(review.book.eq(book)
-                        .and(review.member.eq(member)))
+                        .and(review.member.memberId.eq(memberId)))
                 .fetchOne());
     }
 
     @Override
-    public List<Review> findOtherReviewsWithCursor(Book book, Member member, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
-        return findReviews(book, member, false, updatedAtCursor, lastReviewId, pageable);
+    public List<Review> findOtherReviewsWithCursor(Book book, Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
+        return findReviews(book, memberId, false, updatedAtCursor, lastReviewId, pageable);
     }
 
     private BooleanExpression buildCursorCondition(LocalDateTime updatedAtCursor, Long lastReviewId) {
@@ -52,8 +51,8 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
         return condition;
     }
 
-    private List<Review> findReviews(Book book, Member member, Boolean isMemberReview, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
-        BooleanExpression condition = (isMemberReview) ? review.member.eq(member) : review.book.eq(book).and(review.member.ne(member));
+    private List<Review> findReviews(Book book, Long memberId, Boolean isMemberReview, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable) {
+        BooleanExpression condition = (isMemberReview) ? review.member.memberId.eq(memberId) : review.book.eq(book).and(review.member.memberId.ne(memberId));
         condition = condition.and(buildCursorCondition(updatedAtCursor, lastReviewId));
 
         return queryFactory

@@ -1,7 +1,6 @@
 package com.palja.audisay.domain.review.repository;
 
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.review.entity.Review;
 import org.springframework.data.domain.Pageable;
 
@@ -10,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepositoryCustom {
-    List<Review> findReviewsWithCursor(Member member, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable);
+    List<Review> findReviewsWithCursor(Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable);
 
-    Optional<Review> findMemberReviewForBook(Member member, Book book);
+    Optional<Review> findMemberIdReviewForBook(Long memberId, Book book);
 
-    List<Review> findOtherReviewsWithCursor(Book book, Member member, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable);
+    List<Review> findOtherReviewsWithCursor(Book book, Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId, Pageable pageable);
 }
