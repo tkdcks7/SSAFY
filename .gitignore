@@ -677,3 +677,4 @@ pipeline.groovy
 *.epub
 .vscode/
 BE/Django/.vscode/
+*.pdf

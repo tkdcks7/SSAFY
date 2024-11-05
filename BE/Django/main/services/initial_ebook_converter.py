@@ -190,7 +190,7 @@ class InitialEbookConverter:
 
         # 파일명 및 경로 설정 - 일단 로컬에 저장 (나중에 s3에 저장하는걸로 수정)
         filename = f'{uuid.uuid4()}.epub'
-        filepath = os.path.join(STATIC_ROOT, filename)
+        # filepath = os.path.join(STATIC_ROOT, filename)
         # try:
         #     epub.write_epub(filepath, book)
         # except Exception as e:

@@ -1,5 +1,8 @@
 FROM python:3.12
 
+# Install Poppler
+RUN apt-get update && apt-get install -y poppler-utils
+
 WORKDIR /app
 
 COPY requirements.txt .
