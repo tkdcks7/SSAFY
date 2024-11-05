@@ -91,8 +91,7 @@ public class ReviewService {
 
 	@Transactional
 	public void updateReview(Long memberId, Long reviewId, ReviewRequestDto reviewRequestDto) {
-		Review review = reviewRepository.findById(reviewId).orElseThrow(ReviewNotFoundException::new);
-
+		Review review = reviewRepository.findByReviewIdAndMemberMemberId(reviewId, memberId).orElseThrow(ReviewNotFoundException::new);
 		if (reviewRequestDto.getScore() != null) { // requestBody에 score가 존재할 때만 score 업데이트
 			review.setScore(reviewRequestDto.getScore().byteValue());
 		}
