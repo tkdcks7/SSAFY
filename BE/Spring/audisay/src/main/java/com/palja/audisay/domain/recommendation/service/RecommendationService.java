@@ -21,11 +21,13 @@ import com.palja.audisay.domain.recommendation.entity.Criterion;
 import com.palja.audisay.domain.recommendation.entity.DemographicsBook;
 import com.palja.audisay.domain.recommendation.entity.FamousBook;
 import com.palja.audisay.domain.recommendation.entity.SimilarBook;
+import com.palja.audisay.domain.recommendation.entity.SimilarLikeBook;
 import com.palja.audisay.domain.recommendation.entity.SimilarMemberBook;
 import com.palja.audisay.domain.recommendation.repository.CategoryBookRepository;
 import com.palja.audisay.domain.recommendation.repository.DemographicsBookRepository;
 import com.palja.audisay.domain.recommendation.repository.FamousBookRepository;
 import com.palja.audisay.domain.recommendation.repository.SimilarBookRepository;
+import com.palja.audisay.domain.recommendation.repository.SimilarLikeBookRepository;
 import com.palja.audisay.domain.recommendation.repository.SimilarMemberBookRepository;
 import com.palja.audisay.domain.viewLog.entity.ViewLog;
 import com.palja.audisay.domain.viewLog.repository.ViewLogRepository;
@@ -47,6 +49,7 @@ public class RecommendationService {
 	private final CategoryBookRepository categoryBookRepository;
 	private final SimilarBookRepository similarBookRepository;
 	private final SimilarMemberBookRepository similarMemberBookRepository;
+	private final SimilarLikeBookRepository similarLikeBookRepository;
 	// util
 	private final ImageUtil imageUtil;
 	// ViewLog
@@ -150,11 +153,31 @@ public class RecommendationService {
 	}
 
 	public RecommendationBookDto getSimilarBookByContext(Long bookId) {
-		return null;
+		// 1. 유사 도서 조회 (MongoDB)
+		SimilarBook similarBook = similarBookRepository.findByBookId(bookId)
+			.orElseThrow(RecommendationNotFoundException::new);
+		// 2. 도서 상세 정보 조회
+		List<Book> bookList = bookRepository.findByBookIdIn(similarBook.getBookList());
+		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
+
+		return RecommendationBookDto.builder()
+			.bookList(publishedBookInfoDtoList)
+			.criterion(Criterion.SIMILAR_BOOK_BY_CONTEXT.format())
+			.build();
 	}
 
 	public RecommendationBookDto getSimilarBookByLikes(Long bookId) {
-		return null;
+		// 1. 유사 평가 도서 조회 (MongoDB)
+		SimilarLikeBook similarLikeBook = similarLikeBookRepository.findByBookId(bookId)
+			.orElseThrow(RecommendationNotFoundException::new);
+		// 2. 도서 상세 정보 조회
+		List<Book> bookList = bookRepository.findByBookIdIn(similarLikeBook.getBookList());
+		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
+
+		return RecommendationBookDto.builder()
+			.bookList(publishedBookInfoDtoList)
+			.criterion(Criterion.SIMILAR_BOOK_BY_LIKES.format())
+			.build();
 	}
 
 	// entity -> dto 변환
