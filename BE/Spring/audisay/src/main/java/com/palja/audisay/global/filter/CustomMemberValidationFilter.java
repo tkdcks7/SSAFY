@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,21 +32,23 @@ public class CustomMemberValidationFilter extends OncePerRequestFilter {
 
 	private final MemberRepository memberRepository;
 	private final ObjectMapper objectMapper; // JSON 변환기
-
 	private static final List<String> EXCLUDED_PATHS = List.of(
 		"/auth/login",
 		"/auth/logout",
+		"/members/email-check",
 		"/members",
-		"/swagger-ui",
-		"/swagger",
-		"/v3/api-docs"
+		"/swagger-ui/**",
+		"/swagger/**",
+		"/v3/api-docs/**"
 	);
+	private final PathMatcher pathMatcher = new AntPathMatcher();
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
 
-		String requestURI = request.getRequestURI().replace(request.getContextPath(), "");
+		String contextPath = request.getContextPath();
+		String requestURI = request.getRequestURI().substring(contextPath.length());
 
 		// 인증이 필요 없는 경로는 검증 없이 다음 필터로 넘김
 		if (isExcludedUrl(requestURI)) {
@@ -91,6 +95,6 @@ public class CustomMemberValidationFilter extends OncePerRequestFilter {
 
 	// 인증이 필요 없는 경로를 정의하는 메서드
 	private boolean isExcludedUrl(String url) {
-		return EXCLUDED_PATHS.stream().anyMatch(url::startsWith);
+		return EXCLUDED_PATHS.stream().anyMatch(excludedPath -> pathMatcher.match(excludedPath, url));
 	}
 }
