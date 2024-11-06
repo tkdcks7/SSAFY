@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.book.dto.LastBookInfo;
 import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
-import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.Dtype;
 import com.palja.audisay.domain.book.repository.BookRepository;
@@ -49,14 +49,15 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public BookSearchResDto getSearchPublishedBookResult(Long memberId, CursorPaginationReqDto cursorPaginationReqDto) {
+	public SearchCursorPaginationResDto getSearchPublishedBookResult(Long memberId,
+		CursorPaginationReqDto cursorPaginationReqDto) {
 		// 사용자 검증
 		memberService.validateMember(memberId);
 
 		List<Book> bookRawList = bookRepository.searchBookList(cursorPaginationReqDto);
 
 		if (bookRawList.isEmpty()) {
-			return BookSearchResDto.builder()
+			return SearchCursorPaginationResDto.builder()
 				.bookList(Collections.emptyList())
 				.build();
 		}
@@ -77,7 +78,7 @@ public class BookService {
 				.build())
 			.toList();
 
-		return BookSearchResDto.builder()
+		return SearchCursorPaginationResDto.builder()
 			.keyword(cursorPaginationReqDto.getKeyword())
 			.bookList(bookResultList)
 			.lastDateTime(lastBookInfo.lastCreatedAt())
