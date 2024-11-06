@@ -33,8 +33,6 @@ public class BookService {
 
 	// 도서 상세 정보 조회 메서드.
 	public PublishedBookInfoDto findPublishedBookDetail(Long memberId, Long bookId) {
-		// 사용자 검증
-		memberService.validateMember(memberId);
 		// bookId의 상세 내용 조회
 		// bookId의 리뷰 내용 조회
 		// 사용자 bookId 관련 정보(cartFlag, likeFlag) 조회
@@ -51,8 +49,6 @@ public class BookService {
 
 	public SearchCursorPaginationResDto getSearchPublishedBookResult(Long memberId,
 		CursorPaginationReqDto cursorPaginationReqDto) {
-		// 사용자 검증
-		memberService.validateMember(memberId);
 
 		List<Book> bookRawList = bookRepository.searchBookList(cursorPaginationReqDto);
 
