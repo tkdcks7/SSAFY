@@ -1,19 +1,17 @@
 package com.palja.audisay.domain.review.repository;
 
-import static com.palja.audisay.domain.review.entity.QReview.*;
+import com.palja.audisay.domain.book.entity.Book;
+import com.palja.audisay.domain.review.entity.Review;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
-import org.springframework.stereotype.Repository;
-
-import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.review.entity.Review;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import static com.palja.audisay.domain.review.entity.QReview.review;
 
 @Repository
 public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implements ReviewRepositoryCustom {
@@ -27,8 +25,8 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
 	@Override
 	public List<Review> findReviewsWithCursor(Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId,
-		Pageable pageable) {
-		return findReviews(null, memberId, true, updatedAtCursor, lastReviewId, pageable);
+											  Integer pageSize) {
+		return findReviews(null, memberId, true, updatedAtCursor, lastReviewId, pageSize);
 	}
 
 	@Override
@@ -42,8 +40,8 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
 	@Override
 	public List<Review> findOtherReviewsWithCursor(Book book, Long memberId, LocalDateTime updatedAtCursor,
-		Long lastReviewId, Pageable pageable) {
-		return findReviews(book, memberId, false, updatedAtCursor, lastReviewId, pageable);
+												   Long lastReviewId, Integer pageSize) {
+		return findReviews(book, memberId, false, updatedAtCursor, lastReviewId, pageSize);
 	}
 
 	private BooleanExpression buildCursorCondition(LocalDateTime updatedAtCursor, Long lastReviewId) {
@@ -55,7 +53,7 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 	}
 
 	private List<Review> findReviews(Book book, Long memberId, Boolean isMemberReview, LocalDateTime updatedAtCursor,
-		Long lastReviewId, Pageable pageable) {
+									 Long lastReviewId, Integer pageSize) {
 		BooleanExpression condition = (isMemberReview) ? review.member.memberId.eq(memberId) :
 			review.book.eq(book).and(review.member.memberId.ne(memberId));
 		condition = condition.and(buildCursorCondition(updatedAtCursor, lastReviewId));
@@ -66,7 +64,7 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 			.join(review.member).fetchJoin() // member와의 fetch join 추가
 			.where(condition)
 			.orderBy(review.updatedAt.desc(), review.reviewId.desc())
-			.limit(pageable.getPageSize())
+				.limit(pageSize)
 			.fetch();
 	}
 

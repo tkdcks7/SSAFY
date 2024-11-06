@@ -1,12 +1,5 @@
 package com.palja.audisay.domain.review.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.member.entity.Member;
@@ -20,9 +13,12 @@ import com.palja.audisay.domain.review.repository.ReviewRepository;
 import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import com.palja.audisay.global.exception.exceptions.ReviewBookDuplicatedException;
 import com.palja.audisay.global.exception.exceptions.ReviewNotFoundException;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +28,7 @@ public class ReviewService {
 	private final MemberRepository memberRepository;
 
 	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, LocalDateTime lastUpdatedAt,
-		Long lastReviewId, int pageSize) {
+																Long lastReviewId, Integer pageSize) {
 		Book book = bookService.validatePublishedBook(bookId);
 
 		// 첫 요청인지 확인
@@ -46,9 +42,8 @@ public class ReviewService {
 
 		// cursor 값 설정
 		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
-		Pageable pageable = PageRequest.of(0, pageSize);
 		List<Review> reviews = reviewRepository.findOtherReviewsWithCursor(book, memberId, updatedAtCursor,
-			lastReviewId, pageable);
+				lastReviewId, pageSize);
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
 
 		// 다음 커서 계산 (다음 페이지가 없다면 null 반환)
@@ -64,12 +59,11 @@ public class ReviewService {
 	}
 
 	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, LocalDateTime lastUpdatedAt,
-		Long lastReviewId, int pageSize) {
+															   Long lastReviewId, Integer pageSize) {
 		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
 
-		Pageable pageable = PageRequest.of(0, pageSize);
 		List<Review> reviews = reviewRepository.findReviewsWithCursor(memberId, updatedAtCursor, lastReviewId,
-			pageable);
+				pageSize);
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toDto).toList();
 
 		// 다음 커서 계산

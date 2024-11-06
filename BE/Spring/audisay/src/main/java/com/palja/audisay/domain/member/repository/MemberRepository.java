@@ -1,13 +1,12 @@
 package com.palja.audisay.domain.member.repository;
 
-import java.util.Optional;
-
+import com.palja.audisay.domain.member.dto.MemberBookAnalysisResponseDto;
+import com.palja.audisay.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.palja.audisay.domain.member.dto.MemberBookAnalysisResponseDto;
-import com.palja.audisay.domain.member.entity.Member;
+import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
@@ -27,7 +26,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 		LEFT JOIN BookCart c ON c.member.memberId = m.memberId
 		LEFT JOIN Likes l ON l.member.memberId = m.memberId
 		WHERE m.memberId = :memberId
-		GROUP BY m.nickname
+			GROUP BY m.memberId
 		""")
 	MemberBookAnalysisResponseDto getBookAnalysisByMemberId(@Param("memberId") Long memberId);
 
