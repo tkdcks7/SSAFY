@@ -20,4 +20,8 @@ public class CursorPaginationReqDto {
 	private Long lastId;              // 같은 시간에 생성된 경우를 위한 보조 커서
 	@Min(1)
 	private Integer pageSize = 10;
+
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize == null ? 10 : pageSize;
+	}
 }
