@@ -1,15 +1,18 @@
 package com.palja.audisay.domain.likes.service;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.palja.audisay.domain.book.dto.response.MemberPublishedBookListDto;
+import com.palja.audisay.domain.book.dto.LastBookInfo;
+import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
+import com.palja.audisay.domain.book.dto.response.BookCursorPaginationResDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
+import com.palja.audisay.domain.likes.dto.LikesJoinBookDto;
 import com.palja.audisay.domain.likes.entity.Likes;
 import com.palja.audisay.domain.likes.repository.LikesRepository;
 import com.palja.audisay.domain.member.entity.Member;
@@ -61,20 +64,54 @@ public class LikesService {
 	}
 
 	// 좋아요한 도서 조회
-	public MemberPublishedBookListDto findLikedPublishedBookList(Long memberId) {
+	public BookCursorPaginationResDto findLikedPublishedBookList(Long memberId,
+		CursorPaginationReqDto cursorPaginationReqDto) {
 		// 사용자 검증
 		Member member = memberService.validateMember(memberId);
+
 		// 좋아요한 도서 조회
-		List<PublishedBookInfoDto> bookList = likesRepository.findLikedBooksByMemberId(member.getMemberId()).stream()
+		List<LikesJoinBookDto> bookRawList = likesRepository.findLikedBooksByMemberId(member.getMemberId(),
+			cursorPaginationReqDto);
+		if (bookRawList.isEmpty()) {
+			return BookCursorPaginationResDto.builder()
+				.bookList(Collections.emptyList())
+				.build();
+		}
+		// 도서 목록 후처리
+		LastBookInfo lastBookInfo = processLastBookInfo(bookRawList, cursorPaginationReqDto.getPageSize());
+
+		List<PublishedBookInfoDto> bookResultList = bookRawList.stream()
 			.map(book -> PublishedBookInfoDto.builder()
+				.bookId(book.getBookId())
+				.title(book.getTitle())
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
-				.title(book.getTitle())
 				.author(book.getAuthor())
-				.bookId(book.getBookId())
 				.dtype(book.getDtype())
 				.build())
-			.collect(Collectors.toList());
-		return MemberPublishedBookListDto.builder().bookList(bookList).build();
+			.toList();
+
+		return BookCursorPaginationResDto.builder()
+			.bookList(bookResultList)
+			.lastDateTime(lastBookInfo.lastCreatedAt())
+			.lastId(lastBookInfo.lastBookId())
+			.build();
+	}
+
+	/**
+	 * 조회한 목록에서 마지막 도서 정보 추출 메서드.
+	 *
+	 * @param bookRawList DB에서 추출한 원본 리스트.
+	 * @param pageSize 요청한 페이지 크기.
+	 * @return LastBookInfo 마지막 조회 도서 정보 반환.
+	 */
+	public LastBookInfo processLastBookInfo(List<LikesJoinBookDto> bookRawList, int pageSize) {
+		boolean hasNext = bookRawList.size() > pageSize;
+		if (hasNext) {
+			bookRawList.removeLast();  // 마지막 도서 제거
+		}
+		LikesJoinBookDto lastBook = hasNext ? bookRawList.getLast() : null;
+		return lastBook != null ? new LastBookInfo(lastBook.getBookId(), lastBook.getCreatedAtLike()) :
+			new LastBookInfo();
 	}
 }
