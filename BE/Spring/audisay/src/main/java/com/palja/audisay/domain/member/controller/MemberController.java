@@ -1,29 +1,17 @@
 package com.palja.audisay.domain.member.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.palja.audisay.domain.member.dto.EmailCheckRequestDto;
-import com.palja.audisay.domain.member.dto.MemberBookAnalysisResponseDto;
-import com.palja.audisay.domain.member.dto.MemberRegisterRequestDto;
-import com.palja.audisay.domain.member.dto.MemberResponseDto;
-import com.palja.audisay.domain.member.dto.MemberUpdateRequestDto;
-import com.palja.audisay.domain.member.dto.PasswordChangeRequestDto;
+import com.palja.audisay.domain.member.dto.*;
 import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.global.util.SessionUtil;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -88,11 +76,11 @@ public class MemberController {
 
 	@DeleteMapping
 	@Operation(summary = "회원 탈퇴", description = "현재 세션 삭제, 이메일과 이름 마스킹 처리")
-	public ResponseEntity<Void> deleteMember(HttpSession session, HttpServletResponse response) {
+	public ResponseEntity<Void> deleteMember(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		Long memberId = SessionUtil.getMemberId();
 		memberService.deleteMember(memberId);
 		session.invalidate(); //  현재 세션 무효화 (삭제)
-		SessionUtil.clearSessionCookie(response); // JSESSIONID 쿠키 삭제
+		SessionUtil.clearSessionCookie(request, response); // JSESSIONID 쿠키 삭제
 		return ResponseEntity.ok().build();
 	}
 }
