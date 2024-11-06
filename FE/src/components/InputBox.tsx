@@ -8,12 +8,14 @@ interface CustomTextInputProps extends TextInputProps {
   secureTextEntry?: boolean;
   style?: ViewStyle;
   onChangeText: (text: string) => void;
+  onSubmitEditing?: () => void;
 }
 
 const InputBox = forwardRef<TextInput, CustomTextInputProps>(({
   size = 0,
   value,
   onChangeText,
+  onSubmitEditing,
   placeholder,
   secureTextEntry = false,
   style,
@@ -36,6 +38,7 @@ const InputBox = forwardRef<TextInput, CustomTextInputProps>(({
       secureTextEntry={secureTextEntry}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
+      onSubmitEditing={onSubmitEditing}
       accessible={true}
       accessibilityRole="text"
       accessibilityLabel={`${placeholder} 입력칸`}
