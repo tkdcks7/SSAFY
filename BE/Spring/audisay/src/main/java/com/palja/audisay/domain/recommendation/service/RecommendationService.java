@@ -1,5 +1,6 @@
 package com.palja.audisay.domain.recommendation.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.joda.time.LocalDate;
@@ -113,9 +114,16 @@ public class RecommendationService {
 	// 최근 조회 도서 인기 도서
 	public RecommendationBookDto getSimilarBooks(Long memberId) {
 		// 1. 최근 조회 도서 조회
-		ViewLog viewLog = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
-			.getContent()
-			.getFirst();
+		List<ViewLog> viewLogList = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
+			.getContent();
+		if (viewLogList.isEmpty()) {
+			return RecommendationBookDto.builder()
+				.bookList(new ArrayList<>())
+				.criterion(Criterion.SIMILAR_BOOK.format(""))
+				.build();
+		}
+		ViewLog viewLog = viewLogList.getFirst();
+
 		// 2. 유사 인기 도서 조회 (MongoDB)
 		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
 				Criterion.SIMILAR_BOOK.getType(), viewLog.getBookId())
