@@ -1,13 +1,12 @@
 package com.palja.audisay.global.util;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.palja.audisay.domain.member.auth.CustomUserDetails;
 import com.palja.audisay.global.exception.exceptions.MemberAccessDeniedException;
-
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SessionUtil {
 	// 세션에서 memberId를 가져오는 메서드
@@ -20,11 +19,19 @@ public class SessionUtil {
 	}
 
 	// 쿠키 삭제 메서드
-	public static void clearSessionCookie(HttpServletResponse response) {
-		Cookie cookie = new Cookie("JSESSIONID", null);
-		cookie.setPath("/");
-		cookie.setMaxAge(0); // 쿠키 만료
-		cookie.setHttpOnly(true);
-		response.addCookie(cookie);
+	public static void clearSessionCookie(HttpServletRequest request, HttpServletResponse response) {
+		if (request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				// JSESSIONID 쿠키가 있을 때만 삭제
+				if ("JSESSIONID".equals(cookie.getName())) {
+					cookie = new Cookie("JSESSIONID", null);
+					cookie.setPath("/");
+					cookie.setMaxAge(0); // 쿠키 만료
+					cookie.setHttpOnly(true);
+					response.addCookie(cookie);
+					break;
+				}
+			}
+		}
 	}
 }
