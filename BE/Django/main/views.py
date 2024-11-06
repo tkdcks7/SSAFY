@@ -11,8 +11,8 @@ import io
 import base64
 
 #----------- image captioning 
-from .services.epub_util.epub_reader import EpubReader 
-from .services.image_captioning.image_captioning import ImageCaptioner
+from .services.epub_reader import EpubReader 
+from .services.image_captioning import ImageCaptioner
 
 # Create your views here.
 
@@ -78,8 +78,6 @@ class ImageCaptioningView(APIView):
 
     # 테스트용. 지정된 path에서 파일을 가져온다. 
     def get(self, request):
-        print("get")
-        print("path: "+ request.query_params.get('path'))
         path = request.query_params.get('path')
         if not path:
             return Response({"error": "Path parameter is required"}, status=status.HTTP_400_BAD_REQUEST)

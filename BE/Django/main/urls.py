@@ -8,6 +8,5 @@ urlpatterns = [
     path('ocr/', OcrProcessingView.as_view(), name='ocr_process'),
     path('pdf/', PdfProcessingView.as_view(), name='pdf_process'),
     path('test', views.test_view, name='test'),
-    path('image-caption/', ImageCaptioningView.as_view(), name='image_captioning'),
-    path('image', views.test_view, name='image')
+    path('image-caption/', ImageCaptioningView.as_view(), name='image_captioning')
 ]

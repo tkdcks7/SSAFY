@@ -1,4 +1,6 @@
 asgiref==3.8.1
+azure-ai-vision-imageanalysis==1.0.0
+azure-core==1.32.0
 boto3==1.35.54
 botocore==1.35.54
 certifi==2024.8.30
