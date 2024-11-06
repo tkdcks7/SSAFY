@@ -2,6 +2,7 @@ package com.palja.audisay.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
@@ -17,6 +18,8 @@ public class MongoDBConfig {
 		MongoMappingContext mongoMappingContext) {
 		// DBRefResolver 설정
 		DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDatabaseFactory);
+		// snake_case로 저장
+		mongoMappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
 		// MappingMongoConverter 객체 생성
 		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
 		// TypeMapper 설정: null 처리 -> _class 필드를 저장하지 않도록 설정

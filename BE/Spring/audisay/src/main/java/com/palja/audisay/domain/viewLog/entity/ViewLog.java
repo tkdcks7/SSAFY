@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-@Document(collection = "log_bookView")
+@Document(collection = "logs_book_view")
 @Getter
 @Builder
 @ToString
