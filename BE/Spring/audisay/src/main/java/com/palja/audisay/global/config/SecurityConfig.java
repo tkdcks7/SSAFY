@@ -13,14 +13,22 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import com.palja.audisay.global.filter.CustomMemberValidationFilter;
+
+import lombok.RequiredArgsConstructor;
+
 @EnableWebSecurity
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+	private final CustomMemberValidationFilter customMemberValidationFilter;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,13 +46,13 @@ public class SecurityConfig {
 			.authorizeHttpRequests(requests -> requests
 				.anyRequest().permitAll() // 모든 요청 허용
 			)
-			//			.authorizeHttpRequests((requests) -> requests
-			//				.requestMatchers("/auth/login", "/members", "/members/email-check",
-			//					"/swagger/**","/swagger-ui/**", "/v3/api-docs/**")
-			//				.permitAll() // 로그인, 회원가입, 이메일 중복 체크, swagger는 모두 접근 가능
-			//				.anyRequest()
-			//				.authenticated() // 나머지 요청은 인증 필요
-			//			)
+			// .authorizeHttpRequests((requests) -> requests
+			// 	.requestMatchers("/auth/login", "/members", "/members/email-check",
+			// 		"/swagger/**", "/swagger-ui/**", "/v3/api-docs/**")
+			// 	.permitAll() // 로그인, 회원가입, 이메일 중복 체크, swagger는 모두 접근 가능
+			// 	.anyRequest()
+			// 	.authenticated() // 나머지 요청은 인증 필요
+			// )
 			.sessionManagement(session -> session
 				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요 시 세션 생성
 			);
@@ -56,6 +64,8 @@ public class SecurityConfig {
 		// 			response.setStatus(HttpServletResponse.SC_OK);
 		// 		})
 		// );
+		// CustomMemberValidationFilter 필터를 UsernamePasswordAuthenticationFilter 이후에 등록
+		http.addFilterAfter(customMemberValidationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

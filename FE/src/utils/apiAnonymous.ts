@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiAnonymous = axios.create({
-  baseURL: 'https://audisay.kr',
+  baseURL: 'https://audisay.kr/api',
   timeout: 3000,
 });
 

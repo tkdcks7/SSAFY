@@ -3,7 +3,7 @@ package com.palja.audisay.global.util;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.palja.audisay.domain.member.service.CustomUserDetails;
+import com.palja.audisay.domain.member.auth.CustomUserDetails;
 import com.palja.audisay.global.exception.exceptions.MemberAccessDeniedException;
 
 import jakarta.servlet.http.Cookie;

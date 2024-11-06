@@ -4,11 +4,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.palja.audisay.domain.member.auth.CustomUserDetails;
 import com.palja.audisay.domain.member.dto.LoginRequestDto;
-import com.palja.audisay.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthService {
 
-	private final MemberRepository memberRepository;
-	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
-	private final MemberService memberService;
 
 	public Long authenticateUser(LoginRequestDto loginRequestDto) {
 		// UsernamePasswordAuthenticationToken 생성
