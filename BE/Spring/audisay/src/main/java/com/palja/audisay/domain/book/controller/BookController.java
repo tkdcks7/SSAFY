@@ -12,6 +12,7 @@ import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.service.BookService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,8 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class BookController {
 
 	private final BookService bookService;
-	// 임시 memberId
-	private final Long tempMemberId = 1L;
 
 	@Operation(summary = "도서 상세 내용 조회",
 		description = "도서(bookId)의 상세 내용**(제목, 표지, 표지설명, 저자, 출판사, 카테고리(장르), 출판년도, 줄거리, ISBN, 자체TTS여부, 리뷰평점, 사용자 담은/좋아요 여부)** 반환")
@@ -38,7 +37,8 @@ public class BookController {
 	})
 	@GetMapping("/{bookId}")
 	public ResponseEntity<PublishedBookInfoDto> getPublishedBookDetail(@PathVariable("bookId") Long bookId) {
-		return new ResponseEntity<>(bookService.findPublishedBookDetail(tempMemberId, bookId), HttpStatus.OK);
+		Long memberId = SessionUtil.getMemberId();
+		return new ResponseEntity<>(bookService.findPublishedBookDetail(memberId, bookId), HttpStatus.OK);
 	}
 
 	@Operation(summary = "도서 검색 및 전체 목록 조회", description = "검색어(keyword) 입력 시 제목, 저자, 출판사와 일치하는 도서 검색")
@@ -51,7 +51,8 @@ public class BookController {
 	@GetMapping
 	public ResponseEntity<SearchCursorPaginationResDto> getSearchPublishedBookResult(
 		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
-		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(tempMemberId, cursorPaginationReqDto),
+		Long memberId = SessionUtil.getMemberId();
+		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(memberId, cursorPaginationReqDto),
 			HttpStatus.OK);
 	}
 

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.palja.audisay.domain.book.dto.request.MemberBookStatusReqDto;
 import com.palja.audisay.domain.book.dto.response.MemberPublishedBookListDto;
 import com.palja.audisay.domain.cart.service.BookCartService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,14 +26,13 @@ import lombok.RequiredArgsConstructor;
 public class BookCartController {
 
 	private final BookCartService bookCartService;
-	// 임시 멤버ID
-	private final Long tempMemberId = 1L;
 
 	@Operation(summary = "출판 도서 담기", description = "bookId 도서 담기")
 	@JsonView(MemberBookStatusReqDto.CartView.class)
 	@PostMapping()
 	public ResponseEntity<?> addPublishedBookToCart(@Valid @RequestBody MemberBookStatusReqDto bookStatusReqDto) {
-		bookCartService.savePublishedBookToCart(tempMemberId, bookStatusReqDto.getBookId(),
+		Long memberId = SessionUtil.getMemberId();
+		bookCartService.savePublishedBookToCart(memberId, bookStatusReqDto.getBookId(),
 			bookStatusReqDto.getCartFlag());
 		return ResponseEntity.ok().build();
 	}
@@ -40,6 +40,7 @@ public class BookCartController {
 	@Operation(summary = "담은 출판 도서 조회", description = "담은 출판 도서 조회")
 	@GetMapping()
 	public ResponseEntity<MemberPublishedBookListDto> getPublishedBookToCartList() {
-		return new ResponseEntity<>(bookCartService.findCartPublishedBookList(tempMemberId), HttpStatus.OK);
+		Long memberId = SessionUtil.getMemberId();
+		return new ResponseEntity<>(bookCartService.findCartPublishedBookList(memberId), HttpStatus.OK);
 	}
 }

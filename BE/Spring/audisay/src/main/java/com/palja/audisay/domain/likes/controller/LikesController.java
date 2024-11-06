@@ -14,6 +14,7 @@ import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.request.MemberBookStatusReqDto;
 import com.palja.audisay.domain.book.dto.response.BookCursorPaginationResDto;
 import com.palja.audisay.domain.likes.service.LikesService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,14 +31,13 @@ import lombok.RequiredArgsConstructor;
 public class LikesController {
 
 	private final LikesService likesService;
-	// 임시 memberId
-	private final Long tempMemberId = 1L;
 
 	@Operation(summary = "좋아요 추가/삭제", description = "likedFlag = true : 좋아요 / likedFlag = false : 좋아요 해제")
 	@JsonView(MemberBookStatusReqDto.LikeView.class)
 	@PostMapping()
 	public ResponseEntity<?> updateLikeStatus(@Valid @RequestBody MemberBookStatusReqDto bookStatusReqDto) {
-		likesService.modifyLikeStatus(tempMemberId, bookStatusReqDto.getBookId(), bookStatusReqDto.getLikedFlag());
+		Long memberId = SessionUtil.getMemberId();
+		likesService.modifyLikeStatus(memberId, bookStatusReqDto.getBookId(), bookStatusReqDto.getLikedFlag());
 		return ResponseEntity.ok().build();
 	}
 
@@ -50,7 +50,8 @@ public class LikesController {
 	@GetMapping()
 	public ResponseEntity<BookCursorPaginationResDto> getLikePublishedBookList(
 		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
-		return new ResponseEntity<>(likesService.findLikedPublishedBookList(tempMemberId, cursorPaginationReqDto),
+		Long memberId = SessionUtil.getMemberId();
+		return new ResponseEntity<>(likesService.findLikedPublishedBookList(memberId, cursorPaginationReqDto),
 			HttpStatus.OK);
 	}
 
