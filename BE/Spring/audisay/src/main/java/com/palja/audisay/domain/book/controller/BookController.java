@@ -51,8 +51,7 @@ public class BookController {
 	@GetMapping
 	public ResponseEntity<SearchCursorPaginationResDto> getSearchPublishedBookResult(
 		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
-		Long memberId = SessionUtil.getMemberId();
-		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(memberId, cursorPaginationReqDto),
+		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(cursorPaginationReqDto),
 			HttpStatus.OK);
 	}
 
