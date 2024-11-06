@@ -14,6 +14,7 @@ import com.palja.audisay.domain.category.entity.Category;
 import com.palja.audisay.domain.member.entity.Gender;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
+import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.domain.recommendation.dto.response.RecommendationBookDto;
 import com.palja.audisay.domain.recommendation.entity.CategoryBook;
 import com.palja.audisay.domain.recommendation.entity.Criterion;
@@ -28,7 +29,6 @@ import com.palja.audisay.domain.recommendation.repository.SimilarBookRepository;
 import com.palja.audisay.domain.recommendation.repository.SimilarMemberBookRepository;
 import com.palja.audisay.domain.viewLog.entity.ViewLog;
 import com.palja.audisay.domain.viewLog.repository.ViewLogRepository;
-import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import com.palja.audisay.global.exception.exceptions.RecommendationNotFoundException;
 import com.palja.audisay.global.util.ImageUtil;
 
@@ -53,6 +53,9 @@ public class RecommendationService {
 	private final ViewLogRepository viewLogRepository;
 	private final CustomCartRepository customCartRepository;
 
+	// memberservice
+	private final MemberService memberService;
+
 	// 인기 도서 조회
 	public RecommendationBookDto getFamousBooks() {
 		// 1. 최신 인기 도서 조회 (mongoDB)
@@ -73,8 +76,7 @@ public class RecommendationService {
 	// 연령대 인기 도서 조회
 	public RecommendationBookDto getDemographicsBooks(Long memberId) {
 		// 1. 유저 정보 조회
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+		Member member = memberService.validateMember(memberId);
 		int ageGroup = (LocalDate.now().getYear() - member.getBirth().getYear()) / 10 * 10;
 		String groupId = String.format("%d_%d", ageGroup,
 			member.getGender() == Gender.M? 1 : 0);
@@ -100,7 +102,6 @@ public class RecommendationService {
 		// 1. 유저 선호 카테고리 정보 조회
 		Category category = customCartRepository.findCategoryByMemberIdAndBookCartCount(memberId)
 			.orElseThrow(RecommendationNotFoundException::new);
-		System.out.println("category.getCategoryId() = " + category.getCategoryId());
 		// 2. 카테고리 인기 도서 조회 (MongoDB)
 		CategoryBook categoryBook = categoryBookRepository.findByGroupId(category.getCategoryId())
 			.orElseThrow(RecommendationNotFoundException::new);
@@ -120,7 +121,6 @@ public class RecommendationService {
 		ViewLog viewLog = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
 			.getContent()
 			.getFirst();
-		System.out.println("viewLog.getBookId() = " + viewLog.getBookId());
 		// 2. 유사 인기 도서 조회 (MongoDB)
 		SimilarBook similarBook = similarBookRepository.findByBookId(viewLog.getBookId())
 			.orElseThrow(RecommendationNotFoundException::new);

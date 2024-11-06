@@ -17,5 +17,4 @@ public class BookSearchResDto {
 	private List<PublishedBookInfoDto> bookList;
 	private LocalDateTime lastDateTime;
 	private Long lastId;
-
 }
