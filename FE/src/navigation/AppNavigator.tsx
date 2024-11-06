@@ -19,6 +19,8 @@ import MyReviewEditPage from '../pages/MyPage/MyReviewEditPage';
 import MyBooksPage from '../pages/MyPage/MyBooksPage';
 import MyLikedBooksPage from '../pages/MyPage/MyLikedBooksPage';
 import EBookViewerPage from '../pages/Ebook/EBookViewerPage';
+import BookDetailPage from '../pages/BookDetail/BookDetailPage';
+import ReviewPage from '../pages/BookDetail/ReviewPage';
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -43,7 +45,9 @@ export type RootStackParamList = {
   };
   MyBooks: undefined;
   MyLikedBooks: undefined;
-  EBookViewer: { bookId: string }
+  EBookViewer: { bookId: string };
+  BookDetail: { bookId: number };
+  Review: { bookId: number };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -69,6 +73,8 @@ const AppNavigator = () => {
         <Stack.Screen name="MyBooks" component={MyBooksPage} />
         <Stack.Screen name="MyLikedBooks" component={MyLikedBooksPage} />
         <Stack.Screen name="EBookViewer" component={EBookViewerPage} />
+        <Stack.Screen name="BookDetail" component={BookDetailPage} />
+        <Stack.Screen name="Review" component={ReviewPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
