@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
-import com.palja.audisay.domain.book.dto.response.BookSearchResDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
+import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,7 +49,7 @@ public class BookController {
 		@Parameter(name = "pageSize", description = "페이지 크기(기본값 10)")
 	})
 	@GetMapping
-	public ResponseEntity<BookSearchResDto> getSearchPublishedBookResult(
+	public ResponseEntity<SearchCursorPaginationResDto> getSearchPublishedBookResult(
 		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
 		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(tempMemberId, cursorPaginationReqDto),
 			HttpStatus.OK);
