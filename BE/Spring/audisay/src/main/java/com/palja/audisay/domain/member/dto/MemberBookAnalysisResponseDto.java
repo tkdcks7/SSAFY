@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MemberBookAnalysisResponseDto {
 	private String nickname;
-	private int cartBookCount;
-	private int likedBookCount;
+	private Long cartBookCount;
+	private Long likedBookCount;
 }
