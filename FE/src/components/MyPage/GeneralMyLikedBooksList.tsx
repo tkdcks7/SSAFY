@@ -1,6 +1,6 @@
-// src/components/MyPage/AccessibilityMyLikedBooksList.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface Book {
   bookId: number;
@@ -18,6 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps> = ({ books, searchQuery }) => {
   const [likedBooks, setLikedBooks] = useState(books);
+  const navigation = useNavigation();
 
   // 검색어와 일치하는 도서 목록 필터링
   const filteredBooks = likedBooks.filter(
@@ -46,15 +47,29 @@ const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps
     ]);
   };
 
+  const handleBookPress = (bookId: number) => {
+    navigation.navigate('BookDetail', { bookId });
+  };
+
   return (
     <View style={styles.container}>
       {filteredBooks.map((book) => (
         <View key={book.bookId} style={styles.card}>
-          <Image source={book.cover} style={styles.bookCover} accessibilityLabel={`${book.title} 표지`} />
-          <View style={styles.textContainer}>
-            <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`}>{book.title}</Text>
-            <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`}>저자: {book.author}</Text>
-          </View>
+          {/* 도서 정보 전체를 TouchableOpacity로 감싸 상세 페이지 이동 가능하도록 설정 */}
+          <TouchableOpacity
+            style={styles.bookInfoContainer}
+            onPress={() => handleBookPress(book.bookId)}
+            accessibilityLabel={`${book.title} 상세 보기`}
+            accessibilityHint="이 버튼을 누르면 도서의 상세 페이지로 이동합니다."
+          >
+            <Image source={book.cover} style={styles.bookCover} accessibilityLabel={`${book.title} 표지`} />
+            <View style={styles.textContainer}>
+              <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`}>{book.title}</Text>
+              <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`}>저자: {book.author}</Text>
+            </View>
+          </TouchableOpacity>
+          
+          {/* 좋아요 취소 버튼 */}
           <TouchableOpacity
             style={styles.unlikeButton}
             onPress={() => handleUnlike(book.bookId, book.title)}
@@ -83,6 +98,11 @@ const styles = StyleSheet.create({
     marginVertical: height * 0.01,
     marginHorizontal: height * 0.01,
     backgroundColor: '#fff',
+  },
+  bookInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   bookCover: {
     width: width * 0.15,

@@ -1,6 +1,6 @@
-// src/components/MyPage/AccessibilityMyLikedBooksList.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface Book {
   bookId: number;
@@ -18,6 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps> = ({ books, searchQuery }) => {
   const [likedBooks, setLikedBooks] = useState(books);
+  const navigation = useNavigation();
 
   // 검색어와 일치하는 도서 목록 필터링
   const filteredBooks = likedBooks.filter(
@@ -30,6 +31,11 @@ const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps
   const handleUnlike = (bookId: number, bookTitle: string) => {
     setLikedBooks((prevBooks) => prevBooks.filter((book) => book.bookId !== bookId));
     AccessibilityInfo.announceForAccessibility(`${bookTitle} 좋아요를 취소하였습니다.`);
+  };
+
+  const handleDetailView = (bookId: number, bookTitle: string) => {
+    AccessibilityInfo.announceForAccessibility(`${bookTitle} 상세보기 페이지로 이동합니다.`);
+    navigation.navigate('BookDetail', { bookId });
   };
 
   return (
@@ -55,10 +61,7 @@ const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps
           </View>
           <View style={styles.rightSection}>
             <TouchableOpacity
-              onPress={() => {
-                AccessibilityInfo.announceForAccessibility(`${book.title} 상세보기 페이지로 이동합니다.`);
-                // 상세보기 로직 추가 예정
-              }}
+              onPress={() => handleDetailView(book.bookId, book.title)}
               accessibilityLabel={`${book.title} 상세보기 버튼`}
               accessibilityHint="이 버튼을 누르면 도서의 상세 정보를 볼 수 있습니다"
             >
