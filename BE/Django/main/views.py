@@ -10,6 +10,10 @@ from .services import PdfConverter
 import io
 import base64
 
+#----------- image captioning 
+from .services.epub_util.epub_reader import EpubReader 
+from .services.image_captioning.image_captioning import ImageCaptioner
+
 # Create your views here.
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -57,3 +61,37 @@ class PdfProcessingView(APIView):
             })
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+### ------------------------
+
+## 테스트용 API
+def test_view(request):
+    return JsonResponse({"message": "hello world"}) 
+
+
+## 이미지 캡셔닝 테스트 
+@method_decorator(csrf_exempt, name='dispatch')
+class ImageCaptioningView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    # 테스트용. 지정된 path에서 파일을 가져온다. 
+    def get(self, request):
+        print("get")
+        print("path: "+ request.query_params.get('path'))
+        path = request.query_params.get('path')
+        if not path:
+            return Response({"error": "Path parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        epub = EpubReader.read_epub_from_local(path)
+        if epub is None:
+            return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        images = ImageCaptioner.image_captioning(epub)
+        images_base64 = [
+            base64.b64encode(ei).decode('utf-8')
+            for ei in images
+        ]
+        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
