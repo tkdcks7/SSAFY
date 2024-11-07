@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 import com.palja.audisay.domain.book.entity.QBook;
 import com.palja.audisay.domain.likes.dto.LikesJoinBookDto;
 import com.palja.audisay.domain.likes.entity.QLikes;
@@ -35,7 +35,7 @@ public class CustomLikesRepositoryImpl implements CustomLikesRepository {
 				book.coverAlt,
 				book.title,
 				book.author,
-				book.dtype,
+				book.dType,
 				likes.createdAt.as("createdAtLike")
 			))
 			.from(likes)
@@ -55,7 +55,7 @@ public class CustomLikesRepositoryImpl implements CustomLikesRepository {
 		// 커서 조건 추가
 		addCursorCondition(searchReqDto, builder);
 		// dType이 PUBLISHED인 조건 추가
-		builder.and(book.dtype.eq(Dtype.PUBLISHED));
+		builder.and(book.dType.eq(DType.PUBLISHED));
 		return builder;
 	}
 

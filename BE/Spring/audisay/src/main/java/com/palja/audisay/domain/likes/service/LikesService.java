@@ -85,7 +85,7 @@ public class LikesService {
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
 				.author(book.getAuthor())
-				.dtype(book.getDtype())
+				.dType(book.getDType())
 				.build())
 			.toList();
 
