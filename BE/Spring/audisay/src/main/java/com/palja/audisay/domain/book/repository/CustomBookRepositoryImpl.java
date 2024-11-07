@@ -32,7 +32,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 	public final int ROUND_SCALE = 3;
 
 	@Override
-	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long bookId, Long memberId) {
+	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long memberId, Long bookId) {
 		QBook book = QBook.book;
 		QCategory category = QCategory.category;
 		QReview review = QReview.review;
