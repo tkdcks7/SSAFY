@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from .services import PdfConverter
 import io
 import base64
+from asgiref.sync import async_to_sync
 
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
@@ -86,10 +87,20 @@ class ImageCaptioningView(APIView):
         if epub is None:
             return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        images = ImageCaptioner.image_captioning(epub)
-        images_base64 = [
-            base64.b64encode(ei).decode('utf-8')
-            for ei in images
+        captioner = ImageCaptioner()
+        # async to sync 이용하여 동기처리 
+        processed_images = async_to_sync(captioner.image_captioning)(epub)
+        
+        # 결과를 JSON 형태로 반환
+        response_data = [
+            {
+                "name": im.get_name(),
+                "caption": im.caption,
+                "media_type": im.media_type,
+                "image_data": base64.b64encode(im.get_content()).decode('utf-8')
+            }
+            for im in processed_images
         ]
-        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+        
+        return Response(response_data)
 
