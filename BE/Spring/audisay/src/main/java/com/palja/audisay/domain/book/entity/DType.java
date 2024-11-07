@@ -1,5 +1,5 @@
 package com.palja.audisay.domain.book.entity;
 
-public enum Dtype {
+public enum DType {
 	PUBLISHED, REGISTERED
 }

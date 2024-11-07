@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +26,7 @@ public class LikesJoinBookDto {
 	private String category;
 	private String author;
 	private String publisher;
-	private Dtype dtype;
+	private DType dType;
 	@JsonIgnore
 	private LocalDateTime createdAtLike;
 	@JsonIgnore

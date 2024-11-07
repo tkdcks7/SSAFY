@@ -11,7 +11,7 @@ import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
 import com.palja.audisay.global.util.ImageUtil;
@@ -65,7 +65,7 @@ public class BookService {
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
 				.author(book.getAuthor())
-				.dtype(book.getDtype())
+				.dType(book.getDType())
 				.publisher(book.getPublisher())
 				.publishedAt(StringUtil.dateToString(book.getPublishedDate()))
 				.build())
@@ -97,7 +97,7 @@ public class BookService {
 
 	public Book validatePublishedBook(Long bookId) {
 		Book book = bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
-		if (!book.getDtype().equals(Dtype.PUBLISHED)) {
+		if (!book.getDType().equals(DType.PUBLISHED)) {
 			throw new PublishedBookNotFoundException();
 		}
 		return book;
@@ -105,7 +105,7 @@ public class BookService {
 
 	public Book validateRegisteredBook(Long bookId) {
 		Book book = bookRepository.findByBookId(bookId).orElseThrow(PublishedBookNotFoundException::new);
-		if (!book.getDtype().equals(Dtype.REGISTERED)) {
+		if (!book.getDType().equals(DType.REGISTERED)) {
 			throw new PublishedBookNotFoundException();
 		}
 		return book;

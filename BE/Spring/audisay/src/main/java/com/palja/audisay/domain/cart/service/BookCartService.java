@@ -58,7 +58,7 @@ public class BookCartService {
 				.title(book.getTitle())
 				.author(book.getAuthor())
 				.bookId(book.getBookId())
-				.dtype(book.getDtype())
+				.dType(book.getDType())
 				.build())
 			.collect(Collectors.toList());
 		return MemberPublishedBookListDto.builder().bookList(bookList).build();
