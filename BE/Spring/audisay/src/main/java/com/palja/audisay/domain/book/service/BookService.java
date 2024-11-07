@@ -13,7 +13,6 @@ import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.Dtype;
 import com.palja.audisay.domain.book.repository.BookRepository;
-import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
 import com.palja.audisay.global.util.ImageUtil;
 import com.palja.audisay.global.util.StringUtil;
@@ -28,13 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 public class BookService {
 
 	private final ImageUtil imageUtil;
-	private final MemberService memberService;
 	private final BookRepository bookRepository;
 
 	// 도서 상세 정보 조회 메서드.
 	public PublishedBookInfoDto findPublishedBookDetail(Long memberId, Long bookId) {
-		// 사용자 검증
-		memberService.validateMember(memberId);
 		// bookId의 상세 내용 조회
 		// bookId의 리뷰 내용 조회
 		// 사용자 bookId 관련 정보(cartFlag, likeFlag) 조회
@@ -49,10 +45,7 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public SearchCursorPaginationResDto getSearchPublishedBookResult(Long memberId,
-		CursorPaginationReqDto cursorPaginationReqDto) {
-		// 사용자 검증
-		memberService.validateMember(memberId);
+	public SearchCursorPaginationResDto getSearchPublishedBookResult(CursorPaginationReqDto cursorPaginationReqDto) {
 
 		List<Book> bookRawList = bookRepository.searchBookList(cursorPaginationReqDto);
 

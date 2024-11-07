@@ -50,10 +50,8 @@ public class BookCartService {
 
 	// 담은 출판 도서 조회
 	public MemberPublishedBookListDto findCartPublishedBookList(Long memberId) {
-		// 사용자 검증
-		Member member = memberService.validateMember(memberId);
 		// 담은 출판 도서 조회
-		List<PublishedBookInfoDto> bookList = bookCartRepository.findBookCartByMemberId(member.getMemberId()).stream()
+		List<PublishedBookInfoDto> bookList = bookCartRepository.findBookCartByMemberId(memberId).stream()
 			.map(book -> PublishedBookInfoDto.builder()
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
