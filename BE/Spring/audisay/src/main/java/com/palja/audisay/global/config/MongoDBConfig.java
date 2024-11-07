@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
@@ -14,16 +15,15 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 public class MongoDBConfig {
 
 	@Bean
-	public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory mongoDatabaseFactory,
-		MongoMappingContext mongoMappingContext) {
+	public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDbFactory) {
 		// DBRefResolver 설정
-		DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDatabaseFactory);
-		// snake_case로 저장
+		DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
+		// MongoMappingContext에 SnakeCaseFieldNamingStrategy 설정
+		MongoMappingContext mongoMappingContext = new MongoMappingContext();
 		mongoMappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
-		// MappingMongoConverter 객체 생성
+		// MappingMongoConverter 생성 및 _class 필드 제외 설정
 		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-		// TypeMapper 설정: null 처리 -> _class 필드를 저장하지 않도록 설정
-		converter.setTypeMapper(new DefaultMongoTypeMapper(null));  // _class 필드 제외
-		return converter;
+		converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+		return new MongoTemplate(mongoDbFactory, converter);
 	}
 }
