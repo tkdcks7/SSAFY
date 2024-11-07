@@ -44,7 +44,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.leftJoin(review).on(book.bookId.eq(review.book.bookId))
 			.leftJoin(likes).on(book.bookId.eq(likes.book.bookId).and(likes.member.memberId.eq(memberId)))
 			.leftJoin(bookCart).on(book.bookId.eq(bookCart.book.bookId).and(bookCart.member.memberId.eq(memberId)))
-			.where(book.bookId.eq(bookId))
+			.where(book.bookId.eq(bookId).and(book.dType.eq(DType.PUBLISHED)))
 			.groupBy(book.bookId, category.categoryName)
 			.select(Projections.fields(PublishedBookInfoDto.class,
 				book.title,
