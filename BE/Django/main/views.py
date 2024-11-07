@@ -91,15 +91,12 @@ class ImageCaptioningView(APIView):
         # async to sync 이용하여 동기처리 
         processed_images = async_to_sync(captioner.image_captioning)(epub)
         
-        # 결과를 JSON 형태로 반환
         response_data = [
             {
-                "name": im.get_name(),
-                "caption": im.caption,
-                "media_type": im.media_type,
-                "image_data": base64.b64encode(im.get_content()).decode('utf-8')
+                "name": name,
+                "caption": caption,
             }
-            for im in processed_images
+            for name, caption, _ in processed_images
         ]
         
         return Response(response_data)
