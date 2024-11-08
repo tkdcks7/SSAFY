@@ -2,6 +2,7 @@ import ebooklib
 from ebooklib import epub
 from datetime import datetime
 import re 
+from bs4 import BeautifulSoup
 
 class EpubReader:
     ## 입출력 함수
@@ -25,16 +26,13 @@ class EpubReader:
     def append_alt_to_image(book: epub.EpubBook, image_list: list):
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             content = item.get_content().decode('utf-8')
+            soup = BeautifulSoup(content, 'html.parser')
             
-            # 1. 각 이미지 파일 이름과 캡션을 <img> 태그에 반영
+            # 이미지의 alt 속성 업데이트
             for image_id, caption, _ in image_list:
-                # 모든 Alt 삭제 
-                img_tag_pattern = f'src="{image_id}"'
-                content = re.sub(rf'(<img[^>]*?)\s*alt="[^"]*"([^>]*{img_tag_pattern}[^>]*>)', 
-                                rf'\1 \2', content) # 앞 alt
-                content = re.sub(rf'(<img[^>]*?)\s*({img_tag_pattern}[^\>]alt="[^"]*"[^\>]\>)', 
-                                rf'\1 \2', content) # 뒤 alt
-                content = content.replace(f'src="{image_id}"', f'src="{image_id}" alt="{caption}"')
+                img_tag = soup.find('img', {'src': image_id})
+                if img_tag:
+                    img_tag['alt'] = caption
             
             # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
             item.set_content(content.encode('utf-8'))

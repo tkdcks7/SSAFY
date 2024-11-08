@@ -23,4 +23,6 @@ class ImageCaptioner:
         # 4. 추가된 캡션을 이미지에 추가 
         processed_book = EpubReader.append_alt_to_image(book, openai_result)
         EpubReader.write_epub_to_local("./staticfiles/", "valentin_procceessed", processed_book)
-        return openai_result
+
+        # 5. 바뀐 책을 반환 
+        return processed_book
