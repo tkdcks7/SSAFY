@@ -5,8 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from .serializers import ImageLayouts, Pdf
 from .services import ImageToTextConverter
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from .services import PdfConverter
+from .services import LayoutAnalyze
 import io
 import base64
 from asgiref.sync import async_to_sync
@@ -14,6 +15,7 @@ from asgiref.sync import async_to_sync
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
 from .services.image_captioner import ImageCaptioner
+import requests
 
 # Create your views here.
 
@@ -101,3 +103,43 @@ class ImageCaptioningView(APIView):
         
         return Response(response_data)
 
+# metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> 일단 클라이언트로 .npz파일 전송 
+# 위 계획 성공시 장고에서 npz파일 복원 -> 이미지 콘솔창에 프린트
+@method_decorator(csrf_exempt, name='dispatch')
+class LayoutAnalyzeTestView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def post(self, request):
+        try:
+            files = request.FILES.getlist('images')
+
+            if not files:
+                return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
+
+            response = requests.post(
+                'http://localhost:5000/layout-analysis',
+                files=files_to_send
+            )
+
+            if response.status_code != 200:
+                return Response({'error': '이미지 레이아웃 분석 실패'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # .npz 파일 분석 및 이미지 출력
+            metadata = LayoutAnalyze.load_and_check_npz(response.content)
+            # print(metadata)
+
+            # 클라이언트로 .npz파일을 전송하기 위해..
+            file_obj = io.BytesIO(response.content)
+            return FileResponse(
+                file_obj,
+                content_type='application/octet-stream',
+                as_attachment=True,
+                filename='result.npz'
+            )
+        
+        except Exception as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
