@@ -8,6 +8,7 @@ from config.settings.base import STATIC_ROOT
 from datetime import datetime
 import six
 from .s3_storage import S3Client
+import numpy as np
 
 class InitialEbookConverter:
     def __init__(self):
@@ -24,15 +25,23 @@ class InitialEbookConverter:
     def get_binary(self, image_content) -> Optional[bytes]:
         """
         이미지 바이너리 생성
+        Args:
+            image_content: 파일 경로/파일 객체이거나 numpy array
         """
-        if image_content:
+        if image_content is not None:
             try:
                 # 이미지 바이너리 준비
-                image = Image.open(image_content) # PIL 이미지 객체 생성
+                if isinstance(image_content, np.ndarray):
+                    image = Image.fromarray(image_content)
+                else:
+                    image = Image.open(image_content)
+
+                # 메모리 버퍼에 JPEG로 저장
                 image_bytes = io.BytesIO() # 메모리 내에서 바이너리 데이터 저장할 준비 (메모리 버퍼 준비)
                 image.save(image_bytes, format='JPEG') # 메모리 버퍼에 JPEG 바이너리 데이터 저장
                 image_bytes = image_bytes.getvalue() # 메모리 버퍼에서 바이너리 데이터를 가져옴
                 return image_bytes
+            
             except Exception as e:
                 print(f'이미지 처리 중 에러 발생: {str(e)}')
                 return None
@@ -42,7 +51,7 @@ class InitialEbookConverter:
         """
         커버 이미지 설정
         """
-        if cover_image:
+        if cover_image is not None:
             # 이미지 바이너리 준비
             image_bytes = self.get_binary(cover_image)
             if image_bytes:
@@ -53,7 +62,7 @@ class InitialEbookConverter:
         """
         본문에 이미지 추가
         """
-        if image_content:
+        if image_content is not None:
             # 이미지 추가
             image_bytes = self.get_binary(image_content)
             if image_bytes:
@@ -154,7 +163,7 @@ class InitialEbookConverter:
                 
                 elif type == 'image':
                     image = section.get('content', {}).get('image')
-                    if image:
+                    if image is not None:
                         image_name = f'{page.get('page_number', 0)}_{section.get('sequence', 0)}.jpg'
                         content = self.set_image(book, image, content, image_name)
 
@@ -166,10 +175,6 @@ class InitialEbookConverter:
             chapters.append(chapter)
         
         # 목차 만들기
-        # nav = epub.EpubNav(title="목차")
-        # nav.add_item(nav_css)
-        # book.add_item(nav)
-
         toc = []
         for chapter in chapters:
             chapter_link = epub.Link(
@@ -188,14 +193,8 @@ class InitialEbookConverter:
         book.add_item(epub.EpubNcx()) # 오래된 EPUB 리더를 위한 네비게이션 XML 파일
         book.add_item(epub.EpubNav()) # 최신 EPUB 3.0 표준의 네비게이션 HTML5 파일
 
-        # 파일명 및 경로 설정 - 일단 로컬에 저장 (나중에 s3에 저장하는걸로 수정)
+        # 파일명 및 경로 설정
         filename = f'{uuid.uuid4()}.epub'
-        # filepath = os.path.join(STATIC_ROOT, filename)
-        # try:
-        #     epub.write_epub(filepath, book)
-        # except Exception as e:
-        #     print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
-        #     return None
 
         # s3에 저장
         buffer = io.BytesIO()
@@ -213,7 +212,7 @@ class InitialEbookConverter:
                     "title": metadata.get('title', '(제목 미정)'),
                     "author": metadata.get('author', '(작자 미상)'),
                     "created_at": metadata.get('created_at', datetime.now().isoformat()),
-                    "cover": metadata.get('cover') #s3 링크로 바꿔야 함..?
+                    "cover": metadata.get('cover') # numpy array
                 }
             }
         except Exception as e:

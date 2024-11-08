@@ -2,6 +2,9 @@ from .ocr_service import NaverOcrClient
 from typing import Dict, List
 import base64
 from .stack import Stack
+import io
+import numpy as np
+from PIL import Image
 
 class ImageToTextConverter:
     def __init__(self):
@@ -57,11 +60,14 @@ class ImageToTextConverter:
         섹션 하나만 처리하는 함수. 여러 페이지를 동시에 처리하는건 나중에 구현
         """
         # base64 이미지 데이터를 OCR로 처리
-        image_file = section.get('text', None)
-        if image_file:
+        image_file = section.get('text', None) # numpy array 이미지
+        if image_file is not None and image_file.size > 0: # numpy array가 비어있는지 확인하려면 이렇게 해야함..
             try:
-                image_file.seek(0) # 파일 포인터를 처음으로 이동
-                image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                img = Image.fromarray(image_file) # numpy array -> PIL Image
+                buffer = io.BytesIO()
+                img.save(buffer, format='JPEG') # JPG로 변환해 버퍼에 저장
+                buffer.seek(0) # 파일 포인터를 처음으로 이동
+                image_data = base64.b64encode(buffer.read()).decode('utf-8')
             except Exception as e:
                 print(f"error: {e}")
                 image_data = ''
@@ -78,7 +84,7 @@ class ImageToTextConverter:
                 text = field.get('inferText', '')
                 current_sentences += text + ' '
 
-                if '.' in text or '?' in text:
+                if '.' in text or '?' in text or '!' in text:
                     texts.append(current_sentences.strip())
                     current_sentences = ""
         
@@ -121,7 +127,6 @@ class ImageToTextConverter:
         for page in input_data.get('pages', [{}]):
             processed_page = {
                 'page_number': page.get('page_number', 0),
-                'layout': page.get('layout', 'text_only'),
                 'sections': []
             }
 
