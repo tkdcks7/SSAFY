@@ -21,6 +21,8 @@ import MyLikedBooksPage from '../pages/MyPage/MyLikedBooksPage';
 import EBookViewerPage from '../pages/Ebook/EBookViewerPage';
 import BookDetailPage from '../pages/BookDetail/BookDetailPage';
 import ReviewPage from '../pages/BookDetail/ReviewPage';
+import ImageUploadPage from '../pages/RegisterBook/ImageUploadPage';
+import UploadGuidePage from '../pages/RegisterBook/UploadGuidePage';
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -31,6 +33,8 @@ export type RootStackParamList = {
   Library: undefined;
   Search: undefined;
   RegisterBook: undefined;
+  ImageUpload: undefined;
+  UploadGuide: undefined;
   MyPage: undefined;
   UserInfo: undefined;
   PasswordEdit: undefined;
@@ -41,7 +45,7 @@ export type RootStackParamList = {
     title: string;
     content: string;
     score: number;
-    updatedAt: string
+    updatedAt: string;
   };
   MyBooks: undefined;
   MyLikedBooks: undefined;
@@ -64,6 +68,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Library" component={LibraryPage} />
         <Stack.Screen name="Search" component={SearchPage} />
         <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
+        <Stack.Screen name="ImageUpload" component={ImageUploadPage} />
+        <Stack.Screen name="UploadGuide" component={UploadGuidePage} />
         <Stack.Screen name="MyPage" component={MyPage} />
         <Stack.Screen name="UserInfo" component={UserInfoPage} />
         <Stack.Screen name="PasswordEdit" component={PasswordEditPage} />
