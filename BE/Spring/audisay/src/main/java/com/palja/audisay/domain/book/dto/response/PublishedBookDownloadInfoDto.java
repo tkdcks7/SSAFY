@@ -2,7 +2,7 @@ package com.palja.audisay.domain.book.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 import com.palja.audisay.global.util.StringUtil;
 
 import lombok.AllArgsConstructor;
@@ -28,7 +28,7 @@ public class PublishedBookDownloadInfoDto {
 	private String publishedAt;
 	private String story;
 	private String isbn;
-	private Dtype dtype;
+	private DType dType;
 	private Boolean myTtsFlag;
 
 	// download
@@ -45,7 +45,7 @@ public class PublishedBookDownloadInfoDto {
 			.publishedAt(StringUtil.dateToString(book.getPublishedDate()))
 			.story(book.getStory())
 			.isbn(book.getIsbn())
-			.dtype(book.getDtype())
+			.dType(book.getDType())
 			.myTtsFlag(book.getMyTtsFlag())
 			.category(book.getCategory().getCategoryName())
 			.build();

@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.palja.audisay.domain.cart.repository.BookCartRepository;
-import com.palja.audisay.domain.likes.repository.LikesRepository;
 import com.palja.audisay.domain.member.dto.MemberBookAnalysisResponseDto;
 import com.palja.audisay.domain.member.dto.MemberRegisterRequestDto;
 import com.palja.audisay.domain.member.dto.MemberResponseDto;
@@ -31,19 +29,14 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final BookCartRepository bookCartRepository;
-	private final LikesRepository likesRepository;
 
 	public MemberResponseDto getMemberInfo(Long memberId) {
-		Member member = validateMember(memberId);
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		return MemberResponseDto.fromMember(member);
 	}
 
 	public MemberBookAnalysisResponseDto getBookAnalysis(Long memberId) {
-		Member member = validateMember(memberId);
-		int cartBookCount = bookCartRepository.countByMember(member);
-		int likedBookCount = likesRepository.countByMember(member);
-		return new MemberBookAnalysisResponseDto(member.getNickname(), cartBookCount, likedBookCount);
+		return memberRepository.getBookAnalysisByMemberId(memberId);
 	}
 
 	@Transactional
@@ -72,7 +65,7 @@ public class MemberService {
 
 	@Transactional
 	public void updateMemberInfo(Long memberId, MemberUpdateRequestDto memberUpdateRequestDto) {
-		Member member = validateMember(memberId);
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		member.setNickname(memberUpdateRequestDto.getNickname());
 		member.setBlindFlag(memberUpdateRequestDto.getBlindFlag());
 		memberRepository.save(member);
@@ -80,7 +73,7 @@ public class MemberService {
 
 	@Transactional
 	public void changePassword(Long memberId, PasswordChangeRequestDto passwordChangeRequestDto) {
-		Member member = validateMember(memberId);
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		// 기존 비밀번호 확인
 		if (!passwordEncoder.matches(passwordChangeRequestDto.getOldPassword(), member.getPassword())) {
 			throw new MemberNotFoundException();
@@ -93,7 +86,7 @@ public class MemberService {
 
 	@Transactional
 	public void deleteMember(Long memberId) {
-		Member member = validateMember(memberId);
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		member.setDeleteFlag(true); // delete_flag을 true로 설정
 		member.setEmail(hashEmail(member.getEmail())); // 이메일 마스킹
 		member.setName(maskName(member.getName())); // 이름 마스킹

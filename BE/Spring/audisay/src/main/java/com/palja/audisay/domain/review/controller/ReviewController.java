@@ -33,7 +33,7 @@ public class ReviewController {
             @PathVariable Long bookId,
             @RequestParam(value = "lastDateTime", required = false) LocalDateTime lastUpdatedAt,
             @RequestParam(value = "lastId", required = false) Long lastReviewId,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
         Long memberId = SessionUtil.getMemberId();
         ReviewListResponseDto response = reviewService.getBookReviewsWithMemberReview(memberId, bookId, lastUpdatedAt, lastReviewId, pageSize);
@@ -45,7 +45,7 @@ public class ReviewController {
     public ResponseEntity<MyPageReviewListResponseDto> getMyReviews(
             @RequestParam(value = "lastDateTime", required = false) LocalDateTime lastUpdatedAt,
             @RequestParam(value = "lastId", required = false) Long lastReviewId,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         Long memberId = SessionUtil.getMemberId();
         MyPageReviewListResponseDto response = reviewService.getMyReviewsAfterCursor(memberId, lastUpdatedAt, lastReviewId, pageSize);
         return ResponseEntity.ok(response);

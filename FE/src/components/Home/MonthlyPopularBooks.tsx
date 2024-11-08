@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import book4Image from '../../assets/images/books/book4.png';
 import book5Image from '../../assets/images/books/book5.png';
 import book6Image from '../../assets/images/books/book6.png';
@@ -10,8 +13,11 @@ const responsiveFontSize = (factor: number) => width * (factor / 100);
 const responsiveWidth = (factor: number) => width * (factor / 100);
 const responsiveHeight = (factor: number) => height * (factor / 100);
 
+type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 
 const MonthlyPopularBooks: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+
   const dummyBooks = {
     bookList: [
       {
@@ -40,22 +46,50 @@ const MonthlyPopularBooks: React.FC = () => {
         author: '파울로 코엘료',
         publisher: '민음사',
         story: '자아 실현과 모험에 대한 영감을 주는 이야기.',
-      }
+      },
     ],
-    criterion: '인기 도서'
+    criterion: '인기 도서',
+  };
+
+  const handlePress = (bookId: number, title: string) => {
+    // TalkBack 사용자가 누른 도서의 제목을 음성으로 피드백 제공
+    AccessibilityInfo.announceForAccessibility(`${title} 도서 상세 페이지로 이동합니다.`);
+    navigation.navigate('BookDetail', { bookId });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>이달의 인기도서</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bookList}>
+      <Text style={styles.title} accessibilityLabel={`${dummyBooks.criterion} 목록`}>
+        {dummyBooks.criterion}
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.bookList}
+        accessibilityLabel={`${dummyBooks.criterion} 도서 목록을 좌우로 스크롤하여 탐색할 수 있습니다.`}
+      >
         {dummyBooks.bookList.map((book) => (
-          <View key={book.bookId} style={styles.bookItem}>
-            <Image source={book.cover} style={styles.bookImage} alt={book.coverAlt} />
-            <Text style={styles.bookTitle} numberOfLines={2} ellipsizeMode="tail">
+          <TouchableOpacity
+            key={book.bookId}
+            style={styles.bookItem}
+            onPress={() => handlePress(book.bookId, book.title)}
+            accessibilityLabel={`${book.title}, 저자: ${book.author}, 출판사: ${book.publisher}`}
+            accessibilityHint="더 자세한 정보를 보려면 두 번 탭하세요."
+          >
+            <Image
+              source={book.cover}
+              style={styles.bookImage}
+              accessibilityLabel={book.coverAlt}
+            />
+            <Text
+              style={styles.bookTitle}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              accessibilityLabel={`${book.title}`}
+            >
               {book.title}
             </Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
