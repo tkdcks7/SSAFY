@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +33,7 @@ public class PublishedBookInfoDto {
 	private String publishedAt;
 	private String story;
 	private String isbn;
-	private Dtype dtype;
+	private DType dType;
 	private Boolean myTtsFlag;
 	private ReviewDistribution reviewDistribution;
 	private MemberInfo memberInfo;

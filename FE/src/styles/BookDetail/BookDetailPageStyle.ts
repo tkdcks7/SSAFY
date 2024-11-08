@@ -62,67 +62,23 @@ const styles = StyleSheet.create({
     marginVertical: responsiveHeight(2),
     paddingHorizontal: responsiveWidth(3),
   },
-  reviewDistributionTitle: {
-    fontSize: responsiveFontSize(7),
+  sectionTitleLarge: {
+    fontSize: responsiveFontSize(8),
+    marginBottom: responsiveFontSize(2),
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: responsiveHeight(1),
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: responsiveHeight(2),
-  },
-  starFilled: {
-    color: '#3943B7',
-    fontSize: responsiveFontSize(9),
-  },
-  starEmpty: {
-    color: '#CCCCCC',
-    fontSize: responsiveFontSize(9),
-  },
-  averageScore: {
-    fontSize: responsiveFontSize(9),
-    fontWeight: 'bold',
-    marginLeft: responsiveWidth(2),
-  },
-  reviewBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: responsiveHeight(1),
-  },
-  reviewText: {
-    width: '10%',
-    fontSize: responsiveFontSize(4),
-  },
-  reviewBar: {
-    flex: 1,
-    height: responsiveHeight(1.5),
-    backgroundColor: '#e0e0e0',
-    marginHorizontal: responsiveWidth(3),
-    borderRadius: 5,
-  },
-  reviewBarFill: {
-    height: '100%',
-    backgroundColor: '#3943B7',
-    borderRadius: 5,
-  },
-  reviewPercentage: {
-    width: '10%',
-    fontSize: responsiveFontSize(3),
   },
   buttonContainerWithMargin: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: responsiveHeight(1), // 버튼 사이 여백 설정
+    marginBottom: responsiveHeight(1),
     paddingHorizontal: responsiveWidth(5),
   },
   buttonWrapper: {
     flex: 6,
-    marginBottom: responsiveHeight(4), // 버튼 간의 수직 여백 설정
-    height: responsiveHeight(6), // 버튼의 높이 조정
+    marginBottom: responsiveHeight(4),
+    height: responsiveHeight(6),
   },
   iconWrapper: {
     flex: 1,
@@ -133,12 +89,6 @@ const styles = StyleSheet.create({
     width: responsiveWidth(15),
     height: responsiveWidth(15),
     marginBottom: responsiveFontSize(2),
-  },
-  sectionTitleLarge: {
-    fontSize: responsiveFontSize(8),
-    marginBottom: responsiveFontSize(2),
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,

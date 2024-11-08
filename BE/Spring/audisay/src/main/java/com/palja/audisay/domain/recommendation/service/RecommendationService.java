@@ -1,5 +1,6 @@
 package com.palja.audisay.domain.recommendation.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.joda.time.LocalDate;
@@ -16,19 +17,11 @@ import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
 import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.domain.recommendation.dto.response.RecommendationBookDto;
-import com.palja.audisay.domain.recommendation.entity.CategoryBook;
 import com.palja.audisay.domain.recommendation.entity.Criterion;
-import com.palja.audisay.domain.recommendation.entity.DemographicsBook;
-import com.palja.audisay.domain.recommendation.entity.FamousBook;
-import com.palja.audisay.domain.recommendation.entity.SimilarBook;
-import com.palja.audisay.domain.recommendation.entity.SimilarLikeBook;
-import com.palja.audisay.domain.recommendation.entity.SimilarMemberBook;
-import com.palja.audisay.domain.recommendation.repository.CategoryBookRepository;
-import com.palja.audisay.domain.recommendation.repository.DemographicsBookRepository;
-import com.palja.audisay.domain.recommendation.repository.FamousBookRepository;
-import com.palja.audisay.domain.recommendation.repository.SimilarBookRepository;
-import com.palja.audisay.domain.recommendation.repository.SimilarLikeBookRepository;
-import com.palja.audisay.domain.recommendation.repository.SimilarMemberBookRepository;
+import com.palja.audisay.domain.recommendation.entity.RecommendationLong;
+import com.palja.audisay.domain.recommendation.entity.RecommendationString;
+import com.palja.audisay.domain.recommendation.repository.RecommendationLongRepository;
+import com.palja.audisay.domain.recommendation.repository.RecommendationStringRepository;
 import com.palja.audisay.domain.viewLog.entity.ViewLog;
 import com.palja.audisay.domain.viewLog.repository.ViewLogRepository;
 import com.palja.audisay.global.exception.exceptions.RecommendationNotFoundException;
@@ -44,12 +37,8 @@ public class RecommendationService {
 	private final MemberRepository memberRepository;
 	private final BookRepository bookRepository;
 	// recommendation 목록
-	private final DemographicsBookRepository demographicsBookRepository;
-	private final FamousBookRepository famousBookRepository;
-	private final CategoryBookRepository categoryBookRepository;
-	private final SimilarBookRepository similarBookRepository;
-	private final SimilarMemberBookRepository similarMemberBookRepository;
-	private final SimilarLikeBookRepository similarLikeBookRepository;
+	private final RecommendationLongRepository recommendationLongRepository;
+	private final RecommendationStringRepository recommendationStringRepository;
 	// util
 	private final ImageUtil imageUtil;
 	// ViewLog
@@ -62,12 +51,13 @@ public class RecommendationService {
 	// 인기 도서 조회
 	public RecommendationBookDto getFamousBooks() {
 		// 1. 최신 인기 도서 조회 (mongoDB)
-		FamousBook famousBook = famousBookRepository.findFirstByOrderByGroupIdDesc();
-		if (famousBook == null) {
+		RecommendationLong recommendation = recommendationLongRepository.findFamousFirstOrderByGroupIdDesc();
+		if (recommendation == null) {
 			throw new RecommendationNotFoundException();
 		}
+		System.out.println("recommendation.getBookList() = " + recommendation.getBookList());
 		// 2. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(famousBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -85,12 +75,13 @@ public class RecommendationService {
 			member.getGender() == Gender.M? 1 : 0);
 		String totalGroupId = "Total";
 		// 2. 연령대 인기 도서 조회 (mongoDB)
-		DemographicsBook demographicsBook = demographicsBookRepository.findByGroupId(groupId);
-		if (demographicsBook == null) {
-			demographicsBook = demographicsBookRepository.findByGroupId(totalGroupId);
-		}
+		RecommendationString recommendation = recommendationStringRepository.findByrTypeAndTargetId(
+				Criterion.DEMOGRAPHICS_BOOK.getType(), groupId)
+			.orElseGet(() -> recommendationStringRepository
+				.findByrTypeAndTargetId(Criterion.DEMOGRAPHICS_BOOK.getType(), totalGroupId)
+				.orElseThrow(RecommendationNotFoundException::new));
 		// 3. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(demographicsBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -106,10 +97,12 @@ public class RecommendationService {
 		Category category = customCartRepository.findCategoryByMemberIdAndBookCartCount(memberId)
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 2. 카테고리 인기 도서 조회 (MongoDB)
-		CategoryBook categoryBook = categoryBookRepository.findByGroupId(category.getCategoryId())
+		RecommendationString recommendation = recommendationStringRepository.findByrTypeAndTargetId(
+				Criterion.CATEGORY_BOOK.getType(),
+				category.getCategoryId())
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 3. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(categoryBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -121,14 +114,22 @@ public class RecommendationService {
 	// 최근 조회 도서 인기 도서
 	public RecommendationBookDto getSimilarBooks(Long memberId) {
 		// 1. 최근 조회 도서 조회
-		ViewLog viewLog = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
-			.getContent()
-			.getFirst();
+		List<ViewLog> viewLogList = viewLogRepository.findLatestLogByMemberId(memberId, PageRequest.of(0, 1))
+			.getContent();
+		if (viewLogList.isEmpty()) {
+			return RecommendationBookDto.builder()
+				.bookList(new ArrayList<>())
+				.criterion(Criterion.SIMILAR_BOOK.format(""))
+				.build();
+		}
+		ViewLog viewLog = viewLogList.getFirst();
+
 		// 2. 유사 인기 도서 조회 (MongoDB)
-		SimilarBook similarBook = similarBookRepository.findByBookId(viewLog.getBookId())
+		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
+				Criterion.SIMILAR_BOOK.getType(), viewLog.getBookId())
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 3. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(similarBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -140,10 +141,11 @@ public class RecommendationService {
 	// 유사유저 선호 도서
 	public RecommendationBookDto getSimilarMemberBooks(Long memberId) {
 		// 1. 유사 유저 인기 도서 조회 (MongoDB)
-		SimilarMemberBook similarMemberBook = similarMemberBookRepository.findByMemberId(memberId)
+		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
+				Criterion.SIMILAR_MEMBER_BOOK.getType(), memberId)
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 2. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(similarMemberBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -154,10 +156,11 @@ public class RecommendationService {
 
 	public RecommendationBookDto getSimilarBookByContext(Long bookId) {
 		// 1. 유사 도서 조회 (MongoDB)
-		SimilarBook similarBook = similarBookRepository.findByBookId(bookId)
+		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
+				Criterion.SIMILAR_BOOK_BY_CONTEXT.getType(), bookId)
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 2. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(similarBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()
@@ -168,10 +171,11 @@ public class RecommendationService {
 
 	public RecommendationBookDto getSimilarBookByLikes(Long bookId) {
 		// 1. 유사 평가 도서 조회 (MongoDB)
-		SimilarLikeBook similarLikeBook = similarLikeBookRepository.findByBookId(bookId)
+		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
+				Criterion.SIMILAR_BOOK_BY_LIKES.getType(), bookId)
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 2. 도서 상세 정보 조회
-		List<Book> bookList = bookRepository.findByBookIdIn(similarLikeBook.getBookList());
+		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
 
 		return RecommendationBookDto.builder()

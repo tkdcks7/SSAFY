@@ -19,5 +19,10 @@ public class CursorPaginationReqDto {
 	private LocalDateTime lastDateTime;  // 커서로 사용할 마지막 생성 시간
 	private Long lastId;              // 같은 시간에 생성된 경우를 위한 보조 커서
 	@Min(1)
+	@Builder.Default
 	private Integer pageSize = 10;
+
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize == null ? 10 : pageSize;
+	}
 }

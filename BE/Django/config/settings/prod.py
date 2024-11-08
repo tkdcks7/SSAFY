@@ -1,6 +1,6 @@
 from .base import *
 
-ALLOWED_HOSTS = ['43.203.204.37', 'audisay.kr', 'www.audisay.kr']
+ALLOWED_HOSTS = ['audisay.kr', 'www.audisay.kr']
 
 DATABASES = {
     'default': {

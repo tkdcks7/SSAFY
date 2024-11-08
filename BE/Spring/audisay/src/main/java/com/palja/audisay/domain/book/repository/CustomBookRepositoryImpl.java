@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
-import com.palja.audisay.domain.book.entity.Dtype;
+import com.palja.audisay.domain.book.entity.DType;
 import com.palja.audisay.domain.book.entity.QBook;
 import com.palja.audisay.domain.cart.entity.QBookCart;
 import com.palja.audisay.domain.category.entity.QCategory;
@@ -32,7 +32,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 	public final int ROUND_SCALE = 3;
 
 	@Override
-	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long bookId, Long memberId) {
+	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long memberId, Long bookId) {
 		QBook book = QBook.book;
 		QCategory category = QCategory.category;
 		QReview review = QReview.review;
@@ -44,7 +44,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 			.leftJoin(review).on(book.bookId.eq(review.book.bookId))
 			.leftJoin(likes).on(book.bookId.eq(likes.book.bookId).and(likes.member.memberId.eq(memberId)))
 			.leftJoin(bookCart).on(book.bookId.eq(bookCart.book.bookId).and(bookCart.member.memberId.eq(memberId)))
-			.where(book.bookId.eq(bookId))
+			.where(book.bookId.eq(bookId).and(book.dType.eq(DType.PUBLISHED)))
 			.groupBy(book.bookId, category.categoryName)
 			.select(Projections.fields(PublishedBookInfoDto.class,
 				book.title,
@@ -56,7 +56,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 				book.publishedDate,
 				book.story,
 				book.isbn,
-				book.dtype,
+				book.dType,
 				book.myTtsFlag,
 				// 도서 리뷰 통계
 				Projections.fields(PublishedBookInfoDto.ReviewDistribution.class,
@@ -99,8 +99,8 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 		addKeywordCondition(searchReqDto, book, builder);
 		// 커서 조건 추가
 		addCursorCondition(searchReqDto, book, builder);
-		// dType이 PUBLISHED인 조건 추가
-		builder.and(book.dtype.eq(Dtype.PUBLISHED));
+		// dType 이 PUBLISHED 인 조건 추가
+		builder.and(book.dType.eq(DType.PUBLISHED));
 		return builder;
 	}
 
