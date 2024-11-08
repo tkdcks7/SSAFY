@@ -66,11 +66,9 @@ public class LikesService {
 	// 좋아요한 도서 조회
 	public BookCursorPaginationResDto findLikedPublishedBookList(Long memberId,
 		CursorPaginationReqDto cursorPaginationReqDto) {
-		// 사용자 검증
-		Member member = memberService.validateMember(memberId);
 
 		// 좋아요한 도서 조회
-		List<LikesJoinBookDto> bookRawList = likesRepository.findLikedBooksByMemberId(member.getMemberId(),
+		List<LikesJoinBookDto> bookRawList = likesRepository.findLikedBooksByMemberId(memberId,
 			cursorPaginationReqDto);
 		if (bookRawList.isEmpty()) {
 			return BookCursorPaginationResDto.builder()
@@ -87,7 +85,7 @@ public class LikesService {
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
 				.author(book.getAuthor())
-				.dtype(book.getDtype())
+				.dType(book.getDType())
 				.build())
 			.toList();
 

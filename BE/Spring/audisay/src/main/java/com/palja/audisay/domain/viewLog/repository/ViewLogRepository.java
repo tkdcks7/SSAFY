@@ -7,8 +7,10 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.palja.audisay.domain.viewLog.entity.ViewLog;
+import com.palja.audisay.global.annotation.MongoDBRepository;
 
 @Repository
+@MongoDBRepository
 public interface ViewLogRepository extends
 	MongoRepository<ViewLog, String> {
 

@@ -14,6 +14,7 @@ import com.palja.audisay.domain.cart.entity.BookCart;
 import com.palja.audisay.domain.cart.repository.BookCartRepository;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.service.MemberService;
+import com.palja.audisay.domain.viewLog.service.ViewLogService;
 import com.palja.audisay.global.util.ImageUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class BookCartService {
 	private final BookCartRepository bookCartRepository;
 	private final MemberService memberService;
 	private final BookService bookService;
+	private final ViewLogService viewLogService;
 	private final ImageUtil imageUtil;
 
 	// 출판 도서(기존 제공 도서) 담기
@@ -43,21 +45,20 @@ public class BookCartService {
 		BookCart bookCart = BookCart.builder().member(member).book(book).build();
 		// 담을 도서 저장
 		bookCartRepository.save(bookCart);
+		viewLogService.saveBookViewLog(memberId, book);
 	}
 
 	// 담은 출판 도서 조회
 	public MemberPublishedBookListDto findCartPublishedBookList(Long memberId) {
-		// 사용자 검증
-		Member member = memberService.validateMember(memberId);
 		// 담은 출판 도서 조회
-		List<PublishedBookInfoDto> bookList = bookCartRepository.findBookCartByMemberId(member.getMemberId()).stream()
+		List<PublishedBookInfoDto> bookList = bookCartRepository.findBookCartByMemberId(memberId).stream()
 			.map(book -> PublishedBookInfoDto.builder()
 				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
 				.title(book.getTitle())
 				.author(book.getAuthor())
 				.bookId(book.getBookId())
-				.dtype(book.getDtype())
+				.dType(book.getDType())
 				.build())
 			.collect(Collectors.toList());
 		return MemberPublishedBookListDto.builder().bookList(bookList).build();

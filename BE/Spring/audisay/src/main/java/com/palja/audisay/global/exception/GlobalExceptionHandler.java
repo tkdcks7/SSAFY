@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
 	// 알 수 없는 에러 발생(지정된 에러 제외한 모든 에러 처리)
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
-		log.error("예기치 못한 오류 발생: {}", ex.getMessage());
+		log.error("예기치 못한 오류 발생: {}", ex.getMessage(), ex);
 		return InternalServerExceptionHandler(new ServerErrorException());
 	}
 
