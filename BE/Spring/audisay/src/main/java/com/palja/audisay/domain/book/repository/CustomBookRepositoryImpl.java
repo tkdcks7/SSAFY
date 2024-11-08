@@ -71,7 +71,9 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 				Projections.fields(PublishedBookInfoDto.MemberInfo.class,
 					bookCart.book.bookId.isNotNull().as("cartFlag"),
 					likes.book.bookId.isNotNull().as("likedFlag")
-				).as("memberInfo")
+				).as("memberInfo"),
+				// epub 파일 존재 여부
+				book.epub.isNotNull().as("epubFlag")
 			));
 		return Optional.ofNullable(query.fetchOne());
 	}
