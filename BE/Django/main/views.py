@@ -10,6 +10,11 @@ from .services import PdfConverter
 from .services import LayoutAnalyze
 import io
 import base64
+from asgiref.sync import async_to_sync
+
+#----------- image captioning 
+from .services.epub_reader import EpubReader 
+from .services.image_captioner import ImageCaptioner
 import requests
 
 # Create your views here.
@@ -59,6 +64,44 @@ class PdfProcessingView(APIView):
             })
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+### ------------------------
+
+## 테스트용 API
+def test_view(request):
+    return JsonResponse({"message": "hello world"}) 
+
+
+## 이미지 캡셔닝 테스트 
+@method_decorator(csrf_exempt, name='dispatch')
+class ImageCaptioningView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    # 테스트용. 지정된 path에서 파일을 가져온다. 
+    def get(self, request):
+        path = request.query_params.get('path')
+        if not path:
+            return Response({"error": "Path parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        epub = EpubReader.read_epub_from_local(path)
+        if epub is None:
+            return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        captioner = ImageCaptioner()
+        # async to sync 이용하여 동기처리 
+        processed_images = async_to_sync(captioner.image_captioning)(epub)
+        
+        response_data = [
+            # {
+            #     "name": name,
+            #     "caption": caption,
+            # }
+            # for name, caption, _ in processed_images
+        ]
+        
+        return Response(response_data)
 
 # metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> 일단 클라이언트로 .npz파일 전송 
 # 위 계획 성공시 장고에서 npz파일 복원 -> 이미지 콘솔창에 프린트

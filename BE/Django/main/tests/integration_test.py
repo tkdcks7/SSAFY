@@ -1,5 +1,6 @@
 import unittest
 from main.services import ImageToTextConverter, InitialEbookConverter
+from main.services.image_captioner import ImageCaptioner 
 import io
 from config.settings.base import STATIC_ROOT
 import os
@@ -9,6 +10,7 @@ class IntegrationTest(unittest.TestCase):
         self.static_path = STATIC_ROOT
         self.image_converter = ImageToTextConverter()
         self.ebook_converter = InitialEbookConverter()
+        self.image_captioner = ImageCaptioner()
 
     def test_integration(self):
         with open(os.path.join(self.static_path, 'title_image.jpg'), 'rb') as title_file:
@@ -74,4 +76,5 @@ class IntegrationTest(unittest.TestCase):
 
         ocr_result = self.image_converter.process_book(data)
         book_result = self.ebook_converter.make_book(ocr_result)
+        caption_result = self.image_captioner.image_captioning(book_result)
         print(book_result)
