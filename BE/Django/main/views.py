@@ -13,7 +13,7 @@ from asgiref.sync import async_to_sync
 
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
-from .services.image_captioning import ImageCaptioner
+from .services.image_captioner import ImageCaptioner
 
 # Create your views here.
 
@@ -92,11 +92,11 @@ class ImageCaptioningView(APIView):
         processed_images = async_to_sync(captioner.image_captioning)(epub)
         
         response_data = [
-            {
-                "name": name,
-                "caption": caption,
-            }
-            for name, caption, _ in processed_images
+            # {
+            #     "name": name,
+            #     "caption": caption,
+            # }
+            # for name, caption, _ in processed_images
         ]
         
         return Response(response_data)
