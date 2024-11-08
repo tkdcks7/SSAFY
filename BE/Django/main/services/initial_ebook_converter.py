@@ -196,27 +196,7 @@ class InitialEbookConverter:
         # 파일명 및 경로 설정
         filename = f'{uuid.uuid4()}.epub'
 
-        # s3에 저장
-        buffer = io.BytesIO()
-        try:
-            epub.write_epub(buffer, book) # 버퍼에 epub 저장
-            buffer.seek(0)
-            s3_key = f'temp/epub/{filename}' # S3 내 저장 경로
-            S3Client.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
-            download_url = S3Client.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
-
-            return {
-                "epub": download_url,
-                "dtype": "REGISTERED",
-                "metadata": {
-                    "title": metadata.get('title', '(제목 미정)'),
-                    "author": metadata.get('author', '(작자 미상)'),
-                    "created_at": metadata.get('created_at', datetime.now().isoformat()),
-                    "cover": metadata.get('cover') # numpy array
-                }
-            }
-        except Exception as e:
-            print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
-            return None
+        # s3에 저장 (해당 로직 S3Client.upload_epub_to_s3 로 분리)
+        return book 
 
         

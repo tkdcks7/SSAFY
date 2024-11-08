@@ -9,6 +9,11 @@ from django.http import JsonResponse, FileResponse
 from .services import PdfConverter, LayoutAnalyze, ImageToTextConverter, InitialEbookConverter
 import io
 import base64
+from asgiref.sync import async_to_sync
+
+#----------- image captioning 
+from .services.epub_reader import EpubReader 
+from .services.image_captioner import ImageCaptioner
 import requests
 import json
 from PIL import Image
@@ -63,6 +68,45 @@ class PdfProcessingView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+### ------------------------
+
+## 테스트용 API
+def test_view(request):
+    return JsonResponse({"message": "hello world"}) 
+
+
+## 이미지 캡셔닝 테스트 
+@method_decorator(csrf_exempt, name='dispatch')
+class ImageCaptioningView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    # 테스트용. 지정된 path에서 파일을 가져온다. 
+    def get(self, request):
+        path = request.query_params.get('path')
+        if not path:
+            return Response({"error": "Path parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        epub = EpubReader.read_epub_from_local(path)
+        if epub is None:
+            return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        captioner = ImageCaptioner()
+        # async to sync 이용하여 동기처리 
+        processed_images = async_to_sync(captioner.image_captioning)(epub)
+        
+        response_data = [
+            # {
+            #     "name": name,
+            #     "caption": caption,
+            # }
+            # for name, caption, _ in processed_images
+        ]
+        
+        return Response(response_data)
+
+
 # metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> ocr 요청 -> ebook 제작
 # 클라이언트에게 metadata와 ebook 주소 보냄
 @method_decorator(csrf_exempt, name='dispatch')
@@ -108,12 +152,12 @@ class LayoutAnalyzeTestView(APIView):
             ocr_converter = ImageToTextConverter()
             ocr_processed_data = ocr_converter.process_book(input_data=data)
 
-            # ebook 변환: 생성된 ebook은 s3에 저장
+            # ebook 변환
             ebook_maker = InitialEbookConverter()
-            final_data = ebook_maker.make_book(ocr_processed_data)
+            new_book = ebook_maker.make_book(ocr_processed_data)
 
-            # 임시반환값: cover 이미지가 numpy array형태로 반환됨
-            return Response(final_data)
+            # 특별히 오류가 발생하지 않으면 성공으로 간주
+            return Response({'결과': 'ebook 생성 성공'}, status=status.HTTP_200_OK)
         
         except Exception as e:
             print(e)
