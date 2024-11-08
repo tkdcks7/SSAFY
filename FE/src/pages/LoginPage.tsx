@@ -106,6 +106,12 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
         title='회원가입'
         onPress={() => navigation.navigate('Signup')}
       />
+      <Btn
+        title='홈으로'
+        onPress={() => navigation.navigate('Home')}
+        ref={loginRef}
+        style={{ marginTop: 50, marginBottom: 30 }}
+      />
     </PageWrapper>
   );
 };
