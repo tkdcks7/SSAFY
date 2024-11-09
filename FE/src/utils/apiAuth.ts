@@ -2,8 +2,8 @@ import axios from 'axios';
 import useUserStore from '../store/userStore';
 
 const apiAuth = axios.create({
-  baseURL: 'https://api.example.com',
-  timeout: 1000,
+  baseURL: 'https://audisay.kr/api',
+  timeout: 2000,
 });
 
 // 요청 인터셉터 설정
@@ -30,3 +30,5 @@ apiAuth.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export default apiAuth;
