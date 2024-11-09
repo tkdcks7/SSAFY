@@ -1,4 +1,5 @@
 from typing import Dict, List
+from django.core.files.uploadedfile import UploadedFile
 import requests
 from rest_framework import status
 from rest_framework.response import Response
@@ -6,7 +7,7 @@ from . import LayoutAnalyze, ImageToTextConverter, InitialEbookConverter
 from ebooklib import epub
 
 class Integration:
-    def make_ebook(self, metadata: Dict, files) -> epub.EpubBook:
+    def make_ebook(self, metadata: Dict, files: List[UploadedFile]) -> epub.EpubBook:
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
             files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
