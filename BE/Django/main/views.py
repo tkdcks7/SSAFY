@@ -6,16 +6,22 @@ from rest_framework import status
 from .serializers import ImageLayouts, Pdf
 from .services import ImageToTextConverter
 from django.http import JsonResponse, FileResponse
-from .services import PdfConverter
-from .services import LayoutAnalyze
+from .services import PdfConverter, LayoutAnalyze, ImageToTextConverter, InitialEbookConverter, Integration
 import io
+import os
 import base64
 from asgiref.sync import async_to_sync
+from config.settings.base import STATIC_ROOT
+from ebooklib import epub
 
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
 from .services.image_captioner import ImageCaptioner
 import requests
+import json
+from PIL import Image
+import numpy as np
+import datetime
 
 # Create your views here.
 
@@ -103,8 +109,9 @@ class ImageCaptioningView(APIView):
         
         return Response(response_data)
 
-# metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> 일단 클라이언트로 .npz파일 전송 
-# 위 계획 성공시 장고에서 npz파일 복원 -> 이미지 콘솔창에 프린트
+
+# metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> ocr 요청 -> ebook 제작
+# 클라이언트에게 metadata와 ebook 주소 보냄
 @method_decorator(csrf_exempt, name='dispatch')
 class LayoutAnalyzeTestView(APIView):
     def __init__(self, **kwargs):
@@ -112,33 +119,31 @@ class LayoutAnalyzeTestView(APIView):
     
     def post(self, request):
         try:
+            # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             files = request.FILES.getlist('images')
+            cover = request.FILES.get('cover')
 
-            if not files:
+            if not files or not cover:
                 return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
             
-            files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
-
-            response = requests.post(
-                'http://localhost:5000/layout-analysis',
-                files=files_to_send
-            )
-
-            if response.status_code != 200:
-                return Response({'error': '이미지 레이아웃 분석 실패'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
+            try:
+                metadata = json.loads(request.POST.get('metadata', '{}'))
+            except json.JSONDecodeError:
+                return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # .npz 파일 분석 및 이미지 출력
-            metadata = LayoutAnalyze.load_and_check_npz(response.content)
-            # print(metadata)
+            cover = np.array(Image.open(io.BytesIO(cover.read())))
+            metadata['cover'] = cover
+            metadata['created_at'] = datetime.datetime.now()
+            
+            # ebook 만드는 프로세스
+            book = Integration().make_ebook(metadata=metadata, files=files)
 
-            # 클라이언트로 .npz파일을 전송하기 위해..
-            file_obj = io.BytesIO(response.content)
-            return FileResponse(
-                file_obj,
-                content_type='application/octet-stream',
-                as_attachment=True,
-                filename='result.npz'
-            )
+            # staticfiles에 저장
+            epub.write_epub(os.path.join(STATIC_ROOT, 'example.epub'), book)
+
+            # 특별히 오류가 발생하지 않으면 성공으로 간주
+            return Response({'결과': 'ebook 생성 성공'}, status=status.HTTP_200_OK)
         
         except Exception as e:
             print(e)
