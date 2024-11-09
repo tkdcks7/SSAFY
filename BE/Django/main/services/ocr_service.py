@@ -43,6 +43,8 @@ class NaverOcrClient:
         )
         
         if response.status_code != 200:
+            print(response.status_code)
+            print(response.json())
             print("OCR 정상 응답 X")
             return {}
 
