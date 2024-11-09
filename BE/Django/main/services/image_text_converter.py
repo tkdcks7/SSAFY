@@ -52,6 +52,9 @@ class ImageToTextConverter:
             
             result.append(text)
         
+        if not stack.is_empty():
+            result[-1] = result[-1] + stack.pop()
+
         return result
 
     def process_text_section(self, section: Dict, page_number: int) -> Dict:
