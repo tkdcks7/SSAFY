@@ -6,10 +6,13 @@ from rest_framework import status
 from .serializers import ImageLayouts, Pdf
 from .services import ImageToTextConverter
 from django.http import JsonResponse, FileResponse
-from .services import PdfConverter, LayoutAnalyze, ImageToTextConverter, InitialEbookConverter
+from .services import PdfConverter, LayoutAnalyze, ImageToTextConverter, InitialEbookConverter, Integration
 import io
+import os
 import base64
 from asgiref.sync import async_to_sync
+from config.settings.base import STATIC_ROOT
+from ebooklib import epub
 
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
@@ -133,28 +136,11 @@ class LayoutAnalyzeTestView(APIView):
             metadata['cover'] = cover
             metadata['created_at'] = datetime.datetime.now()
             
-            # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
-            files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
+            # ebook 만드는 프로세스
+            book = Integration().make_ebook(metadata=metadata, files=files)
 
-            response = requests.post(
-                'http://localhost:5000/layout-analysis',
-                files=files_to_send
-            )
-
-            if response.status_code != 200:
-                return Response({'error': '이미지 레이아웃 분석 실패'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            # .npz 파일 가공
-            pages = LayoutAnalyze.load_and_check_npz(response.content)
-            data = {'metadata': metadata, 'pages': pages}
-
-            # ocr 변환
-            ocr_converter = ImageToTextConverter()
-            ocr_processed_data = ocr_converter.process_book(input_data=data)
-
-            # ebook 변환
-            ebook_maker = InitialEbookConverter()
-            new_book = ebook_maker.make_book(ocr_processed_data)
+            # staticfiles에 저장
+            epub.write_epub(os.path.join(STATIC_ROOT, 'example.epub'), book)
 
             # 특별히 오류가 발생하지 않으면 성공으로 간주
             return Response({'결과': 'ebook 생성 성공'}, status=status.HTTP_200_OK)
