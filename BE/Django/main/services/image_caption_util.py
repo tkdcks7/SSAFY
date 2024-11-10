@@ -33,9 +33,7 @@ class AzureImageAnalysis:
             image_data=image,
             visual_features=[VisualFeatures.CAPTION]
         )
-        
-        if result.caption is not None:
-            print(f"   '{result.caption.text}', Confidence {result.caption.confidence:.4f}")
+
 
         return result
     
@@ -44,9 +42,6 @@ class AzureImageAnalysis:
             image_data=image,
             visual_features=[VisualFeatures.CAPTION]
         )
-        
-        if result.caption is not None:
-            print(f"   '{result.caption.text}', Confidence {result.caption.confidence:.4f}")
 
         return result
 
