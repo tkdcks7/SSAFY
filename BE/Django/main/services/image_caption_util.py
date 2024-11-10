@@ -12,9 +12,9 @@ class AzureImageAnalysis:
         self.secret_key = base.AZURE_VISION_KEY
         self.region = base.AZURE_VISION_REGION
 
-        # 생성될 때 연결
-        self.get_async_client()
-    
+        # 생성될 때는 비워둔다 
+        self.async_client = None
+
     def get_sync_client(self):
         # Image analysis client 생성 (동기)
         self.sync_client = ImageAnalysisClient(
@@ -22,11 +22,12 @@ class AzureImageAnalysis:
             credential=AzureKeyCredential(self.secret_key)
         )
     
-    def get_async_client(self):
-        self.async_client = AsyncImageAnalysisClient(
-            endpoint=self.end_point,
-            credential=AzureKeyCredential(self.secret_key)
-        )
+    async def get_async_client(self):
+        if self.async_client is None:
+            self.async_client = AsyncImageAnalysisClient(
+                endpoint=self.end_point,
+                credential=AzureKeyCredential(self.secret_key)
+            )
 
     def analyze_image_sync(self, image):
         result = self.sync_client.analyze(
@@ -36,16 +37,21 @@ class AzureImageAnalysis:
 
 
         return result
-    
+
     async def analyze_image_async(self, image):
+        await self.get_async_client()
         result = await self.async_client.analyze(
             image_data=image,
             visual_features=[VisualFeatures.CAPTION]
         )
-
         return result
-
-
+    
+        
+    async def close_async_client(self):
+        if self.async_client:
+            await self.async_client.close()
+            self.async_client = None
+    
 ## -------------------------------------
 ## -       openai = 1.54.3 버전        -
 ## -------------------------------------

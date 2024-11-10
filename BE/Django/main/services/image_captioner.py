@@ -12,9 +12,12 @@ class ImageCaptioner:
         # 2. 이미지 파일을 azure로 이미지 캡셔닝
         processed_images = []
         azure_image_analysis = AzureImageAnalysis()
-        for im in image_list:
-            azure_result = await azure_image_analysis.analyze_image_async(im.get_content())
-            processed_images.append((im.file_name, azure_result.caption.text, im.get_content()))
+        try:
+            for im in image_list:
+                azure_result = await azure_image_analysis.analyze_image_async(im.get_content())
+                processed_images.append((im.file_name, azure_result.caption.text, im.get_content()))
+        finally:
+            await azure_image_analysis.close_async_client()
 
         # 3. 이미지 파일을 openai로 이미지 캡셔닝
         open_ai_analyzer = OpenAIAnalysis()
