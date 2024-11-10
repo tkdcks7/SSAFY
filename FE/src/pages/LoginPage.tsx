@@ -9,7 +9,6 @@ import Btn from '../components/Btn';
 import InputBox from '../components/InputBox';
 import apiAnonymous from '../utils/apiAnonymous';
 import useUserStore from '../store/userStore';
-import { AxiosResponse } from 'axios';
 
 
 type LoginPageNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -61,11 +60,11 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
     };
     apiAnonymous.post('/auth/login', data, { withCredentials: true })
     .then(response => {
-      console.log('로그인....');
+      console.log(`email = ${email}, password = ${password}`);
+      // clearCookie();
+      console.log(`response.headers = ${response.headers}`);
       const setCookieHeader = response.headers['set-cookie'];
-      console.log(`cookie = ${setCookieHeader}`);
-      console.log(`config = ${response.config}`);
-      console.log(`headers = ${response.headers}`);
+      // console.log(typeof setCookieHeader);
       if (setCookieHeader) {
         setCookie(setCookieHeader[0]);
         navigation.navigate('Home');
