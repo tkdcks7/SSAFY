@@ -2,6 +2,9 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 from config.settings.base import AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_S3_BUCKET, AWS_REGION
+from ebooklib import epub
+import io 
+from datetime import datetime
 
 class S3Client:
 
@@ -53,4 +56,27 @@ class S3Client:
             return url
         except Exception as e:
             logging.error(e)
+            return None
+    
+    def upload_epub_to_s3(book: epub, filename: str, metadata: object):
+        buffer = io.BytesIO()
+        try:
+            epub.write_epub(buffer, book) # 버퍼에 epub 저장
+            buffer.seek(0)
+            s3_key = f'temp/epub/{filename}' # S3 내 저장 경로
+            S3Client.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
+            download_url = S3Client.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
+
+            return {
+                "epub": download_url,
+                "dtype": "REGISTERED",
+                "metadata": {
+                    "title": metadata.get('title', '(제목 미정)'),
+                    "author": metadata.get('author', '(작자 미상)'),
+                    "created_at": metadata.get('created_at', datetime.now().isoformat()),
+                    "cover": metadata.get('cover') #s3 링크로 바꿔야 함..?
+                }
+            }
+        except Exception as e:
+            print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
             return None

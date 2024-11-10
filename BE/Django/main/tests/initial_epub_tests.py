@@ -3,6 +3,7 @@ from main.services.initial_ebook_converter import InitialEbookConverter
 import io
 from config.settings.base import STATIC_ROOT
 import os
+from services.s3_storage import S3Client
 
 class TestInitialEbookConverter(unittest.TestCase):
     def setUp(self):
@@ -69,4 +70,5 @@ class TestInitialEbookConverter(unittest.TestCase):
                 }
 
         result = self.converter.make_book(data)
-        print(result)
+        s3_result = S3Client.upload_epub_to_s3(result)
+        print(s3_result)
