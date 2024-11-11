@@ -82,7 +82,8 @@ public class BookService {
 
 		// search_after 설정
 		if (searchPaginationReqDto.getLastSearchId() != null) {
-			SearchAfterValues searchAfter = SearchAfterValues.parse(searchPaginationReqDto.getLastSearchId());
+			SearchAfterValues searchAfter = SearchAfterValues.parse(sort.sortBy(),
+				searchPaginationReqDto.getLastSearchId());
 			queryBuilder.withSearchAfter(searchAfter.values());
 		}
 

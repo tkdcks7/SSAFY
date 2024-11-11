@@ -9,7 +9,7 @@ import com.palja.audisay.domain.book.entity.BookIndex;
 
 public record SearchAfterValues(List<Object> values) {
 
-	public static SearchAfterValues parse(String searchId) {
+	public static SearchAfterValues parse(String sortBy, String searchId) {
 		if (searchId == null || searchId.isEmpty()) {
 			return null;
 		}
@@ -21,7 +21,7 @@ public record SearchAfterValues(List<Object> values) {
 
 			return new SearchAfterValues(List.of(
 				Double.parseDouble(values[0]),     // score
-				Long.parseLong(values[1]),         // date (timestamp)
+				sortBy.equals("publishedDate") ? Long.parseLong(values[1]) : values[1],         // date (timestamp)
 				Long.parseLong(values[2])          // bookId
 			));
 		} catch (Exception e) {
