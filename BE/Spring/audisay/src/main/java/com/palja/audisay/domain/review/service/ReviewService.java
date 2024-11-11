@@ -3,7 +3,6 @@ package com.palja.audisay.domain.review.service;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.member.entity.Member;
-import com.palja.audisay.domain.member.repository.MemberRepository;
 import com.palja.audisay.domain.review.dto.MyPageReviewListResponseDto;
 import com.palja.audisay.domain.review.dto.ReviewListResponseDto;
 import com.palja.audisay.domain.review.dto.ReviewRequestDto;
@@ -24,7 +23,6 @@ import java.util.List;
 public class ReviewService {
 	private final BookService bookService;
 	private final ReviewRepository reviewRepository;
-	private final MemberRepository memberRepository;
 
 	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, LocalDateTime lastUpdatedAt,
 																Long lastReviewId, Integer pageSize) {
