@@ -73,6 +73,7 @@ services:
   
   django:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
+    network_mode: "host"
     container_name: ${DOCKER_TAG_DJANGO}
     environment:
       - TZ=Asia/Seoul
