@@ -21,45 +21,47 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 public class BookIndex {
+
 	@Id
-	@Field(type = FieldType.Long)
+	@Field(name = "book_id", type = FieldType.Long)
 	private Long bookId;
 
-	@Field(type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
+	@Field(name = "author", type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
 	private String author;
 
-	@MultiField(mainField = @Field(type = FieldType.Text), otherFields = {
+	@MultiField(mainField = @Field(name = "category", type = FieldType.Text), otherFields = {
 		@InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 256)
 	})
 	private String category;
 
-	@MultiField(mainField = @Field(type = FieldType.Text), otherFields = {
+	@MultiField(mainField = @Field(name = "cover", type = FieldType.Text), otherFields = {
 		@InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 256)
 	})
 	private String cover;
 
-	@MultiField(mainField = @Field(type = FieldType.Text), otherFields = {
+	@MultiField(mainField = @Field(name = "cover_alt", type = FieldType.Text), otherFields = {
 		@InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 256)
 	})
 	private String coverAlt;
 
-	@MultiField(mainField = @Field(type = FieldType.Text), otherFields = {
+	@MultiField(mainField = @Field(name = "d_type", type = FieldType.Text), otherFields = {
 		@InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 256)
 	})
 	private String dType;
 
-	@Field(type = FieldType.Date)
+	@Field(name = "last_updated", type = FieldType.Date)
 	private LocalDate lastUpdated;
 
-	@Field(type = FieldType.Date)
+	@Field(name = "published_date", type = FieldType.Date)
 	private LocalDate publishedDate;
 
-	@Field(type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
+	@Field(name = "publisher", type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
 	private String publisher;
 
-	@Field(type = FieldType.Float)
+	@Field(name = "review", type = FieldType.Float)
 	private Float review;
 
-	@Field(type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
+	@Field(name = "title", type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
 	private String title;
 }
+
