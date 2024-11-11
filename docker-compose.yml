@@ -17,7 +17,6 @@ services:
       - DJANGO_PORT=${DJANGO_PORT}
       - DOCKER_TAG_SPRING=${DOCKER_TAG_SPRING}
       - DOCKER_TAG_DJANGO=${DOCKER_TAG_DJANGO}
-      - FASTAPI_SERVER=${FASTAPI_SERVER}
     volumes:
       - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
       - /home/ubuntu/data/certbot/www:/var/www/certbot
@@ -77,6 +76,7 @@ services:
     container_name: ${DOCKER_TAG_DJANGO}
     environment:
       - TZ=Asia/Seoul
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
       - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
