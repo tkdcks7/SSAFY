@@ -21,13 +21,14 @@ public record SearchAfterValues(
 
 		try {
 			// searchId는 "score,date,id" 형태의 Base64 인코딩된 문자열
-			String decoded = new String(Base64.getDecoder().decode(searchId));
-			String[] values = decoded.split("-");
-
+			String decoded = new String(Base64.getUrlDecoder().decode(searchId));
+			String[] decodedValues = decoded.split("~\\|");
 			return new SearchAfterValues(List.of(
 				Double.parseDouble(values[0]),     // score
 				sortBy.equals("publishedDate") ? Long.parseLong(values[1]) : values[1],         // date (timestamp)
 				Long.parseLong(values[2])          // bookId
+				Double.parseDouble(decodedValues[0]),     // score
+				Long.parseLong(decodedValues[2])          // bookId
 			));
 		} catch (Exception e) {
 			log.error("SearchAfterValues parse error = {}", e.getMessage());
@@ -51,7 +52,7 @@ public record SearchAfterValues(
 			sortValues.get(1),    // date
 			sortValues.get(2)     // bookId
 		);
-
-		return Base64.getEncoder().encodeToString(searchAfterString.getBytes());
+		// URL 에선 + 가 공백으로 인식되어 URL-safe Base64 인코딩/디코딩 적용
+		return Base64.getUrlEncoder().encodeToString(searchAfterString.getBytes());
 	}
 }
