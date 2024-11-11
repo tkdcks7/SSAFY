@@ -7,9 +7,6 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 
 import com.palja.audisay.domain.book.entity.BookIndex;
 
-import lombok.Getter;
-
-@Getter
 public record SearchAfterValues(List<Object> values) {
 
 	public static SearchAfterValues parse(String searchId) {
