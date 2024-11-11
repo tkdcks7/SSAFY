@@ -85,4 +85,8 @@ public class Book {
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
 	@CreationTimestamp
 	private LocalDateTime createdAt;
+
+	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
+	@CreationTimestamp
+	private LocalDateTime updatedAt;
 }
