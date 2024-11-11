@@ -82,7 +82,53 @@ class Image2BookConverter(APIView):
             metadata['created_at'] = datetime.datetime.now()
             
             # ebook 만드는 프로세스
-            book = Integration().make_ebook(metadata=metadata, files=files)
+            book = Integration().image_to_ebook(metadata=metadata, files=files)
+
+            # s3에 저장
+            filename = f'{datetime.datetime.now()}.epub'
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            
+            # response 가공
+            response_body = {
+                '결과': 'ebook 생성 성공',
+                'epub_link': epub_data['epub']
+            }
+
+            # 특별히 오류가 발생하지 않으면 성공으로 간주
+            return Response(response_body, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# pdf 업로드시 ebook으로 변환 후 반환
+@method_decorator(csrf_exempt, name='dispatch')
+class Pdf2BookConverter(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def post(self, request):
+        try:
+            # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
+            file = request.FILES.get('pdf')
+            cover = request.FILES.get('cover')
+
+            if not file or not cover:
+                return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
+            try:
+                metadata = json.loads(request.POST.get('metadata', '{}'))
+            except json.JSONDecodeError:
+                return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            cover = np.array(Image.open(io.BytesIO(cover.read())))
+            metadata['cover'] = cover
+            metadata['created_at'] = datetime.datetime.now()
+            
+            # ebook 만드는 프로세스
+            book = Integration().pdf_to_ebook(metadata=metadata, file=file)
 
             # s3에 저장
             filename = f'{datetime.datetime.now()}.epub'
