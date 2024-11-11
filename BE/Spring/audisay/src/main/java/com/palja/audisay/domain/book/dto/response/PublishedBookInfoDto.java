@@ -37,6 +37,7 @@ public class PublishedBookInfoDto {
 	private Boolean myTtsFlag;
 	private ReviewDistribution reviewDistribution;
 	private MemberInfo memberInfo;
+	private Boolean epubFlag;
 	@JsonIgnore
 	private LocalDate publishedDate;
 	@JsonIgnore
