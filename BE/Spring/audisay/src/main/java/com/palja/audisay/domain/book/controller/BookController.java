@@ -50,10 +50,9 @@ public class BookController {
 		@Parameter(name = "pageSize", description = "페이지 크기(기본값 10)")
 	})
 	@GetMapping
-	public ResponseEntity<SearchCursorPaginationResDto> getSearchPublishedBookResult(
+	public ResponseEntity<SearchCursorPaginationResDto> searchPublishedBookResult(
 		@Schema(hidden = true) @Valid @ModelAttribute SearchPaginationReqDto searchPaginationReqDto) {
-		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(searchPaginationReqDto),
+		return new ResponseEntity<>(bookService.searchPublishedBookResult(searchPaginationReqDto),
 			HttpStatus.OK);
 	}
-
 }
