@@ -35,6 +35,18 @@ class EpubReader:
                     img_tag['alt'] = caption
             
             # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
-            item.set_content(content.encode('utf-8'))
+            updated_content = str(soup)
+            item.set_content(updated_content.encode('utf-8'))
 
         return book 
+    
+    # 표지 이미지의 image_id 기준으로 coverAlt 반환 
+    def get_cover_alt(book: epub.EpubBook, cover_id):
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            content = item.get_content().decode('utf-8')
+            soup = BeautifulSoup(content, 'html.parser')
+            
+            img_cover = soup.find('img', {'src': cover_id})
+            return img_cover['alt'] 
+
+        return ""
