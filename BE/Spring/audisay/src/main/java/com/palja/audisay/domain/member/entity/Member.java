@@ -1,7 +1,9 @@
 package com.palja.audisay.domain.member.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
 import jakarta.persistence.Column;
@@ -58,4 +60,8 @@ public class Member {
 
 	@Column(columnDefinition = "tinyint(1) default 0", nullable = false)
 	private boolean deleteFlag;
+
+	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
+	@CreationTimestamp
+	private LocalDateTime createdAt;
 }

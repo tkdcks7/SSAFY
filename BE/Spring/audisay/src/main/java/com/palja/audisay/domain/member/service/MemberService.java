@@ -1,26 +1,21 @@
 package com.palja.audisay.domain.member.service;
 
-import java.time.LocalDateTime;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.palja.audisay.domain.member.dto.MemberBookAnalysisResponseDto;
-import com.palja.audisay.domain.member.dto.MemberRegisterRequestDto;
-import com.palja.audisay.domain.member.dto.MemberResponseDto;
-import com.palja.audisay.domain.member.dto.MemberUpdateRequestDto;
-import com.palja.audisay.domain.member.dto.PasswordChangeRequestDto;
+import com.palja.audisay.domain.member.dto.*;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
+import com.palja.audisay.global.exception.exceptions.IncorrectPasswordException;
 import com.palja.audisay.global.exception.exceptions.MemberAccessDeniedException;
 import com.palja.audisay.global.exception.exceptions.MemberEmailDuplicatedException;
 import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import com.palja.audisay.global.util.StringUtil;
-
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +61,12 @@ public class MemberService {
 	@Transactional
 	public void updateMemberInfo(Long memberId, MemberUpdateRequestDto memberUpdateRequestDto) {
 		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
-		member.setNickname(memberUpdateRequestDto.getNickname());
+
+		// nickname이 null이 아닐 때만 닉네임을 업데이트
+		if (memberUpdateRequestDto.getNickname() != null) {
+			member.setNickname(memberUpdateRequestDto.getNickname());
+		}
+
 		member.setBlindFlag(memberUpdateRequestDto.getBlindFlag());
 		memberRepository.save(member);
 	}
@@ -76,7 +76,7 @@ public class MemberService {
 		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		// 기존 비밀번호 확인
 		if (!passwordEncoder.matches(passwordChangeRequestDto.getOldPassword(), member.getPassword())) {
-			throw new MemberNotFoundException();
+			throw new IncorrectPasswordException();
 		}
 		// 새 비밀번호 인코딩 및 저장
 		String encodedNewPassword = passwordEncoder.encode(passwordChangeRequestDto.getNewPassword());

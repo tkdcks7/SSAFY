@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, ImageToTextConverter
 from ebooklib import epub
+from asgiref.sync import async_to_sync
+from ..services.image_captioner import ImageCaptioner
 from django.conf import settings
 
 class Integration:
@@ -13,7 +15,7 @@ class Integration:
             files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
             response = requests.post(
-                settings.FASTAPI_URL,
+                settings.FASTAPI_URL+"/layout-analysis",
                 files=files_to_send
             )
 
@@ -33,4 +35,11 @@ class Integration:
             ebook_maker = InitialEbookConverter()
             new_book = ebook_maker.make_book(ocr_processed_data)
 
-            return new_book
+            # ------------------- 
+            # 이미지 캡셔닝
+            captioner = ImageCaptioner()
+            # async to sync 이용하여 동기처리 
+            captioned_book, metadata = async_to_sync(captioner.image_captioning)(captioned_book, ocr_processed_data.metadata)
+
+
+            return captioned_book

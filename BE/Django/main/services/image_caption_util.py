@@ -74,11 +74,11 @@ class OpenAIAnalysis:
         self.client = openai.OpenAI(api_key = base.OPENAI_AUTH)
 
     def analyze_openai_image(self, processed_images):
+        updated_images = []
         for file_name, azure_caption, image_content in processed_images:
              # image_content를 base64로 인코딩
             image_base64 = base64.b64encode(image_content).decode("utf-8")  
 
-            updated_images = []
             try:
                 # GPT-4 Vision에게 base64 인코딩된 이미지 데이터를 프롬프트로 전달
                 response = self.client.chat.completions.create(
@@ -103,7 +103,6 @@ class OpenAIAnalysis:
                 )
                 gpt_caption = response.choices[0].message.content
                 updated_images.append((file_name, gpt_caption, image_content))
-
             except Exception as e:
                 print(f"OpenAIAnalysis GPT-4 Vision 캡셔닝 오류: {e}")
                 updated_images.append((file_name, f"Azure Caption: {azure_caption}. GPT-4 Caption: 실패", image_content))
@@ -129,7 +128,7 @@ class OpenAIAnalyzer:
         """
         openai.api_key = base.OPENAI_AUTH
 
-    def analyze_openai_image(self, processed_images):
+    async def analyze_openai_image(self, processed_images):
         for file_name, azure_caption, image_content in processed_images:
             new_prompt = self.prompt+azure_caption
             # image_content를 base64로 인코딩

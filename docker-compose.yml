@@ -73,10 +73,10 @@ services:
   
   django:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
-    network_mode: "host"
     container_name: ${DOCKER_TAG_DJANGO}
     environment:
       - TZ=Asia/Seoul
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
       - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
@@ -191,6 +191,7 @@ services:
       - node.name=elasticsearch
       - discovery.type=single-node
       - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     networks:
@@ -214,6 +215,34 @@ services:
       - backend-network
     depends_on:
       - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.3
+    container_name: logstash
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - DB_TYPE=${DB_TYPE}
+      - MYSQL_DRIVER_CLASS_NAME=${MYSQL_DRIVER_CLASS_NAME}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
+      - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
+      - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+      - LOGSTASH_OPTS="--xpack.monitoring.enabled=false"
+    ports:
+      - "${LOGSTASH_BINDING_PORT}:9600"
+    networks:
+      - backend-network
+    depends_on:
+      - elasticsearch
+    command: >
+      sh -c "curl -L -o /usr/share/logstash/logstash-core/lib/jars/mysql-connector-java.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && /usr/local/bin/docker-entrypoint"
+    volumes:
+      - /home/ubuntu/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # logstash pipeline
+      - /home/ubuntu/logstash/.logstash_jdbc_last_run:/usr/share/logstash/.logstash_jdbc_last_run
   
 
 # 전역 설정
