@@ -1,22 +1,31 @@
 package com.palja.audisay.domain.book.service;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.palja.audisay.domain.book.dto.LastBookInfo;
-import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
+import com.palja.audisay.domain.book.dto.SearchAfterValues;
+import com.palja.audisay.domain.book.dto.SearchSort;
+import com.palja.audisay.domain.book.dto.request.SearchPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.entity.Book;
+import com.palja.audisay.domain.book.entity.BookIndex;
 import com.palja.audisay.domain.book.entity.DType;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
 import com.palja.audisay.global.util.ImageUtil;
 import com.palja.audisay.global.util.StringUtil;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +37,7 @@ public class BookService {
 
 	private final ImageUtil imageUtil;
 	private final BookRepository bookRepository;
+	private final ElasticsearchOperations elasticsearchOperations;
 
 	// 도서 상세 정보 조회 메서드.
 	public PublishedBookInfoDto findPublishedBookDetail(Long memberId, Long bookId) {
@@ -45,54 +55,64 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public SearchCursorPaginationResDto getSearchPublishedBookResult(CursorPaginationReqDto cursorPaginationReqDto) {
+	public SearchCursorPaginationResDto getSearchPublishedBookResult(SearchPaginationReqDto searchPaginationReqDto) {
+		NativeQueryBuilder queryBuilder = NativeQuery.builder();
 
-		List<Book> bookRawList = bookRepository.searchBookList(cursorPaginationReqDto);
-
-		if (bookRawList.isEmpty()) {
-			return SearchCursorPaginationResDto.builder()
-				.bookList(Collections.emptyList())
-				.build();
+		// 검색 조건 설정
+		if (StringUtil.isEmpty(searchPaginationReqDto.getKeyword())) {
+			queryBuilder.withQuery(q -> q.matchAll(m -> m));
+		} else {
+			Query query = Query.of(q -> q
+				.multiMatch(m -> m
+					.query(searchPaginationReqDto.getKeyword())
+					.fields(Arrays.asList("title", "author", "publisher"))
+				)
+			);
+			queryBuilder.withQuery(query);
 		}
 
-		// 도서 목록 후처리
-		LastBookInfo lastBookInfo = processLastBookInfo(bookRawList, cursorPaginationReqDto.getPageSize());
+		// size만 직접 설정
+		queryBuilder.withMaxResults(searchPaginationReqDto.getPageSize());  // PageRequest 대신 이렇게 사용
 
-		List<PublishedBookInfoDto> bookResultList = bookRawList.stream()
-			.map(book -> PublishedBookInfoDto.builder()
-				.bookId(book.getBookId())
-				.title(book.getTitle())
-				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
-				.coverAlt(book.getCoverAlt())
-				.author(book.getAuthor())
-				.dType(book.getDType())
-				.publisher(book.getPublisher())
-				.publishedAt(StringUtil.dateToString(book.getPublishedDate()))
+		// 정렬 조건
+		SearchSort sort = SearchSort.setSort(searchPaginationReqDto.getSortBy(), searchPaginationReqDto.getSortOrder());
+		queryBuilder.withSort(Sort.by(Sort.Direction.DESC, "_score"))
+			.withSort(Sort.by(sort.sortOrder(), sort.sortBy()))
+			.withSort(Sort.by(Sort.Direction.ASC, "bookId"));
+
+		// search_after 설정
+		if (searchPaginationReqDto.getLastSearchId() != null) {
+			SearchAfterValues searchAfter = SearchAfterValues.parse(searchPaginationReqDto.getLastSearchId());
+			queryBuilder.withSearchAfter(searchAfter.values());
+		}
+
+		// 검색 실행
+		SearchHits<BookIndex> searchHits = elasticsearchOperations.search(
+			queryBuilder.build(),
+			BookIndex.class
+		);
+
+		List<PublishedBookInfoDto> bookList = searchHits.getSearchHits().stream()
+			.map(hit -> PublishedBookInfoDto.builder()
+				.bookId(hit.getContent().getBookId())
+				.title(hit.getContent().getTitle())
+				.author(hit.getContent().getAuthor())
+				.publisher(hit.getContent().getPublisher())
+				.publishedAt(StringUtil.dateToString(hit.getContent().getPublishedDate()))
 				.build())
-			.toList();
+			.collect(Collectors.toList());
+
+		// 다음 검색을 위한 searchId 생성
+		String nextSearchId = searchHits.getSearchHits().isEmpty() ? null :
+			SearchAfterValues.generateNextSearchId(
+				searchHits.getSearchHits().getLast()
+			);
 
 		return SearchCursorPaginationResDto.builder()
-			.keyword(cursorPaginationReqDto.getKeyword())
-			.bookList(bookResultList)
-			.lastDateTime(lastBookInfo.lastCreatedAt())
-			.lastId(lastBookInfo.lastBookId())
+			.bookList(bookList)
+			.keyword(searchPaginationReqDto.getKeyword())
+			.lastSearchId(nextSearchId)
 			.build();
-	}
-
-	/**
-	 * 조회한 목록에서 마지막 도서 정보 추출 메서드.
-	 *
-	 * @param bookRawList DB에서 추출한 원본 리스트.
-	 * @param pageSize 요청한 페이지 크기.
-	 * @return LastBookInfo 마지막 조회 도서 정보 반환.
-	 */
-	private LastBookInfo processLastBookInfo(List<Book> bookRawList, int pageSize) {
-		boolean hasNext = bookRawList.size() > pageSize;
-		if (hasNext) {
-			bookRawList.removeLast();  // 마지막 도서 제거
-		}
-		Book lastBook = hasNext ? bookRawList.getLast() : null;
-		return lastBook != null ? new LastBookInfo(lastBook.getBookId(), lastBook.getCreatedAt()) : new LastBookInfo();
 	}
 
 	public Book validatePublishedBook(Long bookId) {
