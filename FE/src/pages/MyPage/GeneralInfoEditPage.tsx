@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, AccessibilityInfo } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, Alert, AccessibilityInfo } from 'react-native';
 import MyPageHeader from '../../components/MyPage/MyPageHeader';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { updateGeneralInfo } from '../../services/Mypage/UserInfo'; // API 함수 임포트
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,11 +28,25 @@ const GeneralInfoEditPage: React.FC<GeneralInfoEditPageProps> = ({ route }) => {
       return;
     }
 
-    // 주석 처리된 API 요청 - 나중에 추가할 예정
-    setStatusMessage('정보가 성공적으로 수정되었습니다.');
-    AccessibilityInfo.announceForAccessibility('정보가 성공적으로 수정되었습니다.');
-    navigation.goBack();
+    try {
+      const data: { nickname?: string; blindFlag: boolean } = { blindFlag };
+      if (nickname !== initialNickname) {
+        data.nickname = nickname;
+      }
+
+      await updateGeneralInfo(data);
+
+      Alert.alert('성공', '정보가 성공적으로 수정되었습니다.');
+      AccessibilityInfo.announceForAccessibility('정보가 성공적으로 수정되었습니다.');
+
+      // 이전 페이지로 데이터 전달
+      navigation.navigate('UserInfo', { updatedNickname: nickname, updatedBlindFlag: blindFlag });
+    } catch (error: any) {
+      Alert.alert('에러', error.message || '정보 수정 중 문제가 발생했습니다.');
+      AccessibilityInfo.announceForAccessibility(error.message || '정보 수정 중 문제가 발생했습니다.');
+    }
   };
+
 
   const handleBlindFlagChange = (value: boolean) => {
     setBlindFlag(value);

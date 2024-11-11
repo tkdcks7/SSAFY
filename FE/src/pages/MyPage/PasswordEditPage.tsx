@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, AccessibilityInfo, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, AccessibilityInfo, ScrollView, Dimensions, Alert } from 'react-native';
 import MyPageHeader from '../../components/MyPage/MyPageHeader';
 import { useNavigation } from '@react-navigation/native';
+import { changePassword } from '../../services/Mypage/UserInfo'; // 비밀번호 변경 API 함수 임포트
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,25 +15,24 @@ const PasswordEditPage: React.FC = () => {
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       AccessibilityInfo.announceForAccessibility('오류: 새 비밀번호와 확인이 일치하지 않습니다.');
+      Alert.alert('오류', '새 비밀번호와 확인이 일치하지 않습니다.');
       return;
     }
-    // try {
-    //   // 비밀번호 변경 API 요청 보내기 (예시)
-    //   const response = await axios.post('https://your-api-endpoint.com/change-password', {
-    //     oldPassword: currentPassword,
-    //     newPassword: newPassword,
-    //   });
-    //   console.log('비밀번호 변경 성공:', response.data);
-    //   AccessibilityInfo.announceForAccessibility('성공: 비밀번호가 변경되었습니다.');
-    //   navigation.goBack();
-    // } catch (error) {
-    //   console.error('비밀번호 변경 오류:', error);
-    //   AccessibilityInfo.announceForAccessibility('오류: 비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
-    // }
 
-    // 아래는 API 연결 전 시나리오 테스트용 코드
-    AccessibilityInfo.announceForAccessibility('성공: 비밀번호가 변경되었습니다.');
-    navigation.goBack();
+    try {
+      // API 호출
+      await changePassword({
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+      });
+
+      Alert.alert('성공', '비밀번호가 성공적으로 변경되었습니다.');
+      AccessibilityInfo.announceForAccessibility('성공: 비밀번호가 변경되었습니다.');
+      navigation.goBack();
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+      AccessibilityInfo.announceForAccessibility(error.message || '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleConfirmPasswordBlur = () => {
@@ -46,9 +46,9 @@ const PasswordEditPage: React.FC = () => {
       <MyPageHeader title="내 정보 수정" />
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.innerContainer}>
-          <TouchableOpacity style={styles.changeButton} onPress={handlePasswordChange}>
-            <Text style={styles.changeButtonText}>비밀번호 변경</Text>
-          </TouchableOpacity>
+          <Text style={styles.noticeText}>
+            ※ 비밀번호는 8자리 이상으로 영어 대소문자, 숫자, 특수문자를 포함해야 합니다.
+          </Text>
           <Text style={styles.label}>기존 비밀번호</Text>
           <TextInput
             style={styles.input}
@@ -74,6 +74,9 @@ const PasswordEditPage: React.FC = () => {
             onChangeText={setConfirmPassword}
             onBlur={handleConfirmPasswordBlur}
           />
+          <TouchableOpacity style={styles.changeButton} onPress={handlePasswordChange}>
+            <Text style={styles.changeButtonText}>비밀번호 변경</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -92,7 +95,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: width * 0.1,
     justifyContent: 'flex-start',
-    marginTop: height * 0.02,
+    marginTop: height * 0,
+  },
+  noticeText: {
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: height * 0.02,
+    textAlign: 'center',
   },
   changeButton: {
     height: height * 0.15,
