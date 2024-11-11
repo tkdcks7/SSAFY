@@ -92,6 +92,7 @@ services:
       - AZURE_VISION_KEY=${AZURE_VISION_KEY}
       - AZURE_VISION_REGION=${AZURE_VISION_REGION}
       - OPENAI_AUTH=${OPENAI_AUTH}
+      - FASTAPI_URL=${FASTAPI_URL}
     expose:
       - ${DJANGO_PORT}
     networks:
