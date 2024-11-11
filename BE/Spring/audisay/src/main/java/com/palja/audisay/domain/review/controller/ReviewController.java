@@ -28,7 +28,6 @@ public class ReviewController {
     @Operation(summary = "특정 도서의 리뷰 조회", description = "본인의 리뷰와 다른 사람들의 리뷰를 최신순으로 조회")
     @Parameters({
             @Parameter(name = "bookId", description = "book ID", example = "1"),
-            @Parameter(name = "lastDateTime", description = "마지막 조회한 도서 등록 일자(ex 2024-10-31T14:08:00)", example = "null"),
             @Parameter(name = "lastId", description = "마지막 조회한 도서 Id", example = "null"),
             @Parameter(name = "pageSize", description = "페이지 크기(기본값 10)", example = "10")
     })
@@ -37,14 +36,13 @@ public class ReviewController {
             @Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
         Long memberId = SessionUtil.getMemberId();
         ReviewListResponseDto response = reviewService.getBookReviewsWithMemberReview(memberId, bookId,
-                cursorPaginationReqDto.getLastDateTime(), cursorPaginationReqDto.getLastId(), cursorPaginationReqDto.getPageSize());
+                cursorPaginationReqDto.getLastId(), cursorPaginationReqDto.getPageSize());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/mypage")
     @Operation(summary = "마이페이지 리뷰 조회 (커서 기반)", description = "회원의 최신순 리뷰 목록을 커서 기반으로 조회")
     @Parameters({
-            @Parameter(name = "lastDateTime", description = "마지막 조회한 도서 등록 일자(ex 2024-10-31T14:08:00)", example = "null"),
             @Parameter(name = "lastId", description = "마지막 조회한 도서 Id", example = "null"),
             @Parameter(name = "pageSize", description = "페이지 크기(기본값 10)", example = "10")
     })
@@ -52,7 +50,7 @@ public class ReviewController {
             @Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
         Long memberId = SessionUtil.getMemberId();
         MyPageReviewListResponseDto response = reviewService.getMyReviewsAfterCursor(memberId,
-                cursorPaginationReqDto.getLastDateTime(), cursorPaginationReqDto.getLastId(), cursorPaginationReqDto.getPageSize());
+                cursorPaginationReqDto.getLastId(), cursorPaginationReqDto.getPageSize());
         return ResponseEntity.ok(response);
     }
 

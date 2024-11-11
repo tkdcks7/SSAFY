@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,48 +23,46 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 	}
 
 	@Override
-	public List<Review> findReviewsWithCursor(Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId,
-											  Integer pageSize) {
-		return findReviews(null, memberId, true, updatedAtCursor, lastReviewId, pageSize);
-	}
-
-	@Override
 	public Optional<Review> findMemberIdReviewForBook(Long memberId, Book book) {
 		return Optional.ofNullable(queryFactory
-			.selectFrom(review)
-			.where(review.book.eq(book)
-				.and(review.member.memberId.eq(memberId)))
-			.fetchOne());
+				.selectFrom(review)
+				.where(review.book.eq(book)
+						.and(review.member.memberId.eq(memberId)))
+				.fetchOne());
+	}
+
+	//	@Override
+	//	public List<Review> findReviewsWithCursor(Long memberId, LocalDateTime updatedAtCursor, Long lastReviewId,
+	//											  Integer pageSize) {
+	//		return findReviews(null, memberId, true, updatedAtCursor, lastReviewId, pageSize);
+	//	}
+	@Override
+	public List<Review> findReviewsWithCursor(Long memberId, Long lastReviewId, Integer pageSize) {
+		return findReviews(null, memberId, true, lastReviewId, pageSize);
 	}
 
 	@Override
-	public List<Review> findOtherReviewsWithCursor(Book book, Long memberId, LocalDateTime updatedAtCursor,
-												   Long lastReviewId, Integer pageSize) {
-		return findReviews(book, memberId, false, updatedAtCursor, lastReviewId, pageSize);
+	public List<Review> findOtherReviewsWithCursor(Book book, Long memberId, Long lastReviewId, Integer pageSize) {
+		return findReviews(book, memberId, false, lastReviewId, pageSize);
 	}
 
-	private BooleanExpression buildCursorCondition(LocalDateTime updatedAtCursor, Long lastReviewId) {
-		BooleanExpression condition = review.updatedAt.lt(updatedAtCursor);
-		if (lastReviewId != null) {
-			condition = condition.or(review.updatedAt.eq(updatedAtCursor).and(review.reviewId.lt(lastReviewId)));
-		}
-		return condition;
-	}
-
-	private List<Review> findReviews(Book book, Long memberId, Boolean isMemberReview, LocalDateTime updatedAtCursor,
-									 Long lastReviewId, Integer pageSize) {
+	private List<Review> findReviews(Book book, Long memberId, Boolean isMemberReview, Long lastReviewId, Integer pageSize) {
 		BooleanExpression condition = (isMemberReview) ? review.member.memberId.eq(memberId) :
 			review.book.eq(book).and(review.member.memberId.ne(memberId));
-		condition = condition.and(buildCursorCondition(updatedAtCursor, lastReviewId));
+		condition = condition.and(buildCursorCondition(lastReviewId));
 
 		return queryFactory
 			.selectFrom(review)
 			.join(review.book).fetchJoin()  // book과의 fetch join 추가
 			.join(review.member).fetchJoin() // member와의 fetch join 추가
 			.where(condition)
-			.orderBy(review.updatedAt.desc(), review.reviewId.desc())
+				.orderBy(review.reviewId.desc())
 				.limit(pageSize)
 			.fetch();
+	}
+
+	private BooleanExpression buildCursorCondition(Long lastReviewId) {
+		return lastReviewId != null ? review.reviewId.lt(lastReviewId) : null;
 	}
 
 }
