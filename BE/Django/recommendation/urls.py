@@ -3,7 +3,7 @@
 from django.urls import path
 
 from . import views
-from .views import RecommendationFamous
+from .views import RecommendationFamous, RecommendationDemographics
 
 urlpatterns = [
     path('test', views.test_view, name='test'),
@@ -12,5 +12,6 @@ urlpatterns = [
     ## --------------------------
     ## 추천 로직
     ## --------------------------
-    path('rec-famous', RecommendationFamous.as_view())
+    path('rec-famous', RecommendationFamous.as_view()),
+    path('rec-demo', RecommendationDemographics.as_view()),
 ]

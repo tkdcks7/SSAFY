@@ -6,7 +6,7 @@ from rest_framework import status
 from django.http import JsonResponse, FileResponse
 
 from .services.dbConnector import MysqlConnector, MongoDBConnector
-from .services.recommendationAnalysis import FamousBookRecommendation
+from .services.recommendationAnalysis import FamousBookRecommendation, DemographicsBookRecommendation
 
 ## 테스트용 API
 def test_view(request):
@@ -39,3 +39,15 @@ class RecommendationFamous(APIView):
         result = rec.get_recommendation() 
         result["_id"] = str(result["_id"])
         return JsonResponse(result)
+    
+@method_decorator(csrf_exempt, name='dispatch')
+class RecommendationDemographics(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        rec = DemographicsBookRecommendation()
+        result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
