@@ -47,6 +47,7 @@ public class PublishedBookInfoDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Builder
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class ReviewDistribution {
 		private Double average;
 		@JsonProperty("5")
