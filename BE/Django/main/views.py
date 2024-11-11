@@ -17,7 +17,6 @@ from ebooklib import epub
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
 from .services.image_captioner import ImageCaptioner
-import requests
 import json
 from PIL import Image
 import numpy as np
