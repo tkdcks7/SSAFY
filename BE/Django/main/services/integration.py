@@ -1,14 +1,16 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from django.core.files.uploadedfile import UploadedFile
 import requests
 from rest_framework import status
 from rest_framework.response import Response
 from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, PdfConverter
 from ebooklib import epub
+from asgiref.sync import async_to_sync
+from ..services.image_captioner import ImageCaptioner
 from django.conf import settings
 
 class Integration:
-    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile]) -> epub.EpubBook:
+    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile]) -> Tuple[epub.EpubBook, Dict]:
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
@@ -25,7 +27,6 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # ocr 변환
-        # ocr_converter = ImageToTextConverter() # 배치/병렬처리 X
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
@@ -33,10 +34,15 @@ class Integration:
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
-        return new_book
+        # 이미지 캡셔닝
+        captioner = ImageCaptioner()
+        # async to sync 이용하여 동기처리 
+        captioned_book, metadata = async_to_sync(captioner.image_captioning)(new_book, ocr_processed_data.metadata)
+
+        return (captioned_book, metadata)
     
     
-    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile) -> epub.EpubBook:
+    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile) -> Tuple[epub.EpubBook, Dict]:
         # pdf -> image list
         images = PdfConverter().convert_pdf_to_images(file)
 
@@ -57,7 +63,6 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # ocr 변환
-        # ocr_converter = ImageToTextConverter() # 배치/병렬처리 X
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
@@ -65,6 +70,10 @@ class Integration:
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
-        return new_book
-    
+        # 이미지 캡셔닝
+        captioner = ImageCaptioner()
+        # async to sync 이용하여 동기처리 
+        captioned_book, metadata = async_to_sync(captioner.image_captioning)(new_book, ocr_processed_data.metadata)
+
+        return (captioned_book, metadata)    
     

@@ -44,7 +44,7 @@ class ImageCaptioningView(APIView):
         
         captioner = ImageCaptioner()
         # async to sync 이용하여 동기처리 
-        processed_images = async_to_sync(captioner.image_captioning)(epub)
+        processed_images, metadata = async_to_sync(captioner.image_captioning)(epub, {})
         
         response_data = [
             # {
@@ -54,7 +54,7 @@ class ImageCaptioningView(APIView):
             # for name, caption, _ in processed_images
         ]
         
-        return Response(response_data)
+        return Response(metadata)
 
 
 # 이미지 업로드시 ebook으로 변환하는 api
