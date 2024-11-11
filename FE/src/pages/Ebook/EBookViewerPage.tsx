@@ -5,7 +5,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { LibraryStackParamList } from '../../navigation/LibraryNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Reader, useReader, Location } from '@epubjs-react-native/core';
+import { Reader, useReader, Location, Annotation, AnnotationType } from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
@@ -38,6 +38,12 @@ type Props = {
   navigation: EBookViewerPageNavigateProp;
 };
 
+type FormContent = {
+  sentence: string;
+  cfisRange: string;
+  pagenum: number;
+}
+
 const { width, height } = Dimensions.get('window');
 
 
@@ -48,10 +54,11 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
   const [ isTTSMode, setIsTTSMode ] = useState<boolean>(false);
   const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean>(false);
   const [ isSearching, setIsSearching ] = useState<boolean>(false);
-  const [ aval, setAval ] = useState<string>('');
+  const [ formArr, setFromArr ] = useState<FormContent[]>([]);
+  const [tempMark, setTempMark] = React.useState<Annotation | null>(null);
 
   
-  const { getCurrentLocation, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript,  } = useReader();
+  const { changeTheme, removeAnnotationByCfi, removeAnnotation, getCurrentLocation, annotations, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript, goNext  } = useReader();
 
 
   // 화면 크기를 상태로 관리
@@ -108,63 +115,20 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     }, []);
 
 
-  const cfiToExtract = "epubcfi(/6/8!/4/2,/2/2/1:0,/8[n1]/2/1:48)";
+  const getFormArr = () => { injectJavascript(`getFormArr();`); };
 
-  const iscript = () => {
-    injectJavascript(`
-            rendition.display("epubcfi(/6/94!/4/2/22/1:36)")
-            const k = pageFromCfi("epubcfi(/6/94!/4/2/22/1:36)")
-            window.ReactNativeWebView.postMessage(JSON.stringify({ pg: k }));
-      `);
-  };
-
-
-  const rangeSelectScript = () => {
-    injectJavascript(`
-        document.addEventListener('selectionchange', () => {
-        const selectedText = window.getSelection().toString();
-        if (selectedText) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'textSelected', text: selectedText }));
-        }
-      });
-  `)
-  }
-
-
-  const bscript= () => {
-    injectJavascript(`
-      rendition.on("relocated", (location) => {
-  const currentCFI = location.start.cfi;
-  window.ReactNativeWebView.postMessage(JSON.stringify({ curCfi: currentCFI }));
-});
-
-      `);
-  }
-
-  const afunc = () => {
-    const aaa: Location | null = getCurrentLocation();
-    if (aaa !== null) {console.log(`
-      start: ${aaa.start.cfi}, 
-      end: ${aaa.end.cfi}, 
-      pr = ${aaa.end.percentage*100}%, 
-      pg: ${aaa.start.displayed.page}, 
-      epg: ${aaa.end.displayed.page}`);
-      setProgress(aaa.end.percentage)
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const handleReading = async (idx: number) => {
+    if (idx !== 0 && formArr[idx].pagenum > formArr[idx + 1].pagenum) { goNext(); }
+    if (tempMark) { removeAnnotation(tempMark); };
+    if (formArr.length > idx) {
+      addAnnotation("highlight", formArr[idx].cfisRange);
+      await sleep(1500);
+      handleReading(idx + 1);
+    } else {
+      goNext();
     }
   };
-
-  const scrrr = `
-
-            rendition.on("relocated", () => {
-              rendition.getContents().forEach((content) => {
-                const paragraphs = content.document.querySelectorAll("p");
-                paragraphs.forEach((paragraph, index) => {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ idx: index, line: paragraph.innerText }));
-                // window.ReactNativeWebView.postMessage(JSON.stringify({ msg: "페이지이동" }));
-                });
-              });
-            });
-        `
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -179,11 +143,11 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
           )
           : (
           <>
-          <TouchableOpacity onPress={() => console.log(getLocations())}>
+          <TouchableOpacity onPress={getFormArr}>
             <Image source={leftarrowicon} style={styles.icon} />
           </TouchableOpacity>
             <Text style={styles.navBarText}>책 타이틀</Text>
-          <TouchableOpacity onPress={() => setIsSearching(true)}>
+          <TouchableOpacity onPress={() => handleReading(0)}>
             <Image source={searchicon} style={styles.icon} />
           </TouchableOpacity>
           </>
@@ -204,119 +168,59 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
         <Reader
           src="https://s3.amazonaws.com/moby-dick/OPS/package.opf"
           fileSystem={useFileSystem}
-          enableSelection={true}
-          onSelected={(selectedText: string, cfiRange: string) => {}}
           flow='paginated'
-          onLocationChange={afunc}
-          width={"100%"}
-          height={"100%"}
-          onReady={(totalLocations, currentLocation, progress) => console.log(`ready: ${currentLocation.end.cfi}`)}
-          getInjectionJavascriptFn={iscript}
+          // enableSelection={true}
+          // onSelected={(selectedText: string, cfiRange: string) => {
+          //   console.log(`selectedText=${selectedText}, cfiRange=${cfiRange}`);
+          //   if (beforeCfiRange !== '') { console.log(`beforeCfiRange= ${beforeCfiRange}`); removeAnnotationByCfi(beforeCfiRange);}
+          //   addAnnotation("highlight", cfiRange );
+          //   setBeforeCfiRange(cfiRange);
+          // }}
+          // onLocationChange={afunc}
+          waitForLocationsReady={true}
+          onAddAnnotation={(annotation: Annotation<any>) => {setTempMark(annotation)}}
+          // width='100%'
+          // height='100%'
+          onWebViewMessage={(message) => {
+            console.log(message);
+            if (message?.formArr) {
+              console.log("formArr 저장됨");
+              setFromArr([...message.formArr]);
+            }; 
+             }}
           injectedJavascript={`
-            // epubcfi 두 개를 받아서 하나의 범위 epubcfi로 변환하는 함수
-function combineCFI(startCFI, endCFI) {
-  if (!startCFI.startsWith("epubcfi(") || !endCFI.startsWith("epubcfi(")) {
-    throw new Error("Invalid CFI format");
-  }
-  let startPath = startCFI.slice(9, -1);
-  let endPath = endCFI.slice(9, -1);
-  let startParts = startPath.split("/");
-  let endParts = endPath.split("/");
-  let commonPathLength = 0;
-  while (
-    commonPathLength < startParts.length &&
-    commonPathLength < endParts.length &&
-    startParts[commonPathLength] === endParts[commonPathLength]
-  ) {
-    commonPathLength++;
-  }
-  let commonPath = startParts.slice(0, commonPathLength).join("/");
-  let startRemainder = startParts.slice(commonPathLength).join("/");
-  let endRemainder = endParts.slice(commonPathLength).join("/");
-  return (
-    "epubcfi(" + commonPath + "," + startRemainder + "," + endRemainder + ")"
+const getFormArr = () => {
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ msgg: "getFormArr 시작" })
   );
-}
-
-// 노드 탐색
-function traverseChildrenIncludingText(element, cfiBase) {
-  window.ReactNativeWebView.postMessage(JSON.stringify({ cfiBase }));
-  Array.from(element.childNodes).forEach(child => {
-    if (child.nodeType === 1) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ elementTag: child.tagName }));
-      if (child.tagName === 'P') {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ ndd: child.textContent.trim() }));
-            window.ReactNativeWebView.postMessage(JSON.stringify({ ndd: typeof child }));
-            // const scfi = rendition.cfiFromElement(child);
-            // if (scfi) {
-            // window.ReactNativeWebView.postMessage(JSON.stringify({ mmsg: "nddd 존재" }));
-            // rendition.annotations.add("highlight", nddd);
-            // } else {
-            //     window.ReactNativeWebView.postMessage(JSON.stringify({ mmsg: "faillll" }));
-            // }
-      }
-      traverseChildrenIncludingText(child);
-    }
-    // else if (child.nodeType === 3) {
-    //  if (child.textContent.trim() !== '') {
-    //   window.ReactNativeWebView.postMessage(JSON.stringify({ elementtext: child.textContent.trim() }));
-    //   }
-    // }
+  const formArr = [];
+  const contentt = rendition.getContents();
+  const contents = contentt[0];
+  const currentView = rendition.manager.current();
+  const currentSection = currentView.section;
+  const paragraphs = contents.document.querySelectorAll("p");
+  paragraphs.forEach((element) => {
+    const sentences = element.textContent.match(/[^.!?]+[.!?]+|[^.!?]+$/g);
+    window.ReactNativeWebView.postMessage(JSON.stringify({ sentences }));
+    sentences.forEach((sentence, index) => {
+      const range = document.createRange();
+      const startOffset = element.textContent.indexOf(sentence);
+      const endOffset = startOffset + sentence.length;
+      range.setStart(element.firstChild, startOffset);
+      range.setEnd(element.firstChild, endOffset);
+      const cfisRange = currentSection.cfiFromRange(range);
+      const singleCfi = cfisRange.replace(/,/, "").split(",")[0] + ")";
+      const pagenum = rendition.book.locations.locationFromCfi(singleCfi);
+      const tempObj = { sentence, cfisRange, pagenum };
+      formArr.push(tempObj);
+      window.ReactNativeWebView.postMessage(JSON.stringify({ tempObj }));
+    });
   });
-}
-  
-rendition.on("relocated", () => {
-  if (rendition.location) {
-      if (book.pageList) { window.ReactNativeWebView.postMessage(JSON.stringify({ aade: book.totalPages })); }
-      // book.spine.spineItems.forEach((item) => { window.ReactNativeWebView.postMessage(JSON.stringify({ [item.index]: item.cfiBase })); })
-    const domm = rendition.getContents()[0];
-    traverseChildrenIncludingText(domm.content, domm.cfiBase);
-    const currentPage = rendition.location.start.cfi;
-    const currentPageE = rendition.location.end.cfi;
-    const currentCFI = rendition.location.start.cfi;
-    const endCFI = rendition.location.end.cfi;
-    const totalPage = rendition.location.start.displayed.total;
-    // const rrr = book.getRange("epubcfi(/6/6!/4/2,/2/2/1:0,/4[q1]/2/14/2/1:14)")
-    // .then((rnm) => {window.ReactNativeWebView.postMessage(JSON.stringify({ rnm: rnm.innerText }));})
-    // .catch(() => {window.ReactNativeWebView.postMessage(JSON.stringify({ rnm: "failli" }));})
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ cpf: currentPage, epf: currentPageE, tp: totalPage })
-    );
-    const ran = combineCFI(currentCFI, endCFI);
-    if (ran) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ ran }));
-      // rendition.annotations.add("highlight", ran);
-      book
-        .getRange(ran)
-        .then((ranl) => {
-          if (ranl) {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(ranl);
-          } else {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ msggg: "ranl 추출 실패" })
-            );
-          }
-        })
-        .catch((err) => {
-          window.ReactNativeWebView.postMessage(
-            JSON.stringify({ msgggg: "err로빠짐" })
-          );
-        });
-    } else {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({
-          msgggggg: "텍스트 추출 실패",
-          error: "범위 내 텍스트 없음",
-        })
-      );
-    }
+  if (formArr.length > 0) {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
   }
-});
-
+};
         `}
-          onWebViewMessage={(message) => console.log(message)}
         />
   </TouchableOpacity>
   {/* 네비게이션 바 */}
