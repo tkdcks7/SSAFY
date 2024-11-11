@@ -12,7 +12,7 @@ public record SearchSort(
 			: Sort.Direction.ASC;
 
 		// 필드명 변환 (published_date -> publishedDate)
-		String dbField = sortBy.equals("published_date") ? "publishedDate" : "title";
+		String dbField = sortBy.equals("published_date") ? "publishedDate" : "title.keyword";
 		return new SearchSort(dbField, direction);
 	}
 }
