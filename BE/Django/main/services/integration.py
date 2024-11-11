@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import UploadedFile
 import requests
 from rest_framework import status
 from rest_framework.response import Response
-from . import LayoutAnalyze, ImageToTextConverter, InitialEbookConverter
+from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, ImageToTextConverter
 from ebooklib import epub
 
 class Integration:
@@ -24,7 +24,8 @@ class Integration:
             data = {'metadata': metadata, 'pages': pages}
 
             # ocr 변환
-            ocr_converter = ImageToTextConverter()
+            # ocr_converter = ImageToTextConverter() # 배치/병렬처리 X
+            ocr_converter = OcrParallel() # 배치/병렬처리 O
             ocr_processed_data = ocr_converter.process_book(input_data=data)
 
             # ebook 변환
