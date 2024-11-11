@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -85,4 +86,13 @@ public class Book {
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
 	@CreationTimestamp
 	private LocalDateTime createdAt;
+
+	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
+	@CreationTimestamp
+	private LocalDateTime updatedAt;
+
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = LocalDateTime.now(); // 엔티티가 수정될 때 현재 시간으로 설정
+	}
 }
