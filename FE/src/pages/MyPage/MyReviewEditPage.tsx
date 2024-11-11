@@ -1,10 +1,9 @@
-// src/pages/Mypage/MyReviewEditPage.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions, AccessibilityInfo } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions, AccessibilityInfo, Alert } from 'react-native';
 import MyPageHeader from '../../components/MyPage/MyPageHeader';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-// import axios from 'axios';
+import { updateReview } from '../../services/Mypage/MyReview';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,19 +32,17 @@ const MyReviewEditPage: React.FC<MyReviewEditPageProps> = ({ route }) => {
 
     if (Object.keys(updatedData).length > 0) {
       try {
-        // API 요청 보내기 (PATCH 요청)
-        // await axios.patch(`/api/reviews/${reviewId}`, updatedData);
-        console.log('수정된 리뷰 데이터:', updatedData);
-      } catch (error) {
-        console.error('리뷰 수정 오류:', error);
-        // 오류 처리
-        AccessibilityInfo.announceForAccessibility('리뷰 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+        await updateReview(reviewId, updatedData);
+        AccessibilityInfo.announceForAccessibility('리뷰 수정이 완료되었습니다.');
+        navigation.navigate('MyReview', { refresh: true });
+      } catch (error: any) {
+        Alert.alert('오류', error.message || '리뷰 수정 중 문제가 발생했습니다.');
+        AccessibilityInfo.announceForAccessibility('리뷰 수정 중 오류가 발생했습니다.');
       }
+    } else {
+      Alert.alert('알림', '변경된 내용이 없습니다.');
+      AccessibilityInfo.announceForAccessibility('변경된 내용이 없습니다.');
     }
-
-    // 뒤로 가기
-    AccessibilityInfo.announceForAccessibility('리뷰 수정이 완료되었습니다.');
-    navigation.goBack();
   };
 
   return (
@@ -133,7 +130,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginBottom: 0,
   },
   rating: {
     fontSize: width * 0.1,
