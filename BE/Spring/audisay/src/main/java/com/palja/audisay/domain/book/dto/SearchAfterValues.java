@@ -7,7 +7,12 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 
 import com.palja.audisay.domain.book.entity.BookIndex;
 
-public record SearchAfterValues(List<Object> values) {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public record SearchAfterValues(
+	List<Object> values
+) {
 
 	public static SearchAfterValues parse(String sortBy, String searchId) {
 		if (searchId == null || searchId.isEmpty()) {
@@ -25,6 +30,7 @@ public record SearchAfterValues(List<Object> values) {
 				Long.parseLong(values[2])          // bookId
 			));
 		} catch (Exception e) {
+			log.error("SearchAfterValues parse error = {}", e.getMessage());
 			return null;
 		}
 	}
