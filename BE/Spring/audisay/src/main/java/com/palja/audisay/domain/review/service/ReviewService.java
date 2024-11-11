@@ -1,5 +1,9 @@
 package com.palja.audisay.domain.review.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.service.BookService;
 import com.palja.audisay.domain.member.entity.Member;
@@ -11,11 +15,9 @@ import com.palja.audisay.domain.review.entity.Review;
 import com.palja.audisay.domain.review.repository.ReviewRepository;
 import com.palja.audisay.global.exception.exceptions.ReviewBookDuplicatedException;
 import com.palja.audisay.global.exception.exceptions.ReviewNotFoundException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,8 @@ public class ReviewService {
 	private final BookService bookService;
 	private final ReviewRepository reviewRepository;
 
-	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, Long lastReviewId, Integer pageSize) {
+	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, Long lastReviewId,
+		Integer pageSize) {
 		Book book = bookService.validatePublishedBook(bookId);
 
 		// 첫 요청인지 확인
@@ -40,30 +43,25 @@ public class ReviewService {
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
 
 		// 다음 커서 계산 (다음 페이지가 없다면 null 반환)
-//		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
+		Long nextReviewId = (reviews.size() == pageSize) ? reviews.getLast().getReviewId() : null;
 
 		return ReviewListResponseDto.builder()
 			.memberReview(memberReviewDto)
 			.reviewList(reviewList)
-//			.lastUpdatedAt(nextUpdatedAt)
 			.lastReviewId(nextReviewId)
 			.build();
 	}
 
 	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, Long lastReviewId, Integer pageSize) {
-//		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
 
 		List<Review> reviews = reviewRepository.findReviewsWithCursor(memberId, lastReviewId, pageSize);
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toDto).toList();
 
 		// 다음 커서 계산
-//		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
+		Long nextReviewId = (reviews.size() == pageSize) ? reviews.getLast().getReviewId() : null;
 
 		return MyPageReviewListResponseDto.builder()
 			.reviewList(reviewList)
-//			.lastUpdatedAt(nextUpdatedAt)
 			.lastReviewId(nextReviewId)
 			.build();
 	}
