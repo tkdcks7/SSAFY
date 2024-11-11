@@ -6,7 +6,7 @@ from rest_framework import status
 from django.http import JsonResponse, FileResponse
 
 from .services.dbConnector import MysqlConnector, MongoDBConnector
-
+from .services.recommendationAnalysis import FamousBookRecommendation
 
 ## 테스트용 API
 def test_view(request):
@@ -25,3 +25,17 @@ def test_mongo(request):
     data = MongoDBConnector.read_data_from_collection(collection, query)
     print(data)
     return None
+
+
+## 추천 로직 실행
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecommendationFamous(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        rec = FamousBookRecommendation()
+        result = rec.get_recommendation() 
+        result["_id"] = str(result["_id"])
+        return JsonResponse(result)
