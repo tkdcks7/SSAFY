@@ -77,7 +77,7 @@ class ImageToTextConverter:
         else:
             image_data = ''
         image_name = f"{page_number}_{section.get('sequence_number', 0)}"
-        ocr_result = self.ocr_client.process_image(image_data, image_name)
+        ocr_result = self.ocr_client.process_image(image_data, image_name) #ocr 처리
 
         # OCR 결과 파싱해 텍스트 추출
         texts = []
