@@ -45,8 +45,8 @@ public class BookController {
 	@Parameters({
 		@Parameter(name = "keyword", description = "검색어"),
 		@Parameter(name = "lastSearchId", description = "마지막 조회한 도서의 searchId"),
-		@Parameter(name = "sortBy", description = "", example = "1"),
-		@Parameter(name = "sortOrder", description = "", example = "1"),
+		@Parameter(name = "sortBy", description = "정렬 항목 (published_date, title)", example = "published_date"),
+		@Parameter(name = "sortOrder", description = "정렬 방향 (asc, desc)", example = "acs"),
 		@Parameter(name = "pageSize", description = "페이지 크기(기본값 10)")
 	})
 	@GetMapping
