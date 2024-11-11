@@ -34,6 +34,7 @@ public class BookService {
 		// bookId의 상세 내용 조회
 		// bookId의 리뷰 내용 조회
 		// 사용자 bookId 관련 정보(cartFlag, likeFlag) 조회
+		// bookId Epub 보유 여부 조회
 		PublishedBookInfoDto publishedBookInfoDto = bookRepository.findBookDetailByBookIdAndMemberId(memberId, bookId)
 			.orElseThrow(PublishedBookNotFoundException::new);
 		// 출판 일시 (date) => (String) 변경

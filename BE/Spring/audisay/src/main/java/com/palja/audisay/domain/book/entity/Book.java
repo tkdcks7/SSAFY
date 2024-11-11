@@ -75,7 +75,7 @@ public class Book {
 	@Column(columnDefinition = "tinyint(1)", nullable = false)
 	private Boolean myTtsFlag;
 
-	@Column(columnDefinition = "text", nullable = false)
+	@Column(columnDefinition = "text")
 	private String epub;
 
 	@Column(columnDefinition = "enum('PUBLISHED', 'REGISTERED')", nullable = false)
