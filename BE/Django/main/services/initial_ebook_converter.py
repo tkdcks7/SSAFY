@@ -188,10 +188,7 @@ class InitialEbookConverter:
         book.add_item(epub.EpubNcx()) # 오래된 EPUB 리더를 위한 네비게이션 XML 파일
         book.add_item(epub.EpubNav()) # 최신 EPUB 3.0 표준의 네비게이션 HTML5 파일
 
-        # 파일명 및 경로 설정
-        filename = f'{uuid.uuid4()}.epub'
-
-        # s3에 저장 (해당 로직 S3Client.upload_epub_to_s3 로 분리)
+        # book 객체 반환
         return book 
 
         
