@@ -41,20 +41,14 @@ public record SearchAfterValues(
 	}
 
 	public static String generateNextSearchId(SearchHit<BookIndex> lastHit) {
-		if (lastHit == null) {
+		if (lastHit == null || lastHit.getSortValues().size() < 3) {
 			return null;
 		}
-
-		List<Object> sortValues = List.of(lastHit.getSortValues().toArray(new Object[0]));
-		if (sortValues.size() < 3) {
-			return null;
-		}
-
 		// 정렬값들을 comma로 구분하고 Base64 인코딩
-		String searchAfterString = String.format("%s-%s-%s",
-			sortValues.get(0),    // score
-			sortValues.get(1),    // date
-			sortValues.get(2)     // bookId
+		String searchAfterString = String.format("%s~|%s~|%s",
+			lastHit.getSortValues().get(0),    // score
+			lastHit.getSortValues().get(1),    // date
+			lastHit.getSortValues().get(2)    // bookId
 		);
 		// URL 에선 + 가 공백으로 인식되어 URL-safe Base64 인코딩/디코딩 적용
 		return Base64.getUrlEncoder().encodeToString(searchAfterString.getBytes());
