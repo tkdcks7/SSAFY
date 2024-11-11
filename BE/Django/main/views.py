@@ -97,7 +97,7 @@ class ImageCaptioningView(APIView):
         
         captioner = ImageCaptioner()
         # async to sync 이용하여 동기처리 
-        processed_images = async_to_sync(captioner.image_captioning)(epub)
+        processed_images, metadata = async_to_sync(captioner.image_captioning)(epub, {})
         
         response_data = [
             # {
@@ -107,7 +107,7 @@ class ImageCaptioningView(APIView):
             # for name, caption, _ in processed_images
         ]
         
-        return Response(response_data)
+        return Response(metadata)
 
 
 # metadata와 이미지들을 첨부해서 요청 -> fastapi에서 레이아웃 분석 -> 다시 장고로 npz파일 보냄 -> ocr 요청 -> ebook 제작
