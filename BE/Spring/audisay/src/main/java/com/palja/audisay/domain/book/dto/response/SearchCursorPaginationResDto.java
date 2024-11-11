@@ -11,4 +11,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class SearchCursorPaginationResDto extends BookCursorPaginationResDto {
 	private String keyword;
+	private String lastSearchId;
 }
