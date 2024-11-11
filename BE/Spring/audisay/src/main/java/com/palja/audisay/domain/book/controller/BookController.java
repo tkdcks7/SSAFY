@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.palja.audisay.domain.book.dto.request.CursorPaginationReqDto;
+import com.palja.audisay.domain.book.dto.request.SearchPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.service.BookService;
@@ -44,14 +44,15 @@ public class BookController {
 	@Operation(summary = "도서 검색 및 전체 목록 조회", description = "검색어(keyword) 입력 시 제목, 저자, 출판사와 일치하는 도서 검색")
 	@Parameters({
 		@Parameter(name = "keyword", description = "검색어"),
-		@Parameter(name = "lastDateTime", description = "마지막 조회한 도서 등록 일자(ex 2024-10-31T14:08:00)"),
-		@Parameter(name = "lastId", description = "마지막 조회한 도서 Id"),
+		@Parameter(name = "lastSearchId", description = "마지막 조회한 도서의 searchId"),
+		@Parameter(name = "sortBy", description = "", example = "1"),
+		@Parameter(name = "sortOrder", description = "", example = "1"),
 		@Parameter(name = "pageSize", description = "페이지 크기(기본값 10)")
 	})
 	@GetMapping
 	public ResponseEntity<SearchCursorPaginationResDto> getSearchPublishedBookResult(
-		@Schema(hidden = true) @Valid @ModelAttribute CursorPaginationReqDto cursorPaginationReqDto) {
-		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(cursorPaginationReqDto),
+		@Schema(hidden = true) @Valid @ModelAttribute SearchPaginationReqDto searchPaginationReqDto) {
+		return new ResponseEntity<>(bookService.getSearchPublishedBookResult(searchPaginationReqDto),
 			HttpStatus.OK);
 	}
 
