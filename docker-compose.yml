@@ -239,7 +239,7 @@ services:
     depends_on:
       - elasticsearch
     command: >
-      sh -c "curl -L -o /usr/share/logstash/logstash-core/lib/jars/mysql-connector-java.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.33/mysql-connector-java-8.0.33.jar && /usr/local/bin/docker-entrypoint logstash" # mysql-connect 설치
+      sh -c "curl -L -o /usr/share/logstash/logstash-core/lib/jars/mysql-connector-java.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && /usr/local/bin/docker-entrypoint"
     volumes:
       - /home/ubuntu/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # logstash pipeline
       - /home/ubuntu/logstash/.logstash_jdbc_last_run:/usr/share/logstash/.logstash_jdbc_last_run
