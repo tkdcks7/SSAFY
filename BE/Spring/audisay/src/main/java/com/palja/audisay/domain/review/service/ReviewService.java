@@ -10,7 +10,6 @@ import com.palja.audisay.domain.review.dto.ReviewRequestDto;
 import com.palja.audisay.domain.review.dto.ReviewResponseDto;
 import com.palja.audisay.domain.review.entity.Review;
 import com.palja.audisay.domain.review.repository.ReviewRepository;
-import com.palja.audisay.global.exception.exceptions.MemberNotFoundException;
 import com.palja.audisay.global.exception.exceptions.ReviewBookDuplicatedException;
 import com.palja.audisay.global.exception.exceptions.ReviewNotFoundException;
 import jakarta.transaction.Transactional;
@@ -47,8 +46,8 @@ public class ReviewService {
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
 
 		// 다음 커서 계산 (다음 페이지가 없다면 null 반환)
-		LocalDateTime nextUpdatedAt = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() < pageSize) ? null : reviews.getLast().getReviewId();
+		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
+		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
 
 		return ReviewListResponseDto.builder()
 			.memberReview(memberReviewDto)
@@ -67,8 +66,8 @@ public class ReviewService {
 		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toDto).toList();
 
 		// 다음 커서 계산
-		LocalDateTime nextUpdatedAt = (reviews.size() < pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() < pageSize) ? null : reviews.getLast().getReviewId();
+		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
+		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
 
 		return MyPageReviewListResponseDto.builder()
 			.reviewList(reviewList)
@@ -79,12 +78,12 @@ public class ReviewService {
 
 	@Transactional
 	public void createReview(Long memberId, ReviewRequestDto reviewRequestDto) {
-		Member member = memberRepository.findByMemberId(memberId).orElseThrow(MemberNotFoundException::new);
 		Book book = bookService.validatePublishedBook(reviewRequestDto.getBookId());
 		// 이미 리뷰가 존재하는지 확인
 		if (reviewRepository.existsByMemberMemberIdAndBook(memberId, book)) {
 			throw new ReviewBookDuplicatedException(); // 중복된 책 예외 던짐
 		}
+		Member member = Member.builder().memberId(memberId).build();
 		Review review = reviewRequestDto.toEntity(member, book);
 		reviewRepository.save(review);
 	}
