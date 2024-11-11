@@ -7,6 +7,7 @@ from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, ImageToTextConv
 from ebooklib import epub
 from asgiref.sync import async_to_sync
 from ..services.image_captioner import ImageCaptioner
+from django.conf import settings
 
 class Integration:
     def make_ebook(self, metadata: Dict, files: List[UploadedFile]) -> epub.EpubBook:
@@ -14,7 +15,7 @@ class Integration:
             files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
             response = requests.post(
-                'http://localhost:5000/layout-analysis',
+                settings.FASTAPI_URL,
                 files=files_to_send
             )
 

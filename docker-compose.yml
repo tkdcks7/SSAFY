@@ -73,6 +73,7 @@ services:
   
   django:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
+    network_mode: "host"
     container_name: ${DOCKER_TAG_DJANGO}
     environment:
       - TZ=Asia/Seoul
@@ -92,6 +93,7 @@ services:
       - AZURE_VISION_KEY=${AZURE_VISION_KEY}
       - AZURE_VISION_REGION=${AZURE_VISION_REGION}
       - OPENAI_AUTH=${OPENAI_AUTH}
+      - FASTAPI_URL=${FASTAPI_URL}
     expose:
       - ${DJANGO_PORT}
     networks:
