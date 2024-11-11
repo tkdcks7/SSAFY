@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, ImageToTextConverter
 from ebooklib import epub
+from django.conf import settings
 
 class Integration:
     def make_ebook(self, metadata: Dict, files: List[UploadedFile]) -> epub.EpubBook:
@@ -12,7 +13,7 @@ class Integration:
             files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
             response = requests.post(
-                'http://localhost:5000/layout-analysis',
+                settings.FASTAPI_URL,
                 files=files_to_send
             )
 

@@ -159,3 +159,6 @@ AZURE_VISION_REGION = env('AZURE_VISION_REGION')
 
 # OpenAI 설정
 OPENAI_AUTH = env('OPENAI_AUTH')
+
+# fastapi url
+FASTAPI_URL = None
