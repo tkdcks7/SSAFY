@@ -96,9 +96,16 @@ public class BookService {
 			.map(hit -> PublishedBookInfoDto.builder()
 				.bookId(hit.getContent().getBookId())
 				.title(hit.getContent().getTitle())
+				.category(hit.getContent().getCategory())
+				.cover(hit.getContent().getCover())
+				.coverAlt(hit.getContent().getCoverAlt())
 				.author(hit.getContent().getAuthor())
 				.publisher(hit.getContent().getPublisher())
 				.publishedAt(StringUtil.dateToString(hit.getContent().getPublishedDate()))
+				.dType(DType.valueOf(hit.getContent().getDType()))
+				.reviewDistribution(PublishedBookInfoDto.ReviewDistribution.builder()
+					.average(Double.valueOf(hit.getContent().getReview()))
+					.build())
 				.build())
 			.collect(Collectors.toList());
 
