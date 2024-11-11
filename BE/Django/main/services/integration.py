@@ -13,7 +13,7 @@ class Integration:
             files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
             response = requests.post(
-                settings.FASTAPI_URL,
+                settings.FASTAPI_URL+"/layout-analysis",
                 files=files_to_send
             )
 
