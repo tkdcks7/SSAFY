@@ -57,6 +57,10 @@ public class Review {
 	@CreationTimestamp
 	private LocalDateTime updatedAt;
 
+	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)
+	@CreationTimestamp
+	private LocalDateTime createdAt;
+
 	@PreUpdate
 	protected void onUpdate() {
 		updatedAt = LocalDateTime.now(); // 엔티티가 수정될 때 현재 시간으로 설정
