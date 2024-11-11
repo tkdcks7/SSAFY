@@ -15,3 +15,6 @@ DATABASES = {
         }
     }
 }
+
+# fastapi url
+FASTAPI_URL = env('FASTAPI_URL')
