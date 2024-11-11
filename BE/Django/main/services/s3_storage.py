@@ -8,7 +8,7 @@ from datetime import datetime
 
 class S3Client:
 
-    def upload_fileobj(file_object, s3_key):
+    def upload_fileobj(self, file_object, s3_key):
         """
         S3 버켓에 파일 객체(바이너리) 업로드. 
         file_object: 업로드할 파일 객체
@@ -31,7 +31,7 @@ class S3Client:
             return False
         return True
     
-    def generate_download_url(s3_key, expiration=3600):
+    def generate_download_url(self, s3_key, expiration=3600):
         """
         다운로드(presigned) URL 생성
         s3_key: 다운로드할 파일의 키 (경로)
@@ -58,14 +58,14 @@ class S3Client:
             logging.error(e)
             return None
     
-    def upload_epub_to_s3(book: epub, filename: str, metadata: object):
+    def upload_epub_to_s3(self, book: epub, filename: str, metadata: object):
         buffer = io.BytesIO()
         try:
             epub.write_epub(buffer, book) # 버퍼에 epub 저장
             buffer.seek(0)
             s3_key = f'temp/epub/{filename}' # S3 내 저장 경로
-            S3Client.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
-            download_url = S3Client.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
+            self.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
+            download_url = self.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
 
             return {
                 "epub": download_url,
