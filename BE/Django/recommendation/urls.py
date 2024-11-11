@@ -3,7 +3,7 @@
 from django.urls import path
 
 from . import views
-from .views import RecommendationFamous, RecommendationDemographics
+from .views import RecommendationFamous, RecommendationDemographics, RecommendationCategory
 
 urlpatterns = [
     path('test', views.test_view, name='test'),
@@ -14,4 +14,5 @@ urlpatterns = [
     ## --------------------------
     path('rec-famous', RecommendationFamous.as_view()),
     path('rec-demo', RecommendationDemographics.as_view()),
+    path('rec-cate', RecommendationCategory.as_view()),
 ]
