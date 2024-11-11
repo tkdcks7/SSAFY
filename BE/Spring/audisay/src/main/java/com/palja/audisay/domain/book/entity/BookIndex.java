@@ -1,6 +1,6 @@
 package com.palja.audisay.domain.book.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -49,10 +49,10 @@ public class BookIndex {
 	private String dType;
 
 	@Field(type = FieldType.Date)
-	private LocalDateTime lastUpdated;
+	private LocalDate lastUpdated;
 
 	@Field(type = FieldType.Date)
-	private LocalDateTime publishedDate;
+	private LocalDate publishedDate;
 
 	@Field(type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
 	private String publisher;
