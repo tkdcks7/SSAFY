@@ -1,31 +1,25 @@
 package com.palja.audisay.domain.book.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.palja.audisay.domain.book.dto.SearchAfterValues;
-import com.palja.audisay.domain.book.dto.SearchSort;
 import com.palja.audisay.domain.book.dto.request.SearchPaginationReqDto;
 import com.palja.audisay.domain.book.dto.response.PublishedBookInfoDto;
 import com.palja.audisay.domain.book.dto.response.SearchCursorPaginationResDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.entity.BookIndex;
 import com.palja.audisay.domain.book.entity.DType;
+import com.palja.audisay.domain.book.repository.BookIndexRepository;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
 import com.palja.audisay.global.util.ImageUtil;
 import com.palja.audisay.global.util.StringUtil;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +31,7 @@ public class BookService {
 
 	private final ImageUtil imageUtil;
 	private final BookRepository bookRepository;
-	private final ElasticsearchOperations elasticsearchOperations;
+	private final BookIndexRepository bookIndexRepository;
 
 	// 도서 상세 정보 조회 메서드.
 	public PublishedBookInfoDto findPublishedBookDetail(Long memberId, Long bookId) {
@@ -55,45 +49,27 @@ public class BookService {
 		return publishedBookInfoDto;
 	}
 
-	public SearchCursorPaginationResDto getSearchPublishedBookResult(SearchPaginationReqDto searchPaginationReqDto) {
-		NativeQueryBuilder queryBuilder = NativeQuery.builder();
-
-		// 검색 조건 설정
-		if (StringUtil.isEmpty(searchPaginationReqDto.getKeyword())) {
-			queryBuilder.withQuery(q -> q.matchAll(m -> m));
-		} else {
-			Query query = Query.of(q -> q
-				.multiMatch(m -> m
-					.query(searchPaginationReqDto.getKeyword())
-					.fields(Arrays.asList("title", "author", "publisher"))
-				)
-			);
-			queryBuilder.withQuery(query);
-		}
-
-		// size만 직접 설정
-		queryBuilder.withMaxResults(searchPaginationReqDto.getPageSize());  // PageRequest 대신 이렇게 사용
-
-		// 정렬 조건
-		SearchSort sort = SearchSort.setSort(searchPaginationReqDto.getSortBy(), searchPaginationReqDto.getSortOrder());
-		queryBuilder.withSort(Sort.by(Sort.Direction.DESC, "_score"))
-			.withSort(Sort.by(sort.sortOrder(), sort.sortBy()))
-			.withSort(Sort.by(Sort.Direction.ASC, "bookId"));
-
-		// search_after 설정
-		if (searchPaginationReqDto.getLastSearchId() != null) {
-			SearchAfterValues searchAfter = SearchAfterValues.parse(sort.sortBy(),
-				searchPaginationReqDto.getLastSearchId());
-			queryBuilder.withSearchAfter(searchAfter.values());
-		}
-
+	public SearchCursorPaginationResDto searchPublishedBookResult(SearchPaginationReqDto searchPaginationReqDto) {
 		// 검색 실행
-		SearchHits<BookIndex> searchHits = elasticsearchOperations.search(
-			queryBuilder.build(),
-			BookIndex.class
-		);
+		SearchHits<BookIndex> searchHits = bookIndexRepository.searchPublishedBooks(searchPaginationReqDto);
 
-		List<PublishedBookInfoDto> bookList = searchHits.getSearchHits().stream()
+		// 다음 검색을 위한 searchId 생성
+		String nextSearchId = generateNextSearchId(searchHits, searchPaginationReqDto.getPageSize());
+
+		List<PublishedBookInfoDto> bookList = convertSearchHitsToPublishedBookInfoDtoList(searchHits,
+			searchPaginationReqDto.getPageSize());
+
+		return SearchCursorPaginationResDto.builder()
+			.bookList(bookList)
+			.keyword(searchPaginationReqDto.getKeyword())
+			.lastSearchId(nextSearchId)
+			.build();
+	}
+
+	private List<PublishedBookInfoDto> convertSearchHitsToPublishedBookInfoDtoList(SearchHits<BookIndex> searchHits,
+		Integer pageSize) {
+		return searchHits.getSearchHits().stream()
+			.limit(pageSize)
 			.map(hit -> PublishedBookInfoDto.builder()
 				.bookId(hit.getContent().getBookId())
 				.title(hit.getContent().getTitle())
@@ -109,18 +85,11 @@ public class BookService {
 					.build())
 				.build())
 			.collect(Collectors.toList());
+	}
 
-		// 다음 검색을 위한 searchId 생성
-		String nextSearchId = searchHits.getSearchHits().isEmpty() ? null :
-			SearchAfterValues.generateNextSearchId(
-				searchHits.getSearchHits().getLast()
-			);
-
-		return SearchCursorPaginationResDto.builder()
-			.bookList(bookList)
-			.keyword(searchPaginationReqDto.getKeyword())
-			.lastSearchId(nextSearchId)
-			.build();
+	private String generateNextSearchId(SearchHits<BookIndex> searchHits, Integer pageSize) {
+		boolean hasNext = searchHits.getSearchHits().size() > pageSize;
+		return hasNext ? SearchAfterValues.generateNextSearchId(searchHits.getSearchHits().get(pageSize - 1)) : null;
 	}
 
 	public Book validatePublishedBook(Long bookId) {
