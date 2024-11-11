@@ -31,7 +31,5 @@ class ImageCaptioner:
         # 5. coverAlt 불러오기 
         metadata['cover_alt'] = EpubReader.get_cover_alt(processed_book, "cover.jpg")
 
-
-        EpubReader.write_epub_to_local("./staticfiles/", "valentin_procceessed", processed_book)
         # 6. 바뀐 책을 반환 
         return processed_book, metadata 

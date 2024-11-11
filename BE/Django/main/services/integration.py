@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, ImageToTextConverter
 from ebooklib import epub
+from asgiref.sync import async_to_sync
+from ..services.image_captioner import ImageCaptioner
 
 class Integration:
     def make_ebook(self, metadata: Dict, files: List[UploadedFile]) -> epub.EpubBook:
@@ -32,4 +34,11 @@ class Integration:
             ebook_maker = InitialEbookConverter()
             new_book = ebook_maker.make_book(ocr_processed_data)
 
-            return new_book
+            # ------------------- 
+            # 이미지 캡셔닝
+            captioner = ImageCaptioner()
+            # async to sync 이용하여 동기처리 
+            captioned_book, metadata = async_to_sync(captioner.image_captioning)(captioned_book, ocr_processed_data.metadata)
+
+
+            return captioned_book
