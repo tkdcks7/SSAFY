@@ -162,7 +162,7 @@ class Epub2BookConverter(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        # try:
+        try:
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             file = request.FILES.get('uploadFile')
             cover = request.FILES.get('cover')
@@ -200,6 +200,6 @@ class Epub2BookConverter(APIView):
             return Response(response_body, status=status.HTTP_200_OK)
 
         
-        # except Exception as e:
-        #     print(e)
-        #     return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
