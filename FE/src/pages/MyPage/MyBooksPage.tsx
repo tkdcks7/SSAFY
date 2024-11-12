@@ -1,7 +1,3 @@
-// src/pages/MyBooksPage.tsx
-// 미구현기능 : api 연동, 다운로드(백엔드 요청 + 메타데이터 추출 & 로컬 데이터베이스에 저장)
-// 다운로드 조회(로컬 데이터베이스), 상세보기 라우팅
-
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, ScrollView, AccessibilityInfo, Dimensions } from 'react-native';
 import MyPageHeader from '../../components/MyPage/MyPageHeader';
@@ -10,7 +6,7 @@ import { handleScrollEndAnnouncement } from '../../utils/announceScrollEnd';
 import MyBooksTab from '../../components/MyPage/MyBooksTab';
 import AccessibilityMyBooksList from '../../components/MyPage/AccessibilityMyBooksList';
 import GeneralMyBooksList from '../../components/MyPage/GeneralMyBooksList';
-import { myBooks } from '../../data/dummyBooks';
+import { getMyBooks } from '../../services/Mypage/MyBooks'; // API 함수 임포트
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,41 +14,40 @@ const MyBooksPage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
   const [isUserVisuallyImpaired, setIsUserVisuallyImpaired] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'출판도서' | '등록도서'>('출판도서');
-  const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredBooks, setFilteredBooks] = useState<any[]>([]);
+  const [allBooks, setAllBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // 실제 유저 정보에서 가져오는 로직을 구현
-    const userIsVisuallyImpaired = false;
-    setIsUserVisuallyImpaired(userIsVisuallyImpaired);
-    setIsAccessibilityMode(userIsVisuallyImpaired); // 시각장애인이라면 접근성 모드를 기본으로 설정
-    if (userIsVisuallyImpaired) {
-      AccessibilityInfo.announceForAccessibility('접근성 모드가 활성화되었습니다. 화면 요소들이 더 쉽게 접근 가능합니다.');
-    }
+    const fetchBooks = async () => {
+      try {
+        const books = await getMyBooks();
+        setAllBooks(books); // 전체 도서 목록 설정
+      } catch (error: any) {
+        console.error(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
-  // 로컬 데이터베이스에서 다운로드 여부 확인 (더미 데이터로 대체)
-  const booksWithDownloadStatus = myBooks.map((book) => ({
-    ...book,
-    isDownloaded: Math.random() > 0.5, // 랜덤으로 다운로드 여부 지정 (더미)
-  }));
-
   useEffect(() => {
-    // 탭에 따라 도서 필터링
-    let filtered = booksWithDownloadStatus.filter((book) =>
+    // 탭 및 검색어에 따라 도서 필터링
+    let filtered = allBooks.filter((book) =>
       selectedTab === '출판도서' ? book.dtype === 'PUBLISHED' : book.dtype === 'REGISTERED'
     );
 
-    // 검색어에 따른 도서 필터링
     if (searchQuery) {
       filtered = filtered.filter(
-        (book) =>
-          book.title.includes(searchQuery) || book.author.includes(searchQuery)
+        (book) => book.title.includes(searchQuery) || book.author.includes(searchQuery)
       );
     }
 
     setFilteredBooks(filtered);
-  }, [selectedTab, searchQuery]);
+  }, [selectedTab, searchQuery, allBooks]);
 
   const handleModeToggle = () => {
     setIsAccessibilityMode((prev) => !prev);
@@ -81,10 +76,12 @@ const MyBooksPage: React.FC = () => {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         onScroll={handleScrollEndAnnouncement}
-        scrollEventThrottle={16} // 스크롤 이벤트 빈도 조절
+        scrollEventThrottle={16}
       >
         <View style={styles.innerContainer}>
-          {isAccessibilityMode ? (
+          {loading ? (
+            <Text>로딩 중...</Text>
+          ) : isAccessibilityMode ? (
             <AccessibilityMyBooksList books={filteredBooks} searchQuery={searchQuery} />
           ) : (
             <GeneralMyBooksList books={filteredBooks} searchQuery={searchQuery} />
