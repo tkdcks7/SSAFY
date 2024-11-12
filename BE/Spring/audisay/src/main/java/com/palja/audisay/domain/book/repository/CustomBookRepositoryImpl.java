@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomBookRepositoryImpl implements CustomBookRepository {
 	private final JPAQueryFactory jpaQueryFactory;
-	public final int ROUND_SCALE = 3;
+	public final int ROUND_SCALE = 1;
 
 	@Override
 	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long memberId, Long bookId) {
@@ -65,7 +65,9 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 					roundTo(calculateScorePercentage(review.score, 4)).as("four"),
 					roundTo(calculateScorePercentage(review.score, 3)).as("three"),
 					roundTo(calculateScorePercentage(review.score, 2)).as("two"),
-					roundTo(calculateScorePercentage(review.score, 1)).as("one")
+					roundTo(calculateScorePercentage(review.score, 1)).as("one"),
+					//리뷰 개수
+					review.reviewId.count().as("totalCount")
 				).as("reviewDistribution"),
 				// 사용자가 좋아요/담은 상태
 				Projections.fields(PublishedBookInfoDto.MemberInfo.class,
