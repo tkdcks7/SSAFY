@@ -1,14 +1,13 @@
-// src/pages/MyPage.tsx
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Text, Alert } from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import Btn from '../../components/Btn';
 import { Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { readingStats } from '../../data/dummyUserInfo';
+import { getUserReadingStats } from '../../services/Mypage/UserInfo'; // API 함수 임포트
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,22 +16,50 @@ type MyPageNavigationProp = StackNavigationProp<RootStackParamList, 'MyPage'>;
 const MyPage: React.FC = () => {
   const navigation = useNavigation<MyPageNavigationProp>();
 
-  // 유저 더미 데이터 (추후 실제 데이터로 대체)
-  const { nickname, cartBookCount, likedBookCount } = readingStats;
+  // 유저 데이터 상태 관리
+  const [userStats, setUserStats] = useState<{ nickname: string; cartBookCount: number; likedBookCount: number } | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchUserStats = async () => {
+    try {
+      const data = await getUserReadingStats();
+      setUserStats(data);
+    } catch (error: any) {
+      Alert.alert('에러', error.message || '데이터를 불러오는 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 페이지가 포커스될 때마다 API 호출
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true); // 로딩 상태 초기화
+      fetchUserStats();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
       <MainHeader title="마이페이지" isAccessibilityMode={false} isUserVisuallyImpaired={true} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.innerContainer}>
-          {/* 유저 정보 섹션 */}
-          <View style={styles.userInfoSection}>
-            <Text style={styles.greetingText}><Text style={styles.nicknameText}>{nickname}</Text> 님, 안녕하세요.</Text>
-            <View style={styles.bookInfoBox}>
-              <Text style={styles.bookInfoText}>담은 도서: {cartBookCount}권</Text>
-              <Text style={styles.bookInfoText}>좋아요한 도서: {likedBookCount}권</Text>
+          {/* 로딩 중일 때 메시지 표시 */}
+          {loading ? (
+            <Text>로딩 중...</Text>
+          ) : userStats ? (
+            <View style={styles.userInfoSection}>
+              <Text style={styles.greetingText}>
+                <Text style={styles.nicknameText}>{userStats.nickname}</Text> 님, 안녕하세요.
+              </Text>
+              <View style={styles.bookInfoBox}>
+                <Text style={styles.bookInfoText}>담은 도서: {userStats.cartBookCount}권</Text>
+                <Text style={styles.bookInfoText}>좋아요한 도서: {userStats.likedBookCount}권</Text>
+              </View>
             </View>
-          </View>
+          ) : (
+            <Text>유저 정보를 가져올 수 없습니다.</Text>
+          )}
 
           {/* 버튼 섹션 */}
           <View style={styles.buttonSection}>
@@ -48,7 +75,6 @@ const MyPage: React.FC = () => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -79,7 +105,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
     paddingLeft: width * 0.05,
-
     width: width * 0.8,
     marginBottom: height * 0.015,
   },
