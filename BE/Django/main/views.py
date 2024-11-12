@@ -66,7 +66,7 @@ class Image2BookConverter(APIView):
     def post(self, request):
         try:
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            files = request.FILES.getlist('images')
+            files = request.FILES.getlist('uploadFile')
             cover = request.FILES.get('cover')
 
             if not files or not cover:
@@ -83,16 +83,19 @@ class Image2BookConverter(APIView):
             metadata['created_at'] = datetime.datetime.now()
             
             # ebook 만드는 프로세스
-            book = Integration().image_to_ebook(metadata=metadata, files=files)
+            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files)
 
-            # s3에 저장
+            # ebook을 s3에 저장
             filename = f'{datetime.datetime.now()}.epub'
             epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
+            metadata['bookId'] = 1 # 책 mysql에 저장
+            metadata['category'] = '005' # 카테고리 ID
+            metadata['dtype'] = 'REGISTERED'
             response_body = {
-                '결과': 'ebook 생성 성공',
-                'epub_link': epub_data['epub']
+                'epub': epub_data['epub'],
+                'metadata': metadata
             }
 
             # 특별히 오류가 발생하지 않으면 성공으로 간주
@@ -112,13 +115,13 @@ class Pdf2BookConverter(APIView):
     def post(self, request):
         try:
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            file = request.FILES.get('pdf')
+            file = request.FILES.get('uploadFile')
             cover = request.FILES.get('cover')
 
             if not file or not cover:
                 return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
+            # 메타데이터 받기 (작가명, 제목, 카테고리) + 메타데이터 추가 (커버 이미지, 생성일시)
             try:
                 metadata = json.loads(request.POST.get('metadata', '{}'))
             except json.JSONDecodeError:
@@ -129,16 +132,19 @@ class Pdf2BookConverter(APIView):
             metadata['created_at'] = datetime.datetime.now()
             
             # ebook 만드는 프로세스
-            book = Integration().pdf_to_ebook(metadata=metadata, file=file)
+            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file)
 
-            # s3에 저장
+            # ebook을 s3에 저장
             filename = f'{datetime.datetime.now()}.epub'
             epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
+            metadata['bookId'] = 1 # 책 mysql에 저장
+            metadata['category'] = '005' # 카테고리 ID
+            metadata['dtype'] = 'REGISTERED'
             response_body = {
-                '결과': 'ebook 생성 성공',
-                'epub_link': epub_data['epub']
+                'epub': epub_data['epub'],
+                'metadata': metadata
             }
 
             # 특별히 오류가 발생하지 않으면 성공으로 간주
@@ -156,9 +162,9 @@ class Epub2BookConverter(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        try:
+        # try:
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            file = request.FILES.get('ebook')
+            file = request.FILES.get('uploadFile')
             cover = request.FILES.get('cover')
 
             if not file or not cover:
@@ -174,25 +180,26 @@ class Epub2BookConverter(APIView):
             metadata['cover'] = cover
             metadata['created_at'] = datetime.datetime.now()
             
-            # 접근성 적용한 ebook 만드는 프로세스
-            epub_content = io.BytesIO(file.read())
-            book = epub.read_epub(epub_content)
-            processed_book = async_to_sync(ImageCaptioner().image_captioning)(book)
+            # ebook 만드는 프로세스
+            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file)
 
             # s3에 저장
-            # filename = f'{datetime.datetime.now()}.epub'
-            # epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            filename = f'{datetime.datetime.now()}.epub'
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
-            # response_body = {
-            #     '결과': 'ebook 생성 성공',
-            #     'epub_link': epub_data['epub']
-            # }
+            metadata['bookId'] = 1 # 책 mysql에 저장
+            metadata['category'] = '005' # 카테고리 ID
+            metadata['dtype'] = 'REGISTERED'
+            response_body = {
+                'epub': epub_data['epub'],
+                'metadata': metadata
+            }
 
             # 특별히 오류가 발생하지 않으면 성공으로 간주
-            # return Response(response_body, status=status.HTTP_200_OK)
+            return Response(response_body, status=status.HTTP_200_OK)
 
         
-        except Exception as e:
-            print(e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # except Exception as e:
+        #     print(e)
+        #     return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
