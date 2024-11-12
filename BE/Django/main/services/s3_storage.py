@@ -5,10 +5,13 @@ from config.settings.base import AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_S3_BUCKET, 
 from ebooklib import epub
 import io 
 from datetime import datetime
+import numpy as np
+from PIL import Image
+from urllib.parse import quote
 
 class S3Client:
 
-    def upload_fileobj(file_object, s3_key):
+    def upload_fileobj(self, file_object, s3_key):
         """
         S3 버켓에 파일 객체(바이너리) 업로드. 
         file_object: 업로드할 파일 객체
@@ -31,7 +34,7 @@ class S3Client:
             return False
         return True
     
-    def generate_download_url(s3_key, expiration=3600):
+    def generate_download_url(self, s3_key, expiration=3600):
         """
         다운로드(presigned) URL 생성
         s3_key: 다운로드할 파일의 키 (경로)
@@ -58,14 +61,14 @@ class S3Client:
             logging.error(e)
             return None
     
-    def upload_epub_to_s3(book: epub, filename: str, metadata: object):
+    def upload_epub_to_s3(self, book: epub, filename: str, metadata: object):
         buffer = io.BytesIO()
         try:
             epub.write_epub(buffer, book) # 버퍼에 epub 저장
             buffer.seek(0)
             s3_key = f'temp/epub/{filename}' # S3 내 저장 경로
-            S3Client.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
-            download_url = S3Client.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
+            self.upload_fileobj(file_object=buffer, s3_key=s3_key) # 파일 업로드
+            download_url = self.generate_download_url(s3_key=s3_key) # 다운로드 링크 생성
 
             return {
                 "epub": download_url,
@@ -80,3 +83,27 @@ class S3Client:
         except Exception as e:
             print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
             return None
+        
+    def save_numpy_to_s3(self, array: np.ndarray, s3_key: str) -> str:
+        """이미지를 jpg로 저장하고 url 반환"""
+        client = boto3.client(  # 정확한 타입 힌트 추가
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_KEY,
+            region_name=AWS_REGION
+        )
+
+        pil_cover = Image.fromarray(array)
+        buffer = io.BytesIO()
+        pil_cover.save(buffer, format='JPEG')
+        buffer.seek(0)
+
+        extra_args = {
+            'ContentType': 'image/jpeg',
+            'ContentDisposition': 'inline'
+        }
+
+        client.upload_fileobj(buffer, AWS_S3_BUCKET, s3_key, ExtraArgs=extra_args)
+
+        url = f'https://{AWS_S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{quote(s3_key)}'
+        return url

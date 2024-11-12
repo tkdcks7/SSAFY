@@ -2,13 +2,13 @@
 
 from django.urls import path
 
-from .views import OcrProcessingView, PdfProcessingView, ImageCaptioningView, LayoutAnalyzeTestView
+from .views import ImageCaptioningView, Image2BookConverter, Pdf2BookConverter, Epub2BookConverter
 from . import views 
 
 urlpatterns = [
-    path('ocr/', OcrProcessingView.as_view(), name='ocr_process'),
-    path('pdf/', PdfProcessingView.as_view(), name='pdf_process'),
     path('test', views.test_view, name='test'),
     path('image-caption/', ImageCaptioningView.as_view(), name='image_captioning'),
-    path('layout/', LayoutAnalyzeTestView.as_view(), name='layout_process')
+    path('upload/image', Image2BookConverter.as_view(), name='image2ebook'),
+    path('upload/pdf', Pdf2BookConverter.as_view(), name='pdf2ebook'),
+    path('upload/epub', Epub2BookConverter.as_view(), name='epub2ebook')
 ]
