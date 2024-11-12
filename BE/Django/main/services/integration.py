@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import UploadedFile
 import requests
 from rest_framework import status
 from rest_framework.response import Response
-from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, PdfConverter
+from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, PdfConverter, EpubReader
 from ebooklib import epub
 from asgiref.sync import async_to_sync
 from ..services.image_captioner import ImageCaptioner
@@ -48,10 +48,11 @@ class Integration:
         # 접근성 적용
 
         # ebook span태그에 index 붙이기
+        indexed_book = EpubReader.set_sentence_index(captioned_book)
 
         # mysql에 정보 저장
 
-        return (captioned_book, metadata)
+        return (indexed_book, metadata)
     
     
     def pdf_to_ebook(self, metadata: Dict, file: UploadedFile) -> Tuple[epub.EpubBook, Dict]:
@@ -93,10 +94,11 @@ class Integration:
         # 접근성 적용
 
         # ebook span태그에 index 붙이기
+        indexed_book = EpubReader.set_sentence_index(captioned_book)
 
         # mysql에 정보 저장
 
-        return (captioned_book, metadata)    
+        return (indexed_book, metadata)    
     
 
     def epub_to_ebook(self, metadata: Dict, file: UploadedFile) -> Tuple[epub.EpubBook, Dict]:
@@ -123,10 +125,11 @@ class Integration:
                 # 접근성 적용
 
                 # ebook span태그에 index 붙이기
+                indexed_book = EpubReader.set_sentence_index(processed_book)
 
                 # mysql에 정보 저장
 
-                return (processed_book, metadata)
+                return (indexed_book, metadata)
             
             finally:
                 # 임시 파일 삭제

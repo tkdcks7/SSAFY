@@ -3,6 +3,7 @@ from ebooklib import epub
 from datetime import datetime
 import re 
 from bs4 import BeautifulSoup
+import bs4
 
 class EpubReader:
     ## 입출력 함수
@@ -73,6 +74,26 @@ class EpubReader:
     
 
     def set_sentence_index(book: epub.EpubBook):
+        """
+        epub html문서의 span태그에 data-index 속성 추가
+        """
         index = 0
 
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            # html 문서 파싱
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+
+            # 모든 span 태그 찾기
+            spans = soup.find_all('span')
+            bs4.element.PageElement
+
+            # 각 span 태그에 data-index 속성 추가
+            for span in spans:
+                if span.get_text(strip=True): # span 태그 안에 문장이 있을 때만
+                    span['data-index'] = str(index)
+                    index += 1
+            
+            # 수정된 내용을 다시 저장
+            item.set_content(str(soup).encode())
         
+        return book
