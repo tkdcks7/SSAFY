@@ -1,12 +1,14 @@
-// src/components/MyPage/AccessibilityMyBooksList.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, AccessibilityInfo } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/AppNavigator'; // 네비게이션 타입 임포트
 
 interface Book {
   bookId: number;
   title: string;
   author: string;
-  cover: any;
+  cover: string; // 원격 URL 이미지
   isDownloaded: boolean;
 }
 
@@ -15,17 +17,24 @@ interface AccessibilityMyBooksListProps {
   searchQuery: string; // 검색어 상태를 전달받음
 }
 
+type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
+
 const { width, height } = Dimensions.get('window');
 
 const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ books, searchQuery }) => {
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
+  const navigation = useNavigation<BookDetailNavigationProp>();
 
   // 검색어와 다운로드되지 않은 도서만 보기 설정에 따라 도서 목록 필터링
   const filteredBooks = books.filter((book) => {
     if (showOnlyNotDownloaded && book.isDownloaded) {
       return false;
     }
-    if (searchQuery && !book.title.toLowerCase().includes(searchQuery.toLowerCase()) && !book.author.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (
+      searchQuery &&
+      !book.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !book.author.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
       return false;
     }
     return true;
@@ -36,15 +45,21 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
       <TouchableOpacity
         style={styles.filterButton}
         onPress={() => setShowOnlyNotDownloaded((prev) => !prev)}
-        accessibilityLabel={showOnlyNotDownloaded ? "모든 도서 보기" : "다운로드되지 않은 도서만 보기"}
+        accessibilityLabel={showOnlyNotDownloaded ? '모든 도서 보기' : '다운로드되지 않은 도서만 보기'}
       >
-        <Text style={styles.filterButtonText}>{showOnlyNotDownloaded ? "모든 도서 보기" : "다운로드되지 않은 도서만 보기"}</Text>
+        <Text style={styles.filterButtonText}>
+          {showOnlyNotDownloaded ? '모든 도서 보기' : '다운로드되지 않은 도서만 보기'}
+        </Text>
       </TouchableOpacity>
       {filteredBooks.map((book) => (
         <View key={book.bookId} style={styles.card}>
           <View style={styles.leftSection}>
-            <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`} numberOfLines={2} ellipsizeMode="tail">{book.title}</Text>
-            <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`} numberOfLines={1} ellipsizeMode="tail">저자: {book.author}</Text>
+            <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`} numberOfLines={2} ellipsizeMode="tail">
+              {book.title}
+            </Text>
+            <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`} numberOfLines={1} ellipsizeMode="tail">
+              {book.author}
+            </Text>
           </View>
           {book.isDownloaded ? (
             <View style={styles.middleSectionDownloaded} accessibilityLabel={`${book.title} 다운로드 완료`}>
@@ -55,7 +70,6 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
               style={styles.middleSection}
               onPress={() => {
                 AccessibilityInfo.announceForAccessibility(`${book.title} 다운로드 중입니다.`);
-                // 다운로드 요청 로직 추가 예정
               }}
               accessibilityLabel={`${book.title} 다운로드 버튼`}
             >
@@ -66,7 +80,7 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
             style={styles.rightSection}
             onPress={() => {
               AccessibilityInfo.announceForAccessibility(`${book.title} 상세보기 페이지로 이동합니다.`);
-              // 상세보기 로직 추가 예정
+              navigation.navigate('BookDetail', { bookId: book.bookId }); // bookId 전달
             }}
             accessibilityLabel={`${book.title} 상세보기 버튼`}
           >
