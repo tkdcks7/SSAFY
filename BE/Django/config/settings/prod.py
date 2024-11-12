@@ -18,3 +18,6 @@ DATABASES = {
 
 # fastapi url
 FASTAPI_URL = env('FASTAPI_URL')
+
+# mongoDB 
+DATABASE_MONGO = env('MONGO_DB_URI')
