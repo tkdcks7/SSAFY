@@ -17,5 +17,5 @@ public class SearchPaginationReqDto extends CursorPaginationReqDto {
 	@Builder.Default
 	private String sortBy = "published_date";
 	@Builder.Default
-	private String sortOrder = "asc";
+	private String sortOrder = "desc";
 }
