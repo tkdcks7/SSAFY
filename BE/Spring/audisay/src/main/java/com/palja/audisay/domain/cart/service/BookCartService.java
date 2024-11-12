@@ -39,10 +39,10 @@ public class BookCartService {
 		// 사용자 검증
 		Member member = memberService.validateMember(memberId);
 		// 담은 상태 확인
-		boolean isCurLike = isCurrentlyCarted(member, book);
-		if (isCart && !isCurLike) {
+		boolean isCurCart = isCurrentlyCarted(member, book);
+		if (isCart && !isCurCart) {
 			savePublishedBookToCart(member, book);
-		} else if (!isCart && isCurLike) {
+		} else if (!isCart && isCurCart) {
 			deletePublishedBookFromCart(member, book);
 		}
 	}
