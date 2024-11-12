@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { unlikeBook } from '../../services/Mypage/MyLikedBooks'; // 좋아요 취소 API 함수 임포트
 
 interface Book {
   bookId: number;
@@ -28,9 +29,14 @@ const AccessibilityMyLikedBooksList: React.FC<AccessibilityMyLikedBooksListProps
       book.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleUnlike = (bookId: number, bookTitle: string) => {
-    setLikedBooks((prevBooks) => prevBooks.filter((book) => book.bookId !== bookId));
-    AccessibilityInfo.announceForAccessibility(`${bookTitle} 좋아요를 취소하였습니다.`);
+  const handleUnlike = async (bookId: number, bookTitle: string) => {
+    try {
+      await unlikeBook(bookId); // 좋아요 취소 API 호출
+      setLikedBooks((prevBooks) => prevBooks.filter((book) => book.bookId !== bookId));
+      AccessibilityInfo.announceForAccessibility(`${bookTitle} 좋아요를 취소하였습니다.`);
+    } catch (error: any) {
+      Alert.alert('에러', error.message || '좋아요 취소 중 문제가 발생했습니다.');
+    }
   };
 
   const handleDetailView = (bookId: number, bookTitle: string) => {
@@ -105,6 +111,7 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#3943B7',
     borderLeftWidth: 1,
     borderLeftColor: '#000',
   },
@@ -125,6 +132,7 @@ const styles = StyleSheet.create({
   rightButtonText: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
+    color: 'white',
   },
 });
 
