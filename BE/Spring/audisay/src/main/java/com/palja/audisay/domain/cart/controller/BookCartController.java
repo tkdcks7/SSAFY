@@ -27,13 +27,12 @@ public class BookCartController {
 
 	private final BookCartService bookCartService;
 
-	@Operation(summary = "출판 도서 담기", description = "bookId 도서 담기")
+	@Operation(summary = "출판 도서 담기/삭제", description = "bookId 도서 담기/삭제")
 	@JsonView(MemberBookStatusReqDto.CartView.class)
 	@PostMapping()
 	public ResponseEntity<?> addPublishedBookToCart(@Valid @RequestBody MemberBookStatusReqDto bookStatusReqDto) {
 		Long memberId = SessionUtil.getMemberId();
-		bookCartService.savePublishedBookToCart(memberId, bookStatusReqDto.getBookId(),
-			bookStatusReqDto.getCartFlag());
+		bookCartService.modifyCartStatus(memberId, bookStatusReqDto.getBookId(), bookStatusReqDto.getCartFlag());
 		return ResponseEntity.ok().build();
 	}
 
