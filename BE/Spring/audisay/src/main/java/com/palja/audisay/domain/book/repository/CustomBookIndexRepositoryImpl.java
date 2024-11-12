@@ -50,7 +50,7 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 	}
 
 	private void setPageSize(NativeQueryBuilder queryBuilder, int pageSize) {
-		queryBuilder.withMaxResults(pageSize + 1);
+		queryBuilder.withMaxResults(pageSize);
 	}
 
 	private SearchSort createSortCondition(String sortBy, String sortOrder) {

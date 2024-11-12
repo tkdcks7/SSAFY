@@ -54,10 +54,9 @@ public class BookService {
 		SearchHits<BookIndex> searchHits = bookIndexRepository.searchPublishedBooks(searchPaginationReqDto);
 
 		// 다음 검색을 위한 searchId 생성
-		String nextSearchId = generateNextSearchId(searchHits, searchPaginationReqDto.getPageSize());
+		String nextSearchId = generateNextSearchId(searchHits);
 
-		List<PublishedBookInfoDto> bookList = convertSearchHitsToPublishedBookInfoDtoList(searchHits,
-			searchPaginationReqDto.getPageSize());
+		List<PublishedBookInfoDto> bookList = convertSearchHitsToPublishedBookInfoDtoList(searchHits);
 
 		return SearchCursorPaginationResDto.builder()
 			.bookList(bookList)
@@ -66,10 +65,8 @@ public class BookService {
 			.build();
 	}
 
-	private List<PublishedBookInfoDto> convertSearchHitsToPublishedBookInfoDtoList(SearchHits<BookIndex> searchHits,
-		Integer pageSize) {
+	private List<PublishedBookInfoDto> convertSearchHitsToPublishedBookInfoDtoList(SearchHits<BookIndex> searchHits) {
 		return searchHits.getSearchHits().stream()
-			.limit(pageSize)
 			.map(hit -> PublishedBookInfoDto.builder()
 				.bookId(hit.getContent().getBookId())
 				.title(hit.getContent().getTitle())
@@ -87,9 +84,9 @@ public class BookService {
 			.collect(Collectors.toList());
 	}
 
-	private String generateNextSearchId(SearchHits<BookIndex> searchHits, Integer pageSize) {
-		boolean hasNext = searchHits.getSearchHits().size() > pageSize;
-		return hasNext ? SearchAfterValues.generateNextSearchId(searchHits.getSearchHits().get(pageSize - 1)) : null;
+	private String generateNextSearchId(SearchHits<BookIndex> searchHits) {
+		return searchHits.getSearchHits().isEmpty() ? null :
+			SearchAfterValues.generateNextSearchId(searchHits.getSearchHits().getLast());
 	}
 
 	public Book validatePublishedBook(Long bookId) {
