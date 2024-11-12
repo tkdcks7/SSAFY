@@ -15,7 +15,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,12 +23,12 @@ public class ReviewService {
 	private final BookService bookService;
 	private final ReviewRepository reviewRepository;
 
-	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, LocalDateTime lastUpdatedAt,
-																Long lastReviewId, Integer pageSize) {
+	public ReviewListResponseDto getBookReviewsWithMemberReview(Long memberId, Long bookId, Long lastReviewId,
+		Integer pageSize) {
 		Book book = bookService.validatePublishedBook(bookId);
 
 		// 첫 요청인지 확인
-		boolean isFirstPage = (lastUpdatedAt == null && lastReviewId == null);
+		boolean isFirstPage = (lastReviewId == null);
 		// 본인의 리뷰 조회 (첫 요청일 때만 조회)
 		ReviewResponseDto memberReviewDto = null;
 		if (isFirstPage) {
@@ -37,42 +36,48 @@ public class ReviewService {
 			memberReviewDto = (memberReview != null) ? ReviewResponseDto.toMemberReviewDto(memberReview) : null;
 		}
 
-		// cursor 값 설정
-		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
-		List<Review> reviews = reviewRepository.findOtherReviewsWithCursor(book, memberId, updatedAtCursor,
-				lastReviewId, pageSize);
-		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
+		List<Review> reviews = reviewRepository.findOtherReviewsWithCursor(book, memberId, lastReviewId, pageSize);
+		List<Review> pagedReviews = getPagedReviewList(reviews, pageSize); // 리뷰 목록 개수 확인
+		Long nextReviewId = calculateNextReviewId(reviews, pageSize); // 커서 계산
 
-		// 다음 커서 계산 (다음 페이지가 없다면 null 반환)
-		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
+		List<ReviewResponseDto> reviewList = pagedReviews.stream().map(ReviewResponseDto::toReviewListDto).toList();
 
 		return ReviewListResponseDto.builder()
 			.memberReview(memberReviewDto)
 			.reviewList(reviewList)
-			.lastUpdatedAt(nextUpdatedAt)
 			.lastReviewId(nextReviewId)
 			.build();
 	}
 
-	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, LocalDateTime lastUpdatedAt,
-															   Long lastReviewId, Integer pageSize) {
-		LocalDateTime updatedAtCursor = (lastUpdatedAt != null) ? lastUpdatedAt : LocalDateTime.now();
+	public MyPageReviewListResponseDto getMyReviewsAfterCursor(Long memberId, Long lastReviewId, Integer pageSize) {
 
-		List<Review> reviews = reviewRepository.findReviewsWithCursor(memberId, updatedAtCursor, lastReviewId,
-				pageSize);
-		List<ReviewResponseDto> reviewList = reviews.stream().map(ReviewResponseDto::toDto).toList();
+		List<Review> reviews = reviewRepository.findReviewsWithCursor(memberId, lastReviewId, pageSize);
+		List<Review> pagedReviews = getPagedReviewList(reviews, pageSize); // 리뷰 목록 개수 확인
+		Long nextReviewId = calculateNextReviewId(reviews, pageSize); // 커서 계산
 
-		// 다음 커서 계산
-		LocalDateTime nextUpdatedAt = (reviews.size() <= pageSize) ? null : reviews.getLast().getUpdatedAt();
-		Long nextReviewId = (reviews.size() <= pageSize) ? null : reviews.getLast().getReviewId();
+		List<ReviewResponseDto> reviewList = pagedReviews.stream().map(ReviewResponseDto::toDto).toList();
+
 
 		return MyPageReviewListResponseDto.builder()
 			.reviewList(reviewList)
-			.lastUpdatedAt(nextUpdatedAt)
 			.lastReviewId(nextReviewId)
 			.build();
 	}
+
+	// 목록 개수를  pageSize와 같게 하기
+	private <T> List<T> getPagedReviewList(List<T> reviews, Integer pageSize) {
+		boolean hasNext = reviews.size() > pageSize;
+		if (hasNext) {
+			reviews = reviews.subList(0, pageSize);
+		}
+		return reviews;
+	}
+
+	// 커서를 계산하는 함수
+	private Long calculateNextReviewId(List<Review> reviews, Integer pageSize) {
+		return (reviews.size() > pageSize) ? reviews.get(pageSize - 1).getReviewId() : null;
+	}
+
 
 	@Transactional
 	public void createReview(Long memberId, ReviewRequestDto reviewRequestDto) {

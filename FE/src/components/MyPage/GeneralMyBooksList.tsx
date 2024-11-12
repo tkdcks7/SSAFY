@@ -1,13 +1,14 @@
-
-// src/components/MyPage/GeneralMyBooksList.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
 interface Book {
   bookId: number;
   title: string;
   author: string;
-  cover: any;
+  cover: string;
   isDownloaded: boolean;
 }
 
@@ -16,8 +17,11 @@ interface GeneralMyBooksListProps {
   searchText: string;
 }
 
+type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
+
 const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchText }) => {
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
+  const navigation = useNavigation<BookDetailNavigationProp>();
 
   const filteredBooks = books.filter((book) => {
     if (showOnlyNotDownloaded && book.isDownloaded) {
@@ -43,15 +47,31 @@ const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchTe
       </TouchableOpacity>
       {filteredBooks.map((book) => (
         <View key={book.bookId} style={styles.card}>
-          <Image source={book.cover} style={styles.bookCover} accessibilityLabel={`${book.title} 표지`} />
-          <View style={styles.textContainer}>
-            <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`}>
+          <Image 
+            source={{ uri: book.cover }} 
+            style={styles.bookCover} 
+            accessibilityLabel={`${book.title} 표지`} 
+          />
+          <TouchableOpacity
+            style={styles.textContainer}
+            onPress={() => {
+              AccessibilityInfo.announceForAccessibility(`${book.title} 상세보기 페이지로 이동합니다.`);
+              navigation.navigate('BookDetail', { bookId: book.bookId });
+            }}
+            accessibilityLabel={`${book.title} 상세보기 버튼`}
+          >
+            <Text 
+              style={styles.title} 
+              accessibilityLabel={`제목: ${book.title}`} 
+              numberOfLines={3} 
+              ellipsizeMode="tail"
+            >
               {book.title}
             </Text>
             <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`}>
-              저자: {book.author}
+              {book.author}
             </Text>
-          </View>
+          </TouchableOpacity>
           {book.isDownloaded ? (
             <View style={styles.downloadedButton} accessibilityLabel={`${book.title} 다운로드 완료`}>
               <Image source={require('../../assets/icons/checked.png')} style={styles.downloadIcon} />

@@ -1,5 +1,6 @@
 package com.palja.audisay.domain.recommendation.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -20,5 +21,5 @@ public interface RecommendationLongRepository extends
 
 	// famous
 	@Query(value = "{ 'r_type': 'famous' }", sort = "{ 'target_id' : -1 }")
-	RecommendationLong findFamousFirstOrderByGroupIdDesc();
+	List<RecommendationLong> findFamousFirstOrderByGroupIdDesc();
 }

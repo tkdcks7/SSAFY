@@ -6,4 +6,6 @@ from .s3_storage import S3Client
 from .pdf_converter import PdfConverter
 from .layout_analyze import LayoutAnalyze
 from .ocr_parallel import OcrParallel
+from .epub_reader import EpubReader
+from .mysql_util import MysqlUtil
 from .integration import Integration

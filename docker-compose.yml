@@ -61,6 +61,9 @@ services:
       - PROD_SERVER_URL=${PROD_SERVER_URL}
       - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
       - MONGO_DB_URI=${MONGO_DB_URI}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_HOST_PORT=${ELASTIC_HOST_PORT}
     expose:
       - ${BACKEND_PORT}
     networks:
@@ -94,6 +97,7 @@ services:
       - AZURE_VISION_REGION=${AZURE_VISION_REGION}
       - OPENAI_AUTH=${OPENAI_AUTH}
       - FASTAPI_URL=${FASTAPI_URL}
+      - MONGO_DB_URI=${MONGO_DB_URI}
     expose:
       - ${DJANGO_PORT}
     networks:
