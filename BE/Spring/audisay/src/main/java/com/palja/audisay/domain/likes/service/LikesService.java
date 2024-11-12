@@ -82,7 +82,7 @@ public class LikesService {
 			.map(book -> PublishedBookInfoDto.builder()
 				.bookId(book.getBookId())
 				.title(book.getTitle())
-				.cover(imageUtil.getFullImageUrl(book.getCover()))  // 이미지 URL 접두사 추가
+				.cover(imageUtil.getFullImageUrl(book.getCoverRaw()))  // 이미지 URL 접두사 추가
 				.coverAlt(book.getCoverAlt())
 				.author(book.getAuthor())
 				.dType(book.getDType())
