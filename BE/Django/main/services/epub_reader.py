@@ -70,3 +70,9 @@ class EpubReader:
             return img_cover['alt'] 
 
         return ""
+    
+
+    def set_sentence_index(book: epub.EpubBook):
+        index = 0
+
+        
