@@ -18,12 +18,14 @@ class EpubReader:
         return epub.read_epub(path) 
 
     def write_epub_to_local(path: str, name: str, book: epub.EpubBook):
+        print(f"path {path}")
         current_time = datetime.now().strftime('%Y%m%d_%H%M%S')  
         epub.write_epub(f'{path}{name}_{current_time}.epub', book)
 
 
     # 이미지에 Alt 추가하여 다시 epub 파일 생성하는 함수 
     def append_alt_to_image(book: epub.EpubBook, image_list: list):
+        print(f"image_id: {image_list[0][0]}")
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             content = item.get_content().decode('utf-8')
             soup = BeautifulSoup(content, 'html.parser')
@@ -40,6 +42,24 @@ class EpubReader:
 
         return book 
     
+
+    def append_alt_to_image_without_decode(book: epub.EpubBook, image_list: list):
+        print(f"image_id: {image_list[0][0]}")
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            content = item.get_content()
+            soup = BeautifulSoup(content, 'html.parser')
+            
+            # 이미지의 alt 속성 업데이트
+            for image_id, caption, _ in image_list:
+                img_tag = soup.find('img', {'src': image_id})
+                if img_tag:
+                    img_tag['alt'] = caption
+            
+            # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
+            updated_content = str(soup)
+            item.set_content(updated_content.encode('utf-8'))
+
+        return book 
     # 표지 이미지의 image_id 기준으로 coverAlt 반환 
     def get_cover_alt(book: epub.EpubBook, cover_id):
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
@@ -50,3 +70,9 @@ class EpubReader:
             return img_cover['alt'] 
 
         return ""
+    
+
+    def set_sentence_index(book: epub.EpubBook):
+        index = 0
+
+        

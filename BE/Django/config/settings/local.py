@@ -18,3 +18,5 @@ DATABASES = {
 
 # fastapi url
 FASTAPI_URL = "http://localhost:5000"
+
+DATABASE_MONGO = env('MONGO_DB_URI')

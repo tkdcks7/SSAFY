@@ -64,6 +64,7 @@ class OpenAIAnalysis:
         이미지 설명은 최대 2문장이어야 합니다. 첫 문장은 반드시 '~한 그림.' 혹은 '~한 사진.'으로 끝나고, 
         두번째 문장은 '~다'로 끝나야 합니다. 
         설명에는 시각장애인이 이해할 수 있도록 시각적 정보가 포함되어야 하며, 주관적 내용은 제외합니다.
+        모든 설명은 반드시 한글이어야 합니다!
         """
 
         self.user_message_template = """
@@ -76,7 +77,7 @@ class OpenAIAnalysis:
     def analyze_openai_image(self, processed_images):
         updated_images = []
         for file_name, azure_caption, image_content in processed_images:
-             # image_content를 base64로 인코딩
+            # image_content를 base64로 인코딩
             image_base64 = base64.b64encode(image_content).decode("utf-8")  
 
             try:
