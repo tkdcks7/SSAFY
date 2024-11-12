@@ -81,7 +81,7 @@ public class RecommendationService {
 				Criterion.DEMOGRAPHICS_BOOK.getType(), groupId)
 			.orElseGet(() -> recommendationStringRepository
 				.findByrTypeAndTargetId(Criterion.DEMOGRAPHICS_BOOK.getType(), totalGroupId)
-				.orElse(RecommendationString.builder().bookList(new ArrayList<>()).build());
+				.orElse(RecommendationString.builder().bookList(new ArrayList<>()).build()));
 		// 3. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
