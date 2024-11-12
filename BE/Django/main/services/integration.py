@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import UploadedFile
 import requests
 from rest_framework import status
 from rest_framework.response import Response
-from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, PdfConverter, EpubReader
+from . import LayoutAnalyze, InitialEbookConverter, OcrParallel, PdfConverter, EpubReader, MysqlUtil
 from ebooklib import epub
 from asgiref.sync import async_to_sync
 from ..services.image_captioner import ImageCaptioner
@@ -13,7 +13,10 @@ import os
 import tempfile
 
 class Integration:
-    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile]) -> Tuple[epub.EpubBook, Dict]:
+    def __init__(self):
+        self.member_id = 1 # 일단 static으로 설정
+
+    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str) -> Tuple[epub.EpubBook, Dict]:
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
@@ -51,11 +54,24 @@ class Integration:
         indexed_book = EpubReader.set_sentence_index(captioned_book)
 
         # mysql에 정보 저장
+        dbutil = MysqlUtil()
+        saved_book = dbutil.save_book(
+            member_id=self.member_id,
+            category_id=metadata['category'],
+            title=metadata['title'],
+            cover_url=metadata['cover'],
+            cover_alt=metadata['cover_alt'],
+            author=metadata['author'],
+            my_tts_flag=1,
+            epub=file_name
+        )
+        metadata['book_id'] = saved_book.book_id
+        metadata['created_at'] = saved_book.created_at
 
         return (indexed_book, metadata)
     
     
-    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile) -> Tuple[epub.EpubBook, Dict]:
+    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str) -> Tuple[epub.EpubBook, Dict]:
         # pdf -> image list
         images = PdfConverter().convert_pdf_to_images(file)
 
@@ -97,11 +113,24 @@ class Integration:
         indexed_book = EpubReader.set_sentence_index(captioned_book)
 
         # mysql에 정보 저장
+        dbutil = MysqlUtil()
+        saved_book = dbutil.save_book(
+            member_id=self.member_id,
+            category_id=metadata['category'],
+            title=metadata['title'],
+            cover_url=metadata['cover'],
+            cover_alt=metadata['cover_alt'],
+            author=metadata['author'],
+            my_tts_flag=1,
+            epub=file_name
+        )
+        metadata['book_id'] = saved_book.book_id
+        metadata['created_at'] = saved_book.created_at
 
         return (indexed_book, metadata)    
     
 
-    def epub_to_ebook(self, metadata: Dict, file: UploadedFile) -> Tuple[epub.EpubBook, Dict]:
+    def epub_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str) -> Tuple[epub.EpubBook, Dict]:
         # epub 임시파일 생성
         with tempfile.NamedTemporaryFile(delete=False, suffix='.epub') as temp_file:
             # delete = False 이유: true로 설정하면 with 블록 안에서(파일이 열린 상태에서) read_epub()에서 임시 파일을 읽으려 시도할 때 windows에서 접근 거부 오류 발생
@@ -128,6 +157,19 @@ class Integration:
                 indexed_book = EpubReader.set_sentence_index(processed_book)
 
                 # mysql에 정보 저장
+                dbutil = MysqlUtil()
+                saved_book = dbutil.save_book(
+                    member_id=self.member_id,
+                    category_id=metadata['category'],
+                    title=metadata['title'],
+                    cover_url=metadata['cover'],
+                    cover_alt=metadata['cover_alt'],
+                    author=metadata['author'],
+                    my_tts_flag=1,
+                    epub=file_name
+                )
+                metadata['book_id'] = saved_book.book_id
+                metadata['created_at'] = saved_book.created_at
 
                 return (indexed_book, metadata)
             
