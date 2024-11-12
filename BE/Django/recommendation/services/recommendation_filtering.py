@@ -34,9 +34,10 @@ class SimilarLikesBookRecommendation:
     
     def calculate_score_similarity(self):
         self.score_df = self.score_df.groupby(['book_id', 'member_id']).agg({'score': 'mean'}).reset_index()
+        self.score_df['score'].fillna(0, inplace=True)
         score_pivot_df = self.score_df.pivot(index='book_id', columns='member_id', values='score')
-        score_pivot_df.fillna(0, inplace=True) 
-
+        score_pivot_df.fillna(0, inplace=True)
+        
         self.score_similarity = cosine_similarity(score_pivot_df)
         self.book_ids = score_pivot_df.index.tolist() # 도서 id 저장 
 
@@ -49,7 +50,7 @@ class SimilarLikesBookRecommendation:
             {
                 "r_type": RType['similarLikesBook'],
                 "target_id": self.book_ids[i],
-                "book_list": self.book_ids[indices[i][indices[i] != i]][:N].tolist()
+                "book_list": [self.book_ids[idx] for idx in indices[i] if idx != i][:N]
             }
             for i in range(final_df.shape[0])
         ]
