@@ -2,16 +2,9 @@ import pandas as pd
 from datetime import datetime
 
 ##--------------------
-from .dbConnector import MysqlConnector, MongoDBConnector
+from .dbutil import MysqlConnector, MongoDBConnector
+from .datacenter import RType
 
-RType = {
-    "famous": "famous",
-    "demographics": "demographics",
-    "category": "category",
-    "similarMember": "similarMember",
-    "similarBook": "similarBook",
-    "similarLikesBook": "similarLikesBook"
-}
 
 class FamousBookRecommendation:
     def __init__(self) -> None:

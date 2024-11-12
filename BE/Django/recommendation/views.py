@@ -5,8 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from django.http import JsonResponse, FileResponse
 
-from .services.dbConnector import MysqlConnector, MongoDBConnector
-from .services.recommendationAnalysis import FamousBookRecommendation, DemographicsBookRecommendation, CategoryBookRecommendation
+from .services.dbutil import MysqlConnector, MongoDBConnector
+from .services.recommendation_simple import FamousBookRecommendation, DemographicsBookRecommendation, CategoryBookRecommendation
 
 ## 테스트용 API
 def test_view(request):
