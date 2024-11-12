@@ -8,6 +8,7 @@ from django.http import JsonResponse, FileResponse
 from .services.dbutil import MysqlConnector, MongoDBConnector
 from .services.recommendation_simple import FamousBookRecommendation, DemographicsBookRecommendation, CategoryBookRecommendation
 from .services.recommendation_filtering import SimilarLikesBookRecommendation, SimilarMemberRecommendation
+from .services.book_analyzer import BookAnalyzer
 
 ## 테스트용 API
 def test_view(request):
@@ -85,6 +86,19 @@ class RecommendationSimilarMemberBook(APIView):
     def get(self, request):
         rec = SimilarMemberRecommendation()
         result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class BookStoryAnalzer(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        analyzer = BookAnalyzer()
+        result = analyzer.analyze_book_story() 
         for item in result:
             item["_id"] = str(item["_id"])
         return JsonResponse(result, safe=False)
