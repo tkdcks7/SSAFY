@@ -65,7 +65,9 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
 					roundTo(calculateScorePercentage(review.score, 4)).as("four"),
 					roundTo(calculateScorePercentage(review.score, 3)).as("three"),
 					roundTo(calculateScorePercentage(review.score, 2)).as("two"),
-					roundTo(calculateScorePercentage(review.score, 1)).as("one")
+					roundTo(calculateScorePercentage(review.score, 1)).as("one"),
+					//리뷰 개수
+					review.reviewId.count().as("totalCount")
 				).as("reviewDistribution"),
 				// 사용자가 좋아요/담은 상태
 				Projections.fields(PublishedBookInfoDto.MemberInfo.class,
