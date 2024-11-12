@@ -1,17 +1,16 @@
 package com.palja.audisay.domain.review.repository;
 
-import static com.palja.audisay.domain.review.entity.QReview.*;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
-import org.springframework.stereotype.Repository;
-
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.review.entity.Review;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.palja.audisay.domain.review.entity.QReview.review;
 
 @Repository
 public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implements ReviewRepositoryCustom {
@@ -54,7 +53,7 @@ public class ReviewRepositoryCustomImpl extends QuerydslRepositorySupport implem
 			.join(review.member).fetchJoin() // member와의 fetch join 추가
 			.where(condition)
 			.orderBy(review.reviewId.desc())
-			.limit(pageSize)
+				.limit(pageSize + 1)
 			.fetch();
 	}
 
