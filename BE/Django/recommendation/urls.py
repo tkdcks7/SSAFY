@@ -3,7 +3,8 @@
 from django.urls import path
 
 from . import views
-from .views import RecommendationFamous, RecommendationDemographics, RecommendationCategory, RecommendationSimilarLikesBook
+from .views import RecommendationFamous, RecommendationDemographics, RecommendationCategory, RecommendationSimilarLikesBook, RecommendationSimilarMemberBook
+
 
 urlpatterns = [
     path('test', views.test_view, name='test'),
@@ -16,4 +17,5 @@ urlpatterns = [
     path('rec-demo', RecommendationDemographics.as_view()),
     path('rec-cate', RecommendationCategory.as_view()),
     path('rec-slb', RecommendationSimilarLikesBook.as_view()),
+    path('rec-smb', RecommendationSimilarMemberBook.as_view()),
 ]
