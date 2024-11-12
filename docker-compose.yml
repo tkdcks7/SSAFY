@@ -97,6 +97,7 @@ services:
       - AZURE_VISION_REGION=${AZURE_VISION_REGION}
       - OPENAI_AUTH=${OPENAI_AUTH}
       - FASTAPI_URL=${FASTAPI_URL}
+      - MONGO_DB_URI=${MONGO_DB_URI}
     expose:
       - ${DJANGO_PORT}
     networks:
