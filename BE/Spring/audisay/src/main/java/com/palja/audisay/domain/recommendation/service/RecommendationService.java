@@ -12,6 +12,7 @@ import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.domain.cart.repository.CustomCartRepository;
 import com.palja.audisay.domain.category.entity.Category;
+import com.palja.audisay.domain.category.entity.Level;
 import com.palja.audisay.domain.member.entity.Gender;
 import com.palja.audisay.domain.member.entity.Member;
 import com.palja.audisay.domain.member.repository.MemberRepository;
@@ -51,11 +52,11 @@ public class RecommendationService {
 	// 인기 도서 조회
 	public RecommendationBookDto getFamousBooks() {
 		// 1. 최신 인기 도서 조회 (mongoDB)
-		RecommendationLong recommendation = recommendationLongRepository.findFamousFirstOrderByGroupIdDesc();
-		if (recommendation == null) {
+		List<RecommendationLong> recommendations = recommendationLongRepository.findFamousFirstOrderByGroupIdDesc();
+		if (recommendations == null) {
 			throw new RecommendationNotFoundException();
 		}
-		System.out.println("recommendation.getBookList() = " + recommendation.getBookList());
+		RecommendationLong recommendation = recommendations.getFirst();
 		// 2. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -96,10 +97,12 @@ public class RecommendationService {
 		// 1. 유저 선호 카테고리 정보 조회
 		Category category = customCartRepository.findCategoryByMemberIdAndBookCartCount(memberId)
 			.orElseThrow(RecommendationNotFoundException::new);
+		// 2. 카테고리 전처리 - 중분류로 처리
+		Category categoryMiddle = category.getLevel().equals(Level.SMALL) ? category.getParent() : category;
 		// 2. 카테고리 인기 도서 조회 (MongoDB)
 		RecommendationString recommendation = recommendationStringRepository.findByrTypeAndTargetId(
 				Criterion.CATEGORY_BOOK.getType(),
-				category.getCategoryId())
+				categoryMiddle.getCategoryId())
 			.orElseThrow(RecommendationNotFoundException::new);
 		// 3. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
