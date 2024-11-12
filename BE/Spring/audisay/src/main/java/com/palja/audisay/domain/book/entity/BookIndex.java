@@ -63,5 +63,8 @@ public class BookIndex {
 
 	@Field(name = "title", type = FieldType.Text, analyzer = "korean_index", searchAnalyzer = "korean_search")
 	private String title;
+
+	@Field(name = "review_total_count", type = FieldType.Long)
+	private Long reviewTotalCount;
 }
 
