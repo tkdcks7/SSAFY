@@ -22,9 +22,9 @@ public class SessionUtil {
 	public static void clearSessionCookie(HttpServletRequest request, HttpServletResponse response) {
 		if (request.getCookies() != null) {
 			for (Cookie cookie : request.getCookies()) {
-				// JSESSIONID 쿠키가 있을 때만 삭제
-				if ("JSESSIONID".equals(cookie.getName())) {
-					cookie = new Cookie("JSESSIONID", null);
+				// SESSION 쿠키가 있을 때만 삭제
+				if ("SESSION".equals(cookie.getName())) {
+					cookie = new Cookie("SESSION", null);
 					cookie.setPath("/");
 					cookie.setMaxAge(0); // 쿠키 만료
 					cookie.setHttpOnly(true);
