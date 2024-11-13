@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.palja.audisay.domain.book.dto.response.PublishedBookDownloadInfoDto;
 import com.palja.audisay.domain.book.service.BookDownloadService;
+import com.palja.audisay.global.util.SessionUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,7 @@ public class BookDownloadController {
 	})
 	@GetMapping("/{bookId}/download")
 	public ResponseEntity<PublishedBookDownloadInfoDto> downloadPublishedBook(@PathVariable("bookId") Long bookId) {
-		return new ResponseEntity<>(bookDownloadService.downloadPublishedBook(bookId), HttpStatus.OK);
+		Long memberId = SessionUtil.getMemberId();
+		return new ResponseEntity<>(bookDownloadService.downloadPublishedBook(memberId, bookId), HttpStatus.OK);
 	}
 }
