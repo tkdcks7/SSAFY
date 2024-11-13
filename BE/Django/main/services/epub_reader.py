@@ -11,6 +11,11 @@ class EpubReader:
         images = book.get_items_of_type(ebooklib.ITEM_IMAGE)
         return images
 
+    ## 표지 처리 함수 
+    def read_cover_image_from_epub(book: epub.EpubBook):
+        cover_image = book.get_items_of_type(ebooklib.ITEM_COVER)
+        return list(cover_image)
+    
     def read_epub_from_s3_path(path: str):
         pass 
 
