@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, TextInput } from 'react-native';
 import InputBox from '../../components/InputBox';
+import { SearchResult } from '@epubjs-react-native/core';
 
 
 // 아이콘
@@ -11,12 +12,12 @@ import searchicon from '../../assets/icons/search.png';
 
 const { width, height } = Dimensions.get('window');
 
-type SearchResult = {
+type SearchResultType = {
     sentence: string;
     progress: number;
 }
 
-const exampleSearchResult: SearchResult[] = [
+const exampleSearchResult: SearchResultType[] = [
     { sentence:'예시문장 1', progress: 0.15 },
     { sentence:'예시문장 2', progress: 0.25 },
     { sentence:'예시문장 3', progress: 0.37 },

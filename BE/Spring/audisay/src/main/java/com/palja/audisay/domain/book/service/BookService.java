@@ -80,6 +80,7 @@ public class BookService {
 				.dType(DType.valueOf(hit.getContent().getDType()))
 				.reviewDistribution(PublishedBookInfoDto.ReviewDistribution.builder()
 					.average(Double.valueOf(hit.getContent().getReview()))
+					.totalCount(hit.getContent().getReviewTotalCount())
 					.build())
 				.build())
 			.collect(Collectors.toList());

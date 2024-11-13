@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.palja.audisay.domain.book.dto.response.PublishedBookDownloadInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.repository.BookRepository;
+import com.palja.audisay.domain.cart.service.BookCartService;
 import com.palja.audisay.domain.s3.service.S3Service;
 import com.palja.audisay.global.exception.exceptions.PublishedBookDownloadFailedException;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
@@ -23,14 +24,17 @@ public class BookDownloadService {
 	private final BookRepository bookRepository;
 	private final S3Service s3Service;
 	private final ImageUtil imageUtil;
-	
-	public PublishedBookDownloadInfoDto downloadPublishedBook(long bookId) {
+	private final BookCartService bookCartService;
+
+	public PublishedBookDownloadInfoDto downloadPublishedBook(Long memberId, long bookId) {
 		// 1. 데이터 읽어오기 
 		Book book = bookRepository.findByBookId(bookId)
 			.orElseThrow(PublishedBookNotFoundException::new);
 		PublishedBookDownloadInfoDto publishedBookDownloadInfoDto = PublishedBookDownloadInfoDto.toDto(book);
 
-		// 2. 데이터 추가
+		// 2. 도서 담기
+		bookCartService.savePublishedBookToCart(memberId, bookId, true);
+		// 3. Dto 데이터 추가
 		// (1) 이미지 주소
 		String fullCoverUrl = imageUtil.getFullImageUrl(book.getCover());
 		publishedBookDownloadInfoDto.setCover(fullCoverUrl);

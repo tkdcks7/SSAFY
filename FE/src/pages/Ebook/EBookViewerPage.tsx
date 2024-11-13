@@ -5,13 +5,14 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { LibraryStackParamList } from '../../navigation/LibraryNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Reader, useReader, Location } from '@epubjs-react-native/core';
+import { Reader, useReader, Location, Annotation, AnnotationType } from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import searchicon from '../../assets/icons/search.png';
 import ProgressBar from '../../components/viewer/ProgressBar';
 import EbookSearch from '../../components/viewer/EbookSearch';
+import Tts from 'react-native-tts';
 
 // 모달 등
 import EbookIndex from '../../components/viewer/EbookIndex';
@@ -38,6 +39,11 @@ type Props = {
   navigation: EBookViewerPageNavigateProp;
 };
 
+type FormContent = {
+  sentence: string;
+  cfisRange: string;
+}
+
 const { width, height } = Dimensions.get('window');
 
 
@@ -46,12 +52,14 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
   const { bookId } = route.params;
   const [progress, setProgress] = useState<number>(0);
   const [ isTTSMode, setIsTTSMode ] = useState<boolean>(false);
-  const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean>(false);
+  const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean | null>(null);
   const [ isSearching, setIsSearching ] = useState<boolean>(false);
-  const [ aval, setAval ] = useState<string>('');
+  const [ formArr, setFromArr ] = useState<FormContent[]>([]);
+  const [ tempMark, setTempMark ] = useState<Annotation | null>(null);
+  const [ ttsIdx, setttsIdx ] = useState<number>(0);
+  const [ lastInitialCfi, setLastInitialCfi ] = useState<string>('');
 
-  
-  const { getCurrentLocation, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript,  } = useReader();
+  const { changeTheme, removeAnnotationByCfi, removeAnnotation, getCurrentLocation, annotations, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript, goNext  } = useReader();
 
 
   // 화면 크기를 상태로 관리
@@ -66,6 +74,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     return () => subscription.remove(); // 컴포넌트 언마운트 시 리스너 제거
   }, []);
   const animHeight = screenDimensions.height * 0.20;
+  const saaa = `https://s3.ap-northeast-2.amazonaws.com/audisay/epub/published/valentin-hauy.epub?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20241112T070838Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=AKIA2YICALD7MZ3XV3TG%2F20241112%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Signature=6ec25ef2ea6ee821ad5b2007b86b1f9dae20975660c16328bab5063762a42864`
 
   // 애니메이션 설정
     // 네비게이션 바의 Y 위치를 조절하는 애니메이션 값
@@ -75,6 +84,9 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     const bookNoteSideBarX = useSharedValue(width);
     const settingSideBarX = useSharedValue(width);
     const settingTTSSideBarX = useSharedValue(width);
+
+    Tts.setDefaultLanguage('en-US');
+
 
     // 네비게이션 바의 표시 여부 상태
     const isVisible = useSharedValue(false);
@@ -108,63 +120,86 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     }, []);
 
 
-  const cfiToExtract = "epubcfi(/6/8!/4/2,/2/2/1:0,/8[n1]/2/1:48)";
+  // 현재 Section의 데이터를 긁어 formArr에 주입하는 로직을 Javascript inject
+  const getFormArr = () => { injectJavascript(`getFormArr();`); };
 
-  const iscript = () => {
-    injectJavascript(`
-            rendition.display("epubcfi(/6/94!/4/2/22/1:36)")
-            const k = pageFromCfi("epubcfi(/6/94!/4/2/22/1:36)")
-            window.ReactNativeWebView.postMessage(JSON.stringify({ pg: k }));
-      `);
+  // annotation 제거를 Javascript를 주입하여 해결
+  const handleRemoveAnnotation = (cfiRangeOfAnnotation: string) => {
+    const sss: string = "rendition.annotations.remove(" + "'" + cfiRangeOfAnnotation + "'" + ", 'highlight');";
+    injectJavascript(sss);
   };
 
+  // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  // const handleReading = async (idx: number) => {
+  //   if (tempMark) { handleRemoveAnnotation(tempMark.cfiRange); }
+  //   if (formArr[idx].pagenum > -1) { goNext(); }
+  //   if (formArr.length > idx) {
+  //     addAnnotation("highlight", formArr[idx].cfisRange);
+  //     // await sleep(1500);
+  //     await setTimeout(() => { handleReading(idx + 1); }, 1500);
+  //   } else {
+  //     goNext();
+  //   }
+  // };
 
-  const rangeSelectScript = () => {
-    injectJavascript(`
-        document.addEventListener('selectionchange', () => {
-        const selectedText = window.getSelection().toString();
-        if (selectedText) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'textSelected', text: selectedText }));
-        }
-      });
-  `)
+
+  // WebView 단에서 동작하는 로직을 javascript를 주입하여 강제 실행
+  const handlePageMoving = (cfisRange: string): void => {
+    const allString: string = "handlePageMove(" + "'" + cfisRange + "'" + ")"
+    injectJavascript(allString);
+  };
+
+  const playTextSequentially = (idx: number = 0) => {
+    if (idx >= formArr.length) {
+      console.log("TTS 끝!");
+      setttsIdx(-1);
+      goNext();
+      if (isTTSPlaying) { setTimeout(() => {
+        console.log("실행실행");
+        if (formArr.length > 0) { playTextSequentially(0); }
+      }, 8000); }
+      return;
+    }
+
+
+    const item = formArr[idx];
+    console.log(idx, item.cfisRange, item.sentence);
+    setttsIdx(idx);
+    Tts.speak(item.sentence);
+    addAnnotation('highlight', item.cfisRange);
+    if (idx > 0) { handleRemoveAnnotation(formArr[idx - 1].cfisRange); }
+    handlePageMoving(item.cfisRange);
+    // TTS 음성이 종료되면 무언가의 로직을 처리하도록 하거나, 안되면 문자 길이에 따라 Time을 조절해야할듯
+    setTimeout(() => { playTextSequentially(idx + 1)}, 6000);
+  };
+
+  // Tts.addEventListener('tts-finish', playTextSequentially);
+
+  const handleReadNoteSave = (): void => {
+    console.log(`문장 저장 성공! index = ${ttsIdx}`);
+    console.log(`저장된 문장=${formArr[ttsIdx].sentence}`);
+    console.log(`저장된 cfi=${formArr[ttsIdx].cfisRange}`);
   }
 
+  // 책 진행률 변경 핸들러
+  const handleProgressGage = (): void => {
+    const gage: number | undefined = getCurrentLocation()?.end.percentage;
+    if (gage) { setProgress(gage); }
+  };
 
-  const bscript= () => {
-    injectJavascript(`
-      rendition.on("relocated", (location) => {
-  const currentCFI = location.start.cfi;
-  window.ReactNativeWebView.postMessage(JSON.stringify({ curCfi: currentCFI }));
-});
-
-      `);
-  }
-
-  const afunc = () => {
-    const aaa: Location | null = getCurrentLocation();
-    if (aaa !== null) {console.log(`
-      start: ${aaa.start.cfi}, 
-      end: ${aaa.end.cfi}, 
-      pr = ${aaa.end.percentage*100}%, 
-      pg: ${aaa.start.displayed.page}, 
-      epg: ${aaa.end.displayed.page}`);
-      setProgress(aaa.end.percentage)
+  const handleTTSPlay = (): void => {
+    if (isTTSPlaying) {
+      setIsTTSPlaying(false);
+    } else if (isTTSPlaying === null) {
+      setIsTTSPlaying(true);
+      if (formArr.length > 0) {
+        playTextSequentially(0);
+      }
+    } else {
+      setIsTTSPlaying(true);
+      playTextSequentially(ttsIdx);
     }
   };
-
-  const scrrr = `
-
-            rendition.on("relocated", () => {
-              rendition.getContents().forEach((content) => {
-                const paragraphs = content.document.querySelectorAll("p");
-                paragraphs.forEach((paragraph, index) => {
-                window.ReactNativeWebView.postMessage(JSON.stringify({ idx: index, line: paragraph.innerText }));
-                // window.ReactNativeWebView.postMessage(JSON.stringify({ msg: "페이지이동" }));
-                });
-              });
-            });
-        `
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -179,11 +214,11 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
           )
           : (
           <>
-          <TouchableOpacity onPress={() => console.log(getLocations())}>
+          <TouchableOpacity onPress={getFormArr}>
             <Image source={leftarrowicon} style={styles.icon} />
           </TouchableOpacity>
             <Text style={styles.navBarText}>책 타이틀</Text>
-          <TouchableOpacity onPress={() => setIsSearching(true)}>
+          <TouchableOpacity onPress={() => {}}>
             <Image source={searchicon} style={styles.icon} />
           </TouchableOpacity>
           </>
@@ -199,131 +234,101 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
       <EbookSetting settingSideBarX={settingSideBarX} toggleSetting={toggleSetting}/>
       {/* TTS 설정창 */}
       <EbookTTSSetting settingTTSSideBarX={settingTTSSideBarX} toggleTTSSetting={toggleTTSSetting}/>
-      {/* <TouchableOpacity onPress={() => {console.log(getCurrentLocation()); }}><Text>aaa</Text></TouchableOpacity> */}
       <TouchableOpacity style={{ flex: 1 }} onPress={toggleNav}>
         <Reader
-          src="https://s3.amazonaws.com/moby-dick/OPS/package.opf"
+          src={"https://s3.amazonaws.com/moby-dick/OPS/package.opf"}
           fileSystem={useFileSystem}
-          enableSelection={true}
-          onSelected={(selectedText: string, cfiRange: string) => {}}
           flow='paginated'
-          onLocationChange={afunc}
-          width={"100%"}
-          height={"100%"}
-          onReady={(totalLocations, currentLocation, progress) => console.log(`ready: ${currentLocation.end.cfi}`)}
-          getInjectionJavascriptFn={iscript}
+          onLocationChange={() => handleProgressGage()}
+          // onAddAnnotation={(annotation: Annotation<any>) => {setTempMark(annotation)}}
+          // initialLocation="epubcfi(/6/2!/4/486[rgn_cnt_0498],/1:0,/1:23)"
+          onWebViewMessage={(message) => {
+            console.log(message);
+            if (message?.formArr) {
+              console.log("formArr 저장됨");
+              if (formArr) {
+                setFromArr([...message.formArr]);
+              } else {
+                setFromArr([...formArr, ...message.formArr]);
+              }
+            } else if (message?.gonextpage) {
+              console.log("페이지 이동");
+              goNext();
+            } else if (message?.resetFromArr) {
+              setFromArr([]);
+            } else if (message?.keepPlay) {
+              console.log("로직 생성 할지도?");
+            }
+             }}
           injectedJavascript={`
-            // epubcfi 두 개를 받아서 하나의 범위 epubcfi로 변환하는 함수
-function combineCFI(startCFI, endCFI) {
-  if (!startCFI.startsWith("epubcfi(") || !endCFI.startsWith("epubcfi(")) {
-    throw new Error("Invalid CFI format");
-  }
-  let startPath = startCFI.slice(9, -1);
-  let endPath = endCFI.slice(9, -1);
-  let startParts = startPath.split("/");
-  let endParts = endPath.split("/");
-  let commonPathLength = 0;
-  while (
-    commonPathLength < startParts.length &&
-    commonPathLength < endParts.length &&
-    startParts[commonPathLength] === endParts[commonPathLength]
-  ) {
-    commonPathLength++;
-  }
-  let commonPath = startParts.slice(0, commonPathLength).join("/");
-  let startRemainder = startParts.slice(commonPathLength).join("/");
-  let endRemainder = endParts.slice(commonPathLength).join("/");
-  return (
-    "epubcfi(" + commonPath + "," + startRemainder + "," + endRemainder + ")"
-  );
-}
+let nowIndex = 0;
 
-// 노드 탐색
-function traverseChildrenIncludingText(element, cfiBase) {
-  window.ReactNativeWebView.postMessage(JSON.stringify({ cfiBase }));
-  Array.from(element.childNodes).forEach(child => {
-    if (child.nodeType === 1) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ elementTag: child.tagName }));
-      if (child.tagName === 'P') {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ ndd: child.textContent.trim() }));
-            window.ReactNativeWebView.postMessage(JSON.stringify({ ndd: typeof child }));
-            // const scfi = rendition.cfiFromElement(child);
-            // if (scfi) {
-            // window.ReactNativeWebView.postMessage(JSON.stringify({ mmsg: "nddd 존재" }));
-            // rendition.annotations.add("highlight", nddd);
-            // } else {
-            //     window.ReactNativeWebView.postMessage(JSON.stringify({ mmsg: "faillll" }));
-            // }
-      }
-      traverseChildrenIncludingText(child);
-    }
-    // else if (child.nodeType === 3) {
-    //  if (child.textContent.trim() !== '') {
-    //   window.ReactNativeWebView.postMessage(JSON.stringify({ elementtext: child.textContent.trim() }));
-    //   }
-    // }
-  });
-}
-  
-rendition.on("relocated", () => {
-  if (rendition.location) {
-      if (book.pageList) { window.ReactNativeWebView.postMessage(JSON.stringify({ aade: book.totalPages })); }
-      // book.spine.spineItems.forEach((item) => { window.ReactNativeWebView.postMessage(JSON.stringify({ [item.index]: item.cfiBase })); })
-    const domm = rendition.getContents()[0];
-    traverseChildrenIncludingText(domm.content, domm.cfiBase);
-    const currentPage = rendition.location.start.cfi;
-    const currentPageE = rendition.location.end.cfi;
-    const currentCFI = rendition.location.start.cfi;
-    const endCFI = rendition.location.end.cfi;
-    const totalPage = rendition.location.start.displayed.total;
-    // const rrr = book.getRange("epubcfi(/6/6!/4/2,/2/2/1:0,/4[q1]/2/14/2/1:14)")
-    // .then((rnm) => {window.ReactNativeWebView.postMessage(JSON.stringify({ rnm: rnm.innerText }));})
-    // .catch(() => {window.ReactNativeWebView.postMessage(JSON.stringify({ rnm: "failli" }));})
+const handlePageMove = async (cfisRange) => {
+  const currentLoc = await rendition.currentLocation();
+  const currentLocEnd = currentLoc.end.cfi;
+  const vallnum = rendition.epubcfi.compare(cfisRange, currentLocEnd);
+  if (vallnum > -1) {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ gonextpage: 1 }));
+  } else {
     window.ReactNativeWebView.postMessage(
-      JSON.stringify({ cpf: currentPage, epf: currentPageE, tp: totalPage })
+      JSON.stringify({ msg: "vallnum is -1" })
     );
-    const ran = combineCFI(currentCFI, endCFI);
-    if (ran) {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ ran }));
-      // rendition.annotations.add("highlight", ran);
-      book
-        .getRange(ran)
-        .then((ranl) => {
-          if (ranl) {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(ranl);
-          } else {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ msggg: "ranl 추출 실패" })
-            );
-          }
-        })
-        .catch((err) => {
-          window.ReactNativeWebView.postMessage(
-            JSON.stringify({ msgggg: "err로빠짐" })
-          );
-        });
-    } else {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({
-          msgggggg: "텍스트 추출 실패",
-          error: "범위 내 텍스트 없음",
-        })
-      );
+  }
+};
+
+const getFormArr = async () => {
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ msgg: "getFormArr 시작" })
+  );
+  const currentLoc = await rendition.currentLocation();
+  const formArr = [];
+  const contentt = rendition.getContents();
+  const contents = contentt[0];
+  const currentView = rendition.manager.current();
+  const currentSection = currentView.section;
+  const paragraphs = contents.document.querySelectorAll("p");
+
+  for (const element of paragraphs) {
+    const sentences = element.textContent.match(/[^.!?]+[.!?]+|[^.!?]+$/g);
+    for (const sentenceRan of sentences) {
+      const sentence = sentenceRan.trim();
+      const range = document.createRange();
+      const startOffset = element.textContent.indexOf(sentence);
+      const endOffset = startOffset + sentence.length;
+
+      try {
+        range.setStart(element.firstChild, startOffset);
+        range.setEnd(element.firstChild, endOffset);
+      } catch (error) {
+        continue;
+      }
+
+      const cfisRange = currentSection.cfiFromRange(range);
+      const tempObj = { sentence, cfisRange };
+      formArr.push(tempObj);
     }
   }
-});
+  window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
+};
 
+rendition.on("relocated", (location) => {
+  window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트" }));
+  if (location.start.index !== nowIndex) {
+    nowIndex = location.start.index;
+    window.ReactNativeWebView.postMessage(JSON.stringify({ resetFromArr: "0" }));
+    getFormArr();
+  }
+  window.ReactNativeWebView.postMessage(JSON.stringify({ stt: location?.start, endd: location?.end }));
+  window.ReactNativeWebView.postMessage(JSON.stringify({ nowIndex }));
+});
         `}
-          onWebViewMessage={(message) => console.log(message)}
         />
   </TouchableOpacity>
   {/* 네비게이션 바 */}
   <Animated.View style={[styles.footer, animatedStyleFoot, isTTSMode && { height: height * 0.25, paddingTop: 0 }]}>
     {
     isTTSMode
-    ? <TouchableOpacity style={styles.saveNote}><Text style={styles.saveNoteText}>읽고 있는 문장 저장</Text></TouchableOpacity>
+    ? <TouchableOpacity style={styles.saveNote} onPress={handleReadNoteSave}><Text style={styles.saveNoteText}>읽고 있는 문장 저장</Text></TouchableOpacity>
     : null
     }
     <View style={styles.progressview}>
@@ -340,7 +345,7 @@ rendition.on("relocated", () => {
             <TouchableOpacity onPress={() => {}}>
               <Image source={prevbuttonicon} style={styles.footericon} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsTTSPlaying(!isTTSPlaying)}>
+            <TouchableOpacity onPress={handleTTSPlay}>
               {
                 isTTSPlaying
                 ? <Image source={pausebuttonicon} style={styles.footericon} />
@@ -357,7 +362,7 @@ rendition.on("relocated", () => {
         )
         : (
           <>
-            <TouchableOpacity onPress={toggleIndex}>
+            <TouchableOpacity onPress={() => goNext()}>
               <Image source={indexmenuicon} style={styles.footericon} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setIsTTSMode(true)}>
@@ -433,7 +438,7 @@ const styles = StyleSheet.create({
   },
   progressview: {
     width: '100%',
-    paddingHorizontal: width * 0.03,
+    paddingHorizontal: width * 0.08,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

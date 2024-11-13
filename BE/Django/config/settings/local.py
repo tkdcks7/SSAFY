@@ -9,10 +9,7 @@ DATABASES = {
         'USER': env('MYSQL_ROOT_USERNAME'), # 유저 이름
         'PASSWORD': env('MYSQL_ROOT_PASSWORD'),
         'HOST': 'audisay.kr', # host 이름 k11d208.p.ssafy.io
-        'PORT': '36284',
-        'OPTIONS' : {
-            'ssl' : False
-        }
+        'PORT': '36284'
     }
 }
 

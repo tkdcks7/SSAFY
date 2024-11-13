@@ -61,6 +61,7 @@ public class PublishedBookInfoDto {
 		private Double two;
 		@JsonProperty("1")
 		private Double one;
+		private Long totalCount;
 	}
 
 	@Getter

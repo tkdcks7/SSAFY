@@ -9,7 +9,7 @@ import io
 from asgiref.sync import async_to_sync
 from config.settings.base import STATIC_ROOT
 from .services import S3Client
-from ebooklib import epub
+import uuid
 
 #----------- image captioning 
 from .services.epub_reader import EpubReader 
@@ -80,19 +80,16 @@ class Image2BookConverter(APIView):
             
             cover = np.array(Image.open(io.BytesIO(cover.read())))
             metadata['cover'] = cover
-            metadata['created_at'] = datetime.datetime.now()
+            metadata['dtype'] = 'REGISTERED'
             
             # ebook 만드는 프로세스
-            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files)
+            filename = f'{uuid.uuid4()}.epub'
+            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename)
 
             # ebook을 s3에 저장
-            filename = f'{datetime.datetime.now()}.epub'
             epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
-            metadata['bookId'] = 1 # 책 mysql에 저장
-            metadata['category'] = '005' # 카테고리 ID
-            metadata['dtype'] = 'REGISTERED'
             response_body = {
                 'epub': epub_data['epub'],
                 'metadata': metadata
@@ -128,20 +125,17 @@ class Pdf2BookConverter(APIView):
                 return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
             
             cover = np.array(Image.open(io.BytesIO(cover.read())))
+            metadata['dtype'] = 'REGISTERED'
             metadata['cover'] = cover
-            metadata['created_at'] = datetime.datetime.now()
             
             # ebook 만드는 프로세스
-            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file)
+            filename = f'{datetime.datetime.now()}.epub'
+            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename)
 
             # ebook을 s3에 저장
-            filename = f'{datetime.datetime.now()}.epub'
             epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
-            metadata['bookId'] = 1 # 책 mysql에 저장
-            metadata['category'] = '005' # 카테고리 ID
-            metadata['dtype'] = 'REGISTERED'
             response_body = {
                 'epub': epub_data['epub'],
                 'metadata': metadata
@@ -177,20 +171,17 @@ class Epub2BookConverter(APIView):
                 return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
             
             cover = np.array(Image.open(io.BytesIO(cover.read())))
+            metadata['dtype'] = 'REGISTERED'
             metadata['cover'] = cover
-            metadata['created_at'] = datetime.datetime.now()
             
             # ebook 만드는 프로세스
-            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file)
+            filename = f'{datetime.datetime.now()}.epub'
+            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename)
 
             # s3에 저장
-            filename = f'{datetime.datetime.now()}.epub'
             epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
             
             # response 가공
-            metadata['bookId'] = 1 # 책 mysql에 저장
-            metadata['category'] = '005' # 카테고리 ID
-            metadata['dtype'] = 'REGISTERED'
             response_body = {
                 'epub': epub_data['epub'],
                 'metadata': metadata
