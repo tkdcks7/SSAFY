@@ -33,7 +33,7 @@ public class BookDownloadService {
 		PublishedBookDownloadInfoDto publishedBookDownloadInfoDto = PublishedBookDownloadInfoDto.toDto(book);
 
 		// 2. 도서 담기
-		bookCartService.savePublishedBookToCart(memberId, bookId, true);
+		bookCartService.modifyCartStatus(memberId, bookId, true);
 		// 3. Dto 데이터 추가
 		// (1) 이미지 주소
 		String fullCoverUrl = imageUtil.getFullImageUrl(book.getCover());
