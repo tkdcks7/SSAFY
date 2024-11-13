@@ -5,8 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from django.http import JsonResponse, FileResponse
 
-from .services.dbConnector import MysqlConnector, MongoDBConnector
-from .services.recommendationAnalysis import FamousBookRecommendation, DemographicsBookRecommendation, CategoryBookRecommendation
+from .services.dbutil import MysqlConnector, MongoDBConnector
+from .services.recommendation_simple import FamousBookRecommendation, DemographicsBookRecommendation, CategoryBookRecommendation
+from .services.recommendation_filtering import SimilarLikesBookRecommendation, SimilarMemberRecommendation, SimilarBookRecommendation
+from .services.book_analyzer import BookAnalyzer
 
 ## 테스트용 API
 def test_view(request):
@@ -60,6 +62,54 @@ class RecommendationCategory(APIView):
     def get(self, request):
         rec = CategoryBookRecommendation()
         result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecommendationSimilarLikesBook(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        rec = SimilarLikesBookRecommendation()
+        result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecommendationSimilarMemberBook(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        rec = SimilarMemberRecommendation()
+        result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecommendationSimilarBook(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        rec = SimilarBookRecommendation()
+        result = rec.get_recommendation() 
+        for item in result:
+            item["_id"] = str(item["_id"])
+        return JsonResponse(result, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class BookStoryAnalzer(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    def get(self, request):
+        analyzer = BookAnalyzer()
+        result = analyzer.analyze_book_story() 
         for item in result:
             item["_id"] = str(item["_id"])
         return JsonResponse(result, safe=False)
