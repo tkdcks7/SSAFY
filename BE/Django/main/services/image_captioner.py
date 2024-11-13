@@ -4,6 +4,9 @@ from .epub_reader import EpubReader
 from .image_caption_util import AzureImageAnalysis, OpenAIAnalysis
 from typing import Dict
 
+### ------------------------
+from main.services.epub_accessibility_util import EpubAccessibilityConverter
+
 class ImageCaptioner:
     # staticmethod를 이용하여 self 인자를 전달하지 않도록 한다 (정적 메소드)
     @staticmethod
@@ -37,8 +40,18 @@ class ImageCaptioner:
         # 5. coverAlt 불러오기 
         metadata['cover_alt'] = EpubReader.get_cover_alt(processed_book, "cover.jpg")
 
+        # 테스트
+        # 접근성 적용
+        epub_access = EpubAccessibilityConverter()
+        epub_access.set_epub(processed_book)
+        epub_access.format_body()
+        formatted_book = epub_access.get_epub()
+
+        EpubReader.write_epub_to_local("staticfiles/", "smile_formatted_book", formatted_book)
+        EpubReader.write_epub_to_local("staticfiles/", "smile_processed_book", processed_book)
+        EpubReader.write_epub_to_local("staticfiles/", "smile_book", book)
         # 6. 바뀐 책을 반환 
-        return processed_book, metadata 
+        return formatted_book, metadata 
     
     @staticmethod
     async def image_captioning_for_integration(book: epub, metadata: Dict):

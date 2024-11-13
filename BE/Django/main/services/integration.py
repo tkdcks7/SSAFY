@@ -12,6 +12,9 @@ from .s3_storage import S3Client
 import os
 import tempfile
 
+### ------------------------
+from main.services.epub_accessibility_util import EpubAccessibilityConverter
+
 class Integration:
     def __init__(self):
         self.member_id = 1 # 일단 static으로 설정
@@ -49,9 +52,13 @@ class Integration:
         metadata['cover'] = url
 
         # 접근성 적용
+        epub_access = EpubAccessibilityConverter()
+        epub_access.set_epub(captioned_book)
+        epub_access.format_body()
+        formatted_book = epub_access.get_epub()
 
         # ebook span태그에 index 붙이기
-        indexed_book = EpubReader.set_sentence_index(captioned_book)
+        indexed_book = EpubReader.set_sentence_index(formatted_book)
 
         # mysql에 정보 저장
         dbutil = MysqlUtil()
