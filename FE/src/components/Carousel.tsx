@@ -75,7 +75,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
             accessible={index === currentIndex} // 현재 포커스된 아이템만 접근 가능하도록 설정
           >
             <Image source={{ uri: item.cover }} style={styles.carouselImage} />
-            <Text style={styles.carouselTitle} numberOfLines={2} ellipsizeMode='tail'>{item.title}</Text>
+            <Text style={styles.carouselTitle} numberOfLines={1} ellipsizeMode='tail'>{item.title}</Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.bookId}

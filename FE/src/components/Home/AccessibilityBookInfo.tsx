@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import Btn from '../Btn';
-import { dummyRecommendedBooks } from '../../data/dummyRecommendedBooks';
+import {
+  getPopularBooks,
+  getDemographicsPopularBooks,
+  getFavoriteCategoryBooks,
+  getRecentSimilarBooks,
+  getSimilarMembersBooks,
+} from '../../services/HomePage/HomeRecomendedBooks'; // 5개의 함수 가져오기
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,28 +23,71 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 const AccessibilityBookIntro: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const recommendationCriteria = [
-    '문학 카테고리 인기 도서',
-    '최근 본 [아기돼지 삼형제]와/과 유사한 도서',
-    '나와 비슷한 사용자가 좋아한 도서',
+  const [books, setBooks] = useState<any[]>([]);
+  const [criterion, setCriterion] = useState<string>(''); // 추천 기준
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastIndex, setLastIndex] = useState<number>(-1); // 마지막 기준 인덱스 저장
+
+  // 추천 함수 목록
+  const recommendationFunctions = [
+    { func: getPopularBooks, name: '인기 도서' },
+    { func: getDemographicsPopularBooks, name: '성별, 나이별 인기 도서' },
+    { func: getFavoriteCategoryBooks, name: '많이 읽은 카테고리 인기 도서' },
+    { func: getRecentSimilarBooks, name: '최근 본 도서와 비슷한 도서' },
+    { func: getSimilarMembersBooks, name: '비슷한 유저들이 좋아한 도서' },
   ];
 
-  const [currentCriterionIndex, setCurrentCriterionIndex] = useState(0);
-  const [dummyBooks, setDummyBooks] = useState(dummyRecommendedBooks[0].bookList);
+  useEffect(() => {
+    fetchRecommendation(0); // 초기에는 첫 번째 추천 기준으로 데이터 로드
+  }, []);
+
+  const fetchRecommendation = async (index: number) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { func, name } = recommendationFunctions[index];
+      const data = await func(); // API 함수 호출
+      setBooks(data.bookList); // 도서 목록 업데이트
+      setCriterion(name); // 추천 기준 업데이트
+      setLastIndex(index); // 마지막 기준 인덱스 저장
+    } catch (err: any) {
+      setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+      Alert.alert('오류', err.message || '데이터를 불러오는 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMoreRecommendations = () => {
-    const nextCriterionIndex = (currentCriterionIndex + 1) % recommendationCriteria.length;
-    setCurrentCriterionIndex(nextCriterionIndex);
+    // 마지막 기준 인덱스를 제외한 나머지 인덱스 목록 생성
+    const availableIndexes = recommendationFunctions
+      .map((_, index) => index)
+      .filter((index) => index !== lastIndex);
 
-    // 기준에 따라 더미 데이터를 변경 (실제 API 요청으로 대체 가능)
-    setDummyBooks(dummyRecommendedBooks[nextCriterionIndex].bookList);
+    // 랜덤으로 새로운 기준 선택
+    const randomIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+    fetchRecommendation(randomIndex);
   };
+
+  if (loading) {
+    return <Text style={styles.loadingText}>로딩 중...</Text>;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>오류 발생: {error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{recommendationCriteria[currentCriterionIndex]}</Text>
+      <Text style={styles.title}>{criterion}</Text>
       <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollViewContent}>
-        {dummyBooks.map((book) => (
+        {books.slice(0, 1).map((book) => ( // 하나의 도서만 표시
           <TouchableOpacity
             key={book.bookId}
             style={styles.bookContainer}
@@ -49,7 +98,7 @@ const AccessibilityBookIntro: React.FC = () => {
           >
             <View style={styles.bookTopSection}>
               <Image
-                source={book.cover}
+                source={{ uri: book.cover }} // API에서 받은 도서 표지 이미지
                 style={styles.bookImage}
                 accessibilityLabel={`${book.title} 표지`}
               />
@@ -109,7 +158,7 @@ const styles = StyleSheet.create({
     padding: responsiveWidth(5),
   },
   title: {
-    fontSize: responsiveFontSize(8),
+    fontSize: responsiveFontSize(7),
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -150,25 +199,24 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: responsiveFontSize(8),
     textAlign: 'center',
-    paddingBottom: responsiveHeight(2),
     fontWeight: 'bold',
-    marginBottom: responsiveHeight(1),
+    marginBottom: responsiveHeight(3),
   },
   bookAuthor: {
     fontSize: responsiveFontSize(6),
     textAlign: 'center',
-    paddingBottom: responsiveHeight(2),
-    marginBottom: responsiveHeight(1),
+    fontWeight: 'bold',
+    marginBottom: responsiveHeight(3),
   },
   bookPublisher: {
     fontSize: responsiveFontSize(6),
-    marginBottom: responsiveHeight(1),
     textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: responsiveHeight(1),
   },
   bookDescription: {
     fontSize: responsiveFontSize(5),
     textAlign: 'left',
-    flexWrap: 'wrap',
   },
   moreButton: {
     alignSelf: 'center',
@@ -177,6 +225,20 @@ const styles = StyleSheet.create({
   moreButtonText: {
     fontSize: responsiveFontSize(11),
     color: 'white',
+  },
+  loadingText: {
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorContainer: {
+    alignItems: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorText: {
+    color: 'red',
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
   },
 });
 
