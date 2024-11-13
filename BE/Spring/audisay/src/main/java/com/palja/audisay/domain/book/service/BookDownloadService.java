@@ -7,7 +7,6 @@ import com.palja.audisay.domain.book.dto.response.PublishedBookDownloadInfoDto;
 import com.palja.audisay.domain.book.entity.Book;
 import com.palja.audisay.domain.book.repository.BookRepository;
 import com.palja.audisay.domain.cart.service.BookCartService;
-import com.palja.audisay.domain.member.service.MemberService;
 import com.palja.audisay.domain.s3.service.S3Service;
 import com.palja.audisay.global.exception.exceptions.PublishedBookDownloadFailedException;
 import com.palja.audisay.global.exception.exceptions.PublishedBookNotFoundException;
@@ -26,8 +25,6 @@ public class BookDownloadService {
 	private final S3Service s3Service;
 	private final ImageUtil imageUtil;
 	private final BookCartService bookCartService;
-	private final MemberService memberService;
-	private final BookService bookService;
 
 	public PublishedBookDownloadInfoDto downloadPublishedBook(Long memberId, long bookId) {
 		// 1. 데이터 읽어오기 
