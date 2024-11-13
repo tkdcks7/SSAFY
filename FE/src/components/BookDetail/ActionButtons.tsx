@@ -1,18 +1,97 @@
-import React from 'react';
-import { View, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, Image, Alert, AccessibilityInfo } from 'react-native';
 import Btn from '../../components/Btn';
 import styles from '../../styles/BookDetail/ActionButtonsStyle';
 import { useNavigation } from '@react-navigation/native';
+import {
+  downloadBook,
+  addBookToCart,
+  saveBookToLocalDatabase,
+  downloadFileFromUrl,
+  isBookAlreadyDownloaded
+} from '../../services/BookDetail/BookDetail';
+import DownloadModal from './DownloadModal';
 
 interface ActionButtonsProps {
   likedFlag: boolean;
-  downloaded: boolean;
-  onLikeToggle: () => void;
+  epubFlag: boolean;
+  initialCartFlag: boolean;
   bookId: number;
+  onLikeToggle: () => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, downloaded, onLikeToggle, bookId }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, initialCartFlag, bookId, onLikeToggle }) => {
   const navigation = useNavigation();
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [cartFlag, setCartFlag] = useState(initialCartFlag);
+  const [isAlreadyDownloaded, setAlreadyDownloaded] = useState(false);
+
+  useEffect(() => {
+    const checkDownloadStatus = async () => {
+      const downloaded = await isBookAlreadyDownloaded(bookId, '맹꽁이 서당'); // 제목은 실제 데이터에서 가져오기
+      setAlreadyDownloaded(downloaded);
+    };
+
+    checkDownloadStatus();
+  }, [bookId]);
+
+  const handleDownload = async () => {
+    try {
+      setDownloading(true);
+
+      if (isAlreadyDownloaded) {
+        setDownloading(false);
+        Alert.alert('다운로드 완료', '이미 다운로드된 도서입니다.');
+        return;
+      }
+
+      const metadata = await downloadBook(bookId);
+      const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
+
+      // 다운로드 시점 추가
+      const downloadDate = new Date().toISOString(); // ISO 형식으로 다운로드 시점 기록
+
+      // 필요한 데이터만 저장하도록 수정
+      const bookData = {
+        bookId: metadata.bookId,
+        title: metadata.title,
+        cover: metadata.cover,
+        category: metadata.category,
+        author: metadata.author,
+        publisher: metadata.publisher,
+        publishedAt: metadata.publishedAt,
+        myTtsFlag: metadata.myTtsFlag,
+        dtype: metadata.dtype,
+        filePath,
+        downloadDate, // 다운로드 날짜 추가
+      };
+
+      await saveBookToLocalDatabase(bookData);
+
+      setAlreadyDownloaded(true);
+      setDownloading(false);
+      setModalVisible(true);
+
+      AccessibilityInfo.announceForAccessibility('도서가 성공적으로 다운로드되었습니다.');
+    } catch (error) {
+      setDownloading(false);
+      Alert.alert('다운로드 실패', '파일을 다운로드할 수 없습니다.');
+    }
+  };
+
+
+  const handleAddToCart = async () => {
+    try {
+      await addBookToCart(bookId); // 도서 담기 API 호출
+      setCartFlag(true); // 담기 성공 시 상태 업데이트
+      AccessibilityInfo.announceForAccessibility('도서가 담겼습니다.');
+      Alert.alert('성공', '도서가 담겼습니다.');
+    } catch (error) {
+      AccessibilityInfo.announceForAccessibility('도서를 담는 데 실패했습니다.');
+      Alert.alert('오류', '도서를 담을 수 없습니다.');
+    }
+  };
 
   return (
     <>
@@ -36,25 +115,49 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, downloaded, on
         </View>
       </View>
 
-      {/* 바로 보기와 다운로드 아이콘 */}
+      {/* 도서 담기와 다운로드 아이콘 */}
       <View style={styles.buttonContainerWithMargin}>
         <View style={styles.buttonWrapper}>
           <Btn
-            title="바로 보기"
+            title={cartFlag ? '담긴 도서' : '도서 담기'}
             btnSize={1}
-            onPress={() => {}}
-            accessibilityLabel="바로 보기 버튼"
-            disabled={!downloaded} // 다운로드 여부에 따라 활성화/비활성화
+            onPress={handleAddToCart}
+            disabled={cartFlag}
+            style={[cartFlag && styles.disabledButton]}
+            accessibilityLabel={cartFlag ? '이미 담긴 도서 버튼' : '도서 담기 버튼'}
+            accessibilityHint={cartFlag ? '이미 담은 도서입니다.' : '도서를 담을 수 있습니다.'}
           />
         </View>
         <View style={styles.iconWrapper}>
-          <Image
-            source={require('../../assets/icons/download2.png')}
-            style={styles.iconImage}
+          <TouchableOpacity
+            onPress={handleDownload}
+            disabled={!epubFlag || downloading || isAlreadyDownloaded}
             accessibilityLabel="다운로드 아이콘"
-          />
+            accessibilityHint={
+              !epubFlag
+                ? '현재 EPUB 파일이 없습니다.'
+                : isAlreadyDownloaded
+                ? '이미 다운로드된 도서입니다.'
+                : '파일을 다운로드합니다.'
+            }
+          >
+            <Image
+              source={require('../../assets/icons/download2.png')}
+              style={[styles.iconImage, (!epubFlag || downloading || isAlreadyDownloaded) && { opacity: 0.5 }]}
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* 다운로드 후 모달 */}
+      <DownloadModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={() => {
+          setModalVisible(false);
+          navigation.navigate('EBookReader', { bookId }); // eBook 리더로 이동
+        }}
+      />
     </>
   );
 };

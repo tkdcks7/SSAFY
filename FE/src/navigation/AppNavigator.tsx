@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -23,6 +22,8 @@ import BookDetailPage from '../pages/BookDetail/BookDetailPage';
 import ReviewPage from '../pages/BookDetail/ReviewPage';
 import ImageUploadPage from '../pages/RegisterBook/ImageUploadPage';
 import UploadGuidePage from '../pages/RegisterBook/UploadGuidePage';
+
+import ViewDatabase from '../pages/DatabaseViewer'; // ViewDatabase 컴포넌트 추가
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -52,6 +53,7 @@ export type RootStackParamList = {
   EBookViewer: { bookId: string };
   BookDetail: { bookId: number };
   Review: { bookId: number };
+  DatabaseViewer: undefined; // ViewDatabase 경로 추가
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -81,6 +83,7 @@ const AppNavigator = () => {
         <Stack.Screen name="EBookViewer" component={EBookViewerPage} />
         <Stack.Screen name="BookDetail" component={BookDetailPage} />
         <Stack.Screen name="Review" component={ReviewPage} />
+        <Stack.Screen name="DatabaseViewer" component={ViewDatabase} />
       </Stack.Navigator>
     </NavigationContainer>
   );

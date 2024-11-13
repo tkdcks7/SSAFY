@@ -1,6 +1,13 @@
-// src/components/Library/Sidebar.tsx
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ScrollView,
+} from 'react-native';
 import DownloadIcon from '../../assets/icons/download.png';
 import DictionaryIcon from '../../assets/icons/dictionary.png';
 import CategoryIcon from '../../assets/icons/category.png';
@@ -32,13 +39,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
         <Image source={CategoryIcon} style={styles.icon} />
         <Text style={styles.filterText}>카테고리 순</Text>
       </TouchableOpacity>
-      <View style={styles.categoryContainer}>
-        {categories.map((category) => (
-          <TouchableOpacity key={category} style={styles.categoryItem} onPress={() => onFilterSelect(category)}>
-            <Text style={styles.categoryText}> ▶  {category}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
+      {/* 스크롤 가능한 카테고리 리스트 */}
+      <ScrollView style={styles.categoryScroll}>
+        <View style={styles.categoryContainer}>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={styles.categoryItem}
+              onPress={() => onFilterSelect(category)}
+            >
+              <Text style={styles.categoryText}> ▶ {category}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
       <TouchableOpacity style={styles.resetButton} onPress={() => onFilterSelect('다운로드 순')}>
         <Text style={styles.resetButtonText}>필터 초기화</Text>
       </TouchableOpacity>
@@ -54,8 +70,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    maxHeight: '100%',
-    width: width * 0.6,
+    height: '100%', // 화면 전체 높이를 차지하도록 설정
+    width: '100%', // 화면 전체 너비를 덮도록 변경
     backgroundColor: '#3943B7',
     padding: width * 0.04,
     zIndex: 10,
@@ -68,7 +84,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#ffffff',
-    fontSize: width * 0.06,
+    textAlign : 'center',
+    fontSize: width * 0.07,
     fontWeight: 'bold',
   },
   filterItem: {
@@ -83,8 +100,11 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: '#ffffff',
-    fontSize: width * 0.05,
+    fontSize: width * 0.08,
     fontWeight: 'bold',
+  },
+  categoryScroll: {
+    maxHeight: height * 0.5, // 카테고리 리스트의 최대 높이 설정
   },
   categoryContainer: {
     marginLeft: width * 0.12,
@@ -94,7 +114,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: '#ffffff',
-    fontSize: width * 0.045,
+    fontSize: width * 0.06,
   },
   resetButton: {
     alignItems: 'center',
@@ -102,11 +122,11 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     backgroundColor: '#ffffff',
     borderRadius: width * 0.02,
-    marginTop: height * 0.02,
+    marginBottom: height * 0.01, // 닫기 버튼과의 간격 최소화
   },
   resetButtonText: {
     color: '#3943B7',
-    fontSize: width * 0.05,
+    fontSize: width * 0.07,
     fontWeight: 'bold',
   },
   closeButton: {
@@ -115,13 +135,14 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     backgroundColor: '#ffffff',
     borderRadius: width * 0.02,
-    marginTop: height * 0.02,
+    marginBottom: 0, // 아래 여백 제거
   },
   closeButtonText: {
     color: '#3943B7',
-    fontSize: width * 0.05,
+    fontSize: width * 0.07,
     fontWeight: 'bold',
   },
 });
+
 
 export default Sidebar;

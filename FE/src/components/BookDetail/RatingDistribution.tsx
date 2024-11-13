@@ -5,7 +5,8 @@ import styles from '../../styles/BookDetail/RatingDistributionStyle';
 
 interface ReviewDistribution {
   average: number;
-  [key: number]: number; // 예: 5점, 4점 등 각각의 점수 분포
+  totalCount: number; // 전체 리뷰 수
+  [key: number]: number; // 각 평점 분포
 }
 
 interface RatingDistributionProps {
@@ -13,32 +14,32 @@ interface RatingDistributionProps {
 }
 
 const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribution }) => {
-  const renderStars = (average: number) => {
+  const renderStars = (average: number, totalCount: number) => {
     const filledStars = Math.floor(average);
     const partialStar = average - filledStars;
 
     return (
       <View
         style={styles.starsContainer}
-        accessibilityLabel={`평균 평점: ${average.toFixed(1)}점`}
+        accessibilityLabel={`평균 평점: ${average.toFixed(1)}점 (${totalCount}개 리뷰)`}
         accessibilityRole="text"
       >
         {Array.from({ length: 5 }, (_, i) => (
           <Svg
             key={i}
-            width={30} // 별 크기
+            width={30}
             height={30}
             viewBox="0 0 24 24"
-            accessibilityLabel={i < filledStars ? "별 가득 참" : "별 부분적으로 참"}
+            accessibilityLabel={i < filledStars ? "별 가득 참" : i === filledStars ? "부분적으로 참" : "별 비어 있음"}
           >
             <Defs>
               <LinearGradient id={`grad${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? "100%" : i === filledStars ? `${partialStar * 100}%` : "0%"}
                   stopColor="#3943B7"
                 />
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? "100%" : i === filledStars ? `${partialStar * 100}%` : "0%"}
                   stopColor="#DDDDDD"
                 />
               </LinearGradient>
@@ -49,7 +50,9 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
             />
           </Svg>
         ))}
-        <Text style={styles.averageScore}>{average.toFixed(1)}</Text>
+        <Text style={styles.averageScore}>
+          {average.toFixed(1)} <Text style={styles.totalCount}>({totalCount}개 리뷰)</Text>
+        </Text>
       </View>
     );
   };
@@ -63,9 +66,9 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
       >
         평점 분포
       </Text>
-      {renderStars(reviewDistribution.average)}
+      {renderStars(reviewDistribution.average, reviewDistribution.totalCount)}
       {Object.entries(reviewDistribution)
-        .filter(([key]) => key !== 'average')
+        .filter(([key]) => key !== 'average' && key !== 'totalCount') // totalCount는 제외
         .sort(([a], [b]) => Number(b) - Number(a))
         .map(([key, value]) => (
           <View
