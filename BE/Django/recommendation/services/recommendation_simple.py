@@ -2,20 +2,16 @@ import pandas as pd
 from datetime import datetime
 
 ##--------------------
-from .dbConnector import MysqlConnector, MongoDBConnector
+from .dbutil import MysqlConnector, MongoDBConnector
+from .datacenter import RType
 
-RType = {
-    "famous": "famous",
-    "demographics": "demographics",
-    "category": "category",
-    "similarMember": "similarMember",
-    "similarBook": "similarBook",
-    "similarLikesBook": "similarLikesBook"
-}
+
+## 이 추천에서 join할 때는 inner join을 사용한다 -> 인기 도서만 추출하면 되기 때문에 null 값은 필요 없음
 
 class FamousBookRecommendation:
     def __init__(self) -> None:
         self.score_df = None
+
 
     def load_db_data(self):
         mysql_connector = MysqlConnector()
@@ -23,7 +19,7 @@ class FamousBookRecommendation:
         query = """
             select b.book_id, st.member_id, sum(st.sc) as score
             from book b 
-            left join ((select book_id, member_id, sum(score-3)*3 as sc from review group by book_id, member_id) 
+            join ((select book_id, member_id, sum(score-3)*3 as sc from review group by book_id, member_id) 
                         union all
                         (select book_id, member_id, count(*)*2 as sc from book_cart group by book_id, member_id) 
                         union all
