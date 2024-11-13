@@ -45,6 +45,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'daphne', # SSE
+    'django_eventstream', # SSE
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
