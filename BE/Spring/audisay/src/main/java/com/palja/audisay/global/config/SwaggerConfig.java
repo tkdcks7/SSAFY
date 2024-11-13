@@ -26,7 +26,7 @@ public class SwaggerConfig {
         SecurityScheme auth = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.COOKIE)
-                .name("JSESSIONID"); // 쿠키 이름을 JSESSIONID로 설정
+                .name("SESSION"); // 쿠키 이름을 SESSION으로 설정
 
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("cookieAuth"); // swagger에서 사용할 인증 스키마 이름
