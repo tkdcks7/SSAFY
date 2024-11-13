@@ -23,5 +23,5 @@ urlpatterns = [
 
     # api/registration/으로 시작하는 모든 요청을 main/urls.py로 전달
     path('api/registration/', include('main.urls')),
-    path('api/recommendation/', include('recommendation.urls')),
+    path('api/registration/recommendation/', include('recommendation.urls')),
 ]
