@@ -58,6 +58,9 @@ dependencies {
 	implementation 'co.elastic.clients:elasticsearch-java:8.13.4'
 	implementation 'org.springframework.data:spring-data-elasticsearch:5.2.0'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	// Redis
+	implementation 'org.springframework.session:spring-session-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 // QueryDSL 설정
