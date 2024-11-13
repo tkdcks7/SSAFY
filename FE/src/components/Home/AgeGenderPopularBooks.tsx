@@ -1,11 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, AccessibilityInfo } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import book7Image from '../../assets/images/books/book7.png';
-import book8Image from '../../assets/images/books/book8.png';
-import book9Image from '../../assets/images/books/book9.png';
+import { getDemographicsPopularBooks } from '../../services/HomePage/HomeRecomendedBooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,57 +16,60 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 const AgeGenderPopularBooks: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const dummyBooks = {
-    bookList: [
-      {
-        bookId: 7,
-        cover: book7Image,
-        coverAlt: '도둑맞은 집중력 표지',
-        title: '도둑맞은 집중력',
-        author: '요한 하리',
-        publisher: '부키',
-        story: '현대 사회에서 집중력이 사라지고 있는 이유와 이를 되찾기 위한 방법을 탐구한 책.',
-      },
-      {
-        bookId: 8,
-        cover: book8Image,
-        coverAlt: '총, 균, 쇠 표지',
-        title: '총, 균, 쇠',
-        author: '재레드 다이아몬드',
-        publisher: '문학사상',
-        story: '인류 문명의 발전과 그 불평등의 원인을 분석한 과학적 역사서.',
-      },
-      {
-        bookId: 9,
-        cover: book9Image,
-        coverAlt: '거인의 노트 표지',
-        title: '거인의 노트',
-        author: '팀 페리스',
-        publisher: '토네이도',
-        story: '세계적인 거인들의 성공적인 삶과 지혜를 엿볼 수 있는 인터뷰 모음집.',
-      }
-    ],
-    criterion: '20대 남성 인기도서'
+  const [books, setBooks] = useState<any[]>([]);
+  const [criterion, setCriterion] = useState<string>(''); // 추천 기준
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDemographicsPopularBooks(); // 컴포넌트가 마운트되면 데이터 로드
+  }, []);
+
+  const fetchDemographicsPopularBooks = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getDemographicsPopularBooks(); // API 호출
+      setBooks(data.bookList);
+      setCriterion(data.criterion);
+    } catch (error: any) {
+      setError(error.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+      Alert.alert('오류', error.message || '데이터를 불러오는 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePress = (bookId: number, title: string) => {
-    // TalkBack 사용자가 누른 도서의 제목을 음성으로 피드백 제공
     AccessibilityInfo.announceForAccessibility(`${title} 도서 상세 페이지로 이동합니다.`);
     navigation.navigate('BookDetail', { bookId });
   };
 
+  if (loading) {
+    return <Text style={styles.loadingText}>로딩 중...</Text>;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>오류 발생: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title} accessibilityLabel={`${dummyBooks.criterion} 목록`}>
-        {dummyBooks.criterion}
+      <Text style={styles.title} accessibilityLabel={`${criterion} 목록`}>
+        {criterion}
       </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.bookList}
-        accessibilityLabel={`${dummyBooks.criterion} 도서 목록을 좌우로 스크롤하여 탐색할 수 있습니다.`}
+        accessibilityLabel={`${criterion} 도서 목록을 좌우로 스크롤하여 탐색할 수 있습니다.`}
       >
-        {dummyBooks.bookList.map((book) => (
+        {books.map((book) => (
           <TouchableOpacity
             key={book.bookId}
             style={styles.bookItem}
@@ -77,7 +78,7 @@ const AgeGenderPopularBooks: React.FC = () => {
             accessibilityHint="더 자세한 정보를 보려면 두 번 탭하세요."
           >
             <Image
-              source={book.cover}
+              source={{ uri: book.cover }} // 실제 API에서 받은 이미지 URL 사용
               style={styles.bookImage}
               accessibilityLabel={book.coverAlt}
             />
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   bookImage: {
     width: responsiveWidth(25),
     height: undefined,
-    aspectRatio: 2 / 3, // 이미지 비율을 유지
+    aspectRatio: 2 / 3, // 이미지 비율 유지
     backgroundColor: '#e0e0e0',
     marginBottom: responsiveHeight(1),
     resizeMode: 'contain',
@@ -129,6 +130,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     width: responsiveWidth(25),
     minHeight: responsiveHeight(5),
+  },
+  loadingText: {
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorContainer: {
+    alignItems: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorText: {
+    color: 'red',
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
   },
 });
 

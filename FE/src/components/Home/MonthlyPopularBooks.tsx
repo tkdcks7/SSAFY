@@ -1,11 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, AccessibilityInfo } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import book4Image from '../../assets/images/books/book4.png';
-import book5Image from '../../assets/images/books/book5.png';
-import book6Image from '../../assets/images/books/book6.png';
+import { getPopularBooks } from '../../services/HomePage/HomeRecomendedBooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,57 +16,60 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 const MonthlyPopularBooks: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const dummyBooks = {
-    bookList: [
-      {
-        bookId: 4,
-        cover: book4Image,
-        coverAlt: '앤디 위어 - 헤일 메리 표지',
-        title: '앤디 위어 - 헤일 메리',
-        author: '앤디 위어',
-        publisher: 'RHK',
-        story: '과학적 사고를 바탕으로 지구를 구하기 위한 한 남자의 이야기.',
-      },
-      {
-        bookId: 5,
-        cover: book5Image,
-        coverAlt: '채식주의자 표지',
-        title: '채식주의자',
-        author: '한강',
-        publisher: '창비',
-        story: '한 여성이 채식주의자가 되면서 벌어지는 가족과의 갈등을 그린 이야기.',
-      },
-      {
-        bookId: 6,
-        cover: book6Image,
-        coverAlt: '연금술사 표지',
-        title: '연금술사',
-        author: '파울로 코엘료',
-        publisher: '민음사',
-        story: '자아 실현과 모험에 대한 영감을 주는 이야기.',
-      },
-    ],
-    criterion: '인기 도서',
+  const [books, setBooks] = useState<any[]>([]);
+  const [criterion, setCriterion] = useState<string>(''); // 추천 기준
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchPopularBooks(); // 컴포넌트가 마운트되면 데이터 로드
+  }, []);
+
+  const fetchPopularBooks = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getPopularBooks(); // API 호출
+      setBooks(data.bookList);
+      setCriterion(data.criterion);
+    } catch (err: any) {  // 여기서 변수명을 error 대신 err로 변경
+      setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+      Alert.alert('오류', err.message || '데이터를 불러오는 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePress = (bookId: number, title: string) => {
-    // TalkBack 사용자가 누른 도서의 제목을 음성으로 피드백 제공
     AccessibilityInfo.announceForAccessibility(`${title} 도서 상세 페이지로 이동합니다.`);
     navigation.navigate('BookDetail', { bookId });
   };
 
+  if (loading) {
+    return <Text style={styles.loadingText}>로딩 중...</Text>;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>오류 발생: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title} accessibilityLabel={`${dummyBooks.criterion} 목록`}>
-        {dummyBooks.criterion}
+      <Text style={styles.title} accessibilityLabel={`${criterion} 목록`}>
+        {criterion}
       </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.bookList}
-        accessibilityLabel={`${dummyBooks.criterion} 도서 목록을 좌우로 스크롤하여 탐색할 수 있습니다.`}
+        accessibilityLabel={`${criterion} 도서 목록을 좌우로 스크롤하여 탐색할 수 있습니다.`}
       >
-        {dummyBooks.bookList.map((book) => (
+        {books.map((book) => (
           <TouchableOpacity
             key={book.bookId}
             style={styles.bookItem}
@@ -77,7 +78,7 @@ const MonthlyPopularBooks: React.FC = () => {
             accessibilityHint="더 자세한 정보를 보려면 두 번 탭하세요."
           >
             <Image
-              source={book.cover}
+              source={{ uri: book.cover }} // API에서 받은 이미지 URL 사용
               style={styles.bookImage}
               accessibilityLabel={book.coverAlt}
             />
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   bookImage: {
     width: responsiveWidth(25),
     height: undefined,
-    aspectRatio: 2 / 3, // 이미지 비율을 유지
+    aspectRatio: 2 / 3, // 이미지 비율 유지
     backgroundColor: '#e0e0e0',
     marginBottom: responsiveHeight(1),
     resizeMode: 'contain',
@@ -128,7 +129,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     width: responsiveWidth(25),
-    minHeight: responsiveHeight(5), // 텍스트 영역의 최소 높이를 지정하여 이미지 정렬 문제 해결
+    minHeight: responsiveHeight(5), // 텍스트 최소 높이
+  },
+  loadingText: {
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorContainer: {
+    alignItems: 'center',
+    marginTop: responsiveHeight(10),
+  },
+  errorText: {
+    color: 'red',
+    fontSize: responsiveFontSize(5),
+    textAlign: 'center',
   },
 });
 
