@@ -24,6 +24,8 @@ from .services.sse import send_sse_message
 
 # Create your views here.
 
+MEMBER_ID = 1
+
 ## 테스트용 API
 def test_view(request):
     channel = request.headers.get('X-Request-ID', 'default-channel')
@@ -94,7 +96,7 @@ class Image2BookConverter(APIView):
             book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename, channel=channel)
 
             # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {
@@ -141,7 +143,7 @@ class Pdf2BookConverter(APIView):
             book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
 
             # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {
@@ -190,7 +192,7 @@ class Epub2BookConverter(APIView):
             book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
 
             # s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {
