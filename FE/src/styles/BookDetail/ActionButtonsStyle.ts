@@ -18,6 +18,9 @@ const styles = StyleSheet.create({
     marginBottom: responsiveHeight(4),
     height: responsiveHeight(6),
   },
+  disabledButton: {
+    backgroundColor: '#D3D3D3', // 비활성화된 버튼 색상
+  },
   iconWrapper: {
     flex: 1,
     justifyContent: 'center',

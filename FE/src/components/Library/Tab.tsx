@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingVertical: height * 0.015,
     borderRadius: 4,
-    marginHorizontal: width * 0.005, // 양쪽 간격 조정
+    marginHorizontal: width * 0.005,
   },
   selectedTabButton: {
     backgroundColor: '#3943B7',
@@ -108,12 +108,12 @@ const styles = StyleSheet.create({
     marginTop: height * 0.01,
   },
   searchInput: {
-    flex: 1.2, // 가로 길이를 늘림
+    flex: 1.2,
     height: height * 0.07,
     borderColor: '#ccc',
     borderWidth: 1,
     padding: height * 0.015,
-    marginHorizontal: width * 0.03, // 아이콘과의 간격을 추가
+    marginHorizontal: width * 0.03,
     fontSize: width * 0.045,
   },
   menuButton: {
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     height: width * 0.1,
   },
   menuIcon: {
-    width: width * 0.16, // 메뉴 아이콘 크기를 키움
+    width: width * 0.16,
     height: width * 0.16,
   },
 });

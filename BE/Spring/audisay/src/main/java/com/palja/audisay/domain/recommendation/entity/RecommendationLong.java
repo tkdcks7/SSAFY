@@ -6,12 +6,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import jakarta.persistence.Id;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 @Document(collection = "recommendations_long")
 @Getter
 @ToString
+@Builder
 public class RecommendationLong {
 
 	@Id

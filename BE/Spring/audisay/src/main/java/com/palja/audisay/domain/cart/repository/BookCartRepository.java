@@ -27,4 +27,5 @@ public interface BookCartRepository extends JpaRepository<BookCart, BookCartId> 
 
 	int countByMember(Member member);
 
+	void deleteByMemberAndBook(Member member, Book book);
 }

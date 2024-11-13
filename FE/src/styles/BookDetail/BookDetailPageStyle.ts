@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveWidth(3),
     backgroundColor: '#FFFFFF',
     flexGrow: 1,
-    paddingBottom: 60, // ScrollView 하단 여백 추가
+    paddingBottom: 100, // ScrollView 하단 여백 추가
   },
   bookImage: {
     width: responsiveWidth(40),
@@ -30,17 +30,17 @@ const styles = StyleSheet.create({
     marginVertical: responsiveHeight(2),
   },
   bookAuthor: {
-    fontSize: responsiveFontSize(5),
+    fontSize: responsiveFontSize(6),
     textAlign: 'center',
     marginBottom: responsiveHeight(0.5),
   },
   bookPublisher: {
-    fontSize: responsiveFontSize(5),
+    fontSize: responsiveFontSize(6),
     textAlign: 'center',
     marginBottom: responsiveHeight(0.5),
   },
   bookCategory: {
-    fontSize: responsiveFontSize(5),
+    fontSize: responsiveFontSize(6),
     textAlign: 'center',
   },
   bookStoryContainer: {
@@ -63,10 +63,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveWidth(3),
   },
   sectionTitleLarge: {
-    fontSize: responsiveFontSize(8),
+    fontSize: responsiveFontSize(6.5),
     marginBottom: responsiveFontSize(2),
+    color: '#3943B7',
+    marginLeft: responsiveWidth(3),
     fontWeight: 'bold',
-    textAlign: 'center',
   },
   buttonContainerWithMargin: {
     flexDirection: 'row',
@@ -103,6 +104,17 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: responsiveFontSize(5),
     color: '#FF0000',
+  },
+  emptyContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: responsiveHeight(1),
+  },
+  emptyText: {
+    fontSize: responsiveFontSize(6.5),
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: responsiveWidth(4),
   },
 });
 

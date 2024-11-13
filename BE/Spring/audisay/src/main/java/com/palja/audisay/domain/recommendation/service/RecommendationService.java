@@ -53,10 +53,11 @@ public class RecommendationService {
 	public RecommendationBookDto getFamousBooks() {
 		// 1. 최신 인기 도서 조회 (mongoDB)
 		List<RecommendationLong> recommendations = recommendationLongRepository.findFamousFirstOrderByGroupIdDesc();
-		if (recommendations == null) {
-			throw new RecommendationNotFoundException();
+		RecommendationLong recommendation = RecommendationLong.builder().bookList(new ArrayList<>()).build();
+		if (recommendations != null && !recommendations.isEmpty()) {
+			recommendation = recommendations.getFirst();
 		}
-		RecommendationLong recommendation = recommendations.getFirst();
+
 		// 2. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -80,7 +81,7 @@ public class RecommendationService {
 				Criterion.DEMOGRAPHICS_BOOK.getType(), groupId)
 			.orElseGet(() -> recommendationStringRepository
 				.findByrTypeAndTargetId(Criterion.DEMOGRAPHICS_BOOK.getType(), totalGroupId)
-				.orElseThrow(RecommendationNotFoundException::new));
+				.orElse(RecommendationString.builder().bookList(new ArrayList<>()).build()));
 		// 3. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -103,7 +104,7 @@ public class RecommendationService {
 		RecommendationString recommendation = recommendationStringRepository.findByrTypeAndTargetId(
 				Criterion.CATEGORY_BOOK.getType(),
 				categoryMiddle.getCategoryId())
-			.orElseThrow(RecommendationNotFoundException::new);
+			.orElse(RecommendationString.builder().bookList(new ArrayList<>()).build());
 		// 3. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -130,7 +131,7 @@ public class RecommendationService {
 		// 2. 유사 인기 도서 조회 (MongoDB)
 		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
 				Criterion.SIMILAR_BOOK.getType(), viewLog.getBookId())
-			.orElseThrow(RecommendationNotFoundException::new);
+			.orElse(RecommendationLong.builder().bookList(new ArrayList<>()).build());
 		// 3. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -146,7 +147,7 @@ public class RecommendationService {
 		// 1. 유사 유저 인기 도서 조회 (MongoDB)
 		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
 				Criterion.SIMILAR_MEMBER_BOOK.getType(), memberId)
-			.orElseThrow(RecommendationNotFoundException::new);
+			.orElse(RecommendationLong.builder().bookList(new ArrayList<>()).build());
 		// 2. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -161,7 +162,8 @@ public class RecommendationService {
 		// 1. 유사 도서 조회 (MongoDB)
 		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
 				Criterion.SIMILAR_BOOK_BY_CONTEXT.getType(), bookId)
-			.orElseThrow(RecommendationNotFoundException::new);
+			.orElse(RecommendationLong.builder().bookList(new ArrayList<>()).build());
+
 		// 2. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);
@@ -176,7 +178,7 @@ public class RecommendationService {
 		// 1. 유사 평가 도서 조회 (MongoDB)
 		RecommendationLong recommendation = recommendationLongRepository.findByrTypeAndTargetId(
 				Criterion.SIMILAR_BOOK_BY_LIKES.getType(), bookId)
-			.orElseThrow(RecommendationNotFoundException::new);
+			.orElse(RecommendationLong.builder().bookList(new ArrayList<>()).build());
 		// 2. 도서 상세 정보 조회
 		List<Book> bookList = bookRepository.findByBookIdIn(recommendation.getBookList());
 		List<PublishedBookInfoDto> publishedBookInfoDtoList = bookToDto(bookList);

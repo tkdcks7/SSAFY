@@ -32,20 +32,35 @@ public class BookCartService {
 	private final ViewLogService viewLogService;
 	private final ImageUtil imageUtil;
 
-	// 출판 도서(기존 제공 도서) 담기
-	public void savePublishedBookToCart(Long memberId, Long bookId, Boolean status) {
-		// 사용자 검증
-		Member member = memberService.validateMember(memberId);
+	// 담은 도서 상태 업데이트 메서드.
+	public void modifyCartStatus(Long memberId, Long bookId, Boolean isCart) {
 		// 도서 검증
 		Book book = bookService.validatePublishedBook(bookId);
-		// 도서 카드에 도서 존재 여부 확인
-		if (!status || bookCartRepository.existsByMemberAndBook(member, book)) {
-			return;
+		// 사용자 검증
+		Member member = memberService.validateMember(memberId);
+		// 담은 상태 확인
+		boolean isCurCart = isCurrentlyCarted(member, book);
+		if (isCart && !isCurCart) {
+			savePublishedBookToCart(member, book);
+		} else if (!isCart && isCurCart) {
+			deletePublishedBookFromCart(member, book);
 		}
+	}
+
+	public boolean isCurrentlyCarted(Member member, Book book) {
+		return bookCartRepository.existsByMemberAndBook(member, book);
+	}
+
+	public void deletePublishedBookFromCart(Member member, Book book) {
+		bookCartRepository.deleteByMemberAndBook(member, book);
+	}
+
+	// 출판 도서(기존 제공 도서) 담기
+	public void savePublishedBookToCart(Member member, Book book) {
 		BookCart bookCart = BookCart.builder().member(member).book(book).build();
 		// 담을 도서 저장
 		bookCartRepository.save(bookCart);
-		viewLogService.saveBookViewLog(memberId, book);
+		viewLogService.saveBookViewLog(member.getMemberId(), book);
 	}
 
 	// 담은 출판 도서 조회
@@ -59,6 +74,7 @@ public class BookCartService {
 				.author(book.getAuthor())
 				.bookId(book.getBookId())
 				.dType(book.getDType())
+				.epubFlag(book.getEpub() != null) // epubFlag 추가
 				.build())
 			.collect(Collectors.toList());
 		return MemberPublishedBookListDto.builder().bookList(bookList).build();
