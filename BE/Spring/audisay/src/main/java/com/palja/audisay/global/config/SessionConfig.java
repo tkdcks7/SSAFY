@@ -14,7 +14,7 @@ public class SessionConfig {
         DefaultCookieSerializer serializer = new DefaultCookieSerializer();
         serializer.setCookieName("JSESSIONID"); // 기본 세션 쿠키 이름
         serializer.setSameSite("None"); // 크로스 도메인 허용
-        serializer.setUseSecureCookie(false); // HTTPS가 아닌 HTTP에서도 작동하도록 설정
+        serializer.setUseSecureCookie(true); // HTTPS에서만 작동
         return serializer;
     }
 }
