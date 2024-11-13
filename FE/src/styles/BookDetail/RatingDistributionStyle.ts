@@ -1,54 +1,48 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const responsiveFontSize = (factor: number) => width * (factor / 100);
-const responsiveWidth = (factor: number) => width * (factor / 100);
-const responsiveHeight = (factor: number) => height * (factor / 100);
 
 const styles = StyleSheet.create({
   container: {
-    padding: responsiveWidth(4),
-    marginBottom: responsiveHeight(4),
+    padding: width * 0.01,
+    marginBottom: height * 0.02,
   },
   title: {
     fontWeight: 'bold',
-    fontSize: responsiveFontSize(6),
+    fontSize: width * 0.08,
     textAlign: 'center',
-    marginBottom: responsiveHeight(2),
+    marginBottom: height * 0.01,
   },
   starsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: responsiveHeight(2),
-  },
-  starFilled: {
-    fontSize: responsiveFontSize(7),
-    color: '#3943B7',
-  },
-  starEmpty: {
-    fontSize: responsiveFontSize(7),
-    color: '#ccc',
+    marginBottom: height * 0.02,
   },
   averageScore: {
-    fontSize: responsiveFontSize(6),
+    fontSize: width * 0.06,
     fontWeight: 'bold',
-    marginLeft: responsiveWidth(2),
+    marginLeft: width * 0.02,
   },
   reviewBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: responsiveHeight(1),
+    justifyContent: 'center',
+    marginBottom: height * 0.005,
+    marginLeft: 0,
   },
   reviewText: {
     width: '10%',
-    fontSize: responsiveFontSize(4),
+    fontSize: width * 0.05,
+    textAlign: 'right',
+    marginRight: width * 0.01, // 프로그레스바와 점수 간 여백 추가
   },
   reviewBar: {
     flex: 1,
-    height: responsiveHeight(1.5),
+    width: '40%',
+    height: height * 0.015,
     backgroundColor: '#e0e0e0',
-    marginHorizontal: responsiveWidth(3),
+    marginHorizontal: width * 0.02, // 프로그레스바와 텍스트 간 여백
     borderRadius: 5,
   },
   reviewBarFill: {
@@ -57,8 +51,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   reviewPercentage: {
-    width: '10%',
-    fontSize: responsiveFontSize(3),
+    width: '15%',
+    fontSize: width * 0.05,
+    textAlign: 'left',
+    marginLeft: width * 0.01, // 프로그레스바와 분포 비율 간 여백 추가
   },
 });
 

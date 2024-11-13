@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { LibraryStackParamList } from '../../navigation/LibraryNavigator';
+import { View, StyleSheet, Alert, FlatList } from 'react-native';
+import RNFS from 'react-native-fs';
+import { useNavigation } from '@react-navigation/native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import Tab from '../../components/Library/Tab';
@@ -9,76 +9,88 @@ import Sidebar from '../../components/Library/Sidebar';
 import AccessibilityBookList from '../../components/Library/AccessibilityBookList';
 import GeneralBookList from '../../components/Library/GeneralBookList';
 import CurrentReadingStatus from '../../components/Library/CurrentReadingStatus';
-import { dummyBooks } from '../../data/dummyBooks';
-import { FlatList } from 'react-native';
+import Btn from '../../components/Btn';
+import { resetLocalDatabase } from '../../utils/readLocalDatabase';
 
-// 더미 데이터 타입 정의
 type Book = {
   id: number;
   title: string;
   author: string;
-  downloadDate: string;
-  category: string;
-  type: '출판도서' | '등록도서';
-  coverImage: any;
+  cover: string;
   publisher: string;
+  category: string;
+  downloadDate: string;
+  dtype: 'PUBLISHED' | 'REGISTERED';
 };
 
-type LibraryPageNavigationProp = StackNavigationProp<LibraryStackParamList, 'LibraryMain'>;
-
-type Props = {
-  navigation: LibraryPageNavigationProp;
-};
-
-const LibraryPage: React.FC<Props> = ({ navigation }) => {
-  const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
-  const [isUserVisuallyImpaired, setIsUserVisuallyImpaired] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-  const [filter, setFilter] = useState<'전체' | '출판도서' | '등록도서'>('전체');
-  const [books, setBooks] = useState<Book[]>(dummyBooks);
-  const [searchText, setSearchText] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('다운로드 순');
+const LibraryPage: React.FC = () => {
+  const navigation = useNavigation();
+  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [filter, setFilter] = useState<'전체' | '출판도서' | '등록도서'>('전체');
+  const [selectedFilter, setSelectedFilter] = useState('다운로드 순');
+  const [searchText, setSearchText] = useState('');
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
+
+  // 데이터 로드 함수
+  const loadBooks = async () => {
+    try {
+      const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
+      const fileExists = await RNFS.exists(dbPath);
+
+      if (fileExists) {
+        const fileContent = await RNFS.readFile(dbPath, 'utf8');
+        const parsedBooks = JSON.parse(fileContent).map((book: any, index: number) => ({
+          ...book,
+          id: book.id || index,
+        }));
+        setAllBooks(parsedBooks);
+        setBooks(parsedBooks);
+
+        const uniqueCategories = Array.from(new Set(parsedBooks.map((book: Book) => book.category)));
+        setCategories(uniqueCategories);
+      } else {
+        Alert.alert('알림', '로컬 데이터베이스에 저장된 도서가 없습니다.');
+      }
+    } catch (error) {
+      console.error('도서 데이터를 불러오는 중 오류 발생:', error);
+      Alert.alert('오류', '도서 데이터를 불러오는 데 실패했습니다.');
+    }
+  };
 
   useEffect(() => {
-    const userIsVisuallyImpaired = false; // 실제 유저 정보에서 가져오는 로직을 구현
-    setIsUserVisuallyImpaired(userIsVisuallyImpaired);
-    setIsAccessibilityMode(userIsVisuallyImpaired); // 시각장애인이라면 접근성 모드를 기본으로 설정
-
-    // 중복되지 않는 카테고리 추출
-    const uniqueCategories = Array.from(new Set(dummyBooks.map((book) => book.category)));
-    setCategories(uniqueCategories);
+    loadBooks(); // 컴포넌트가 처음 로드될 때 로컬 데이터 로드
   }, []);
 
   useEffect(() => {
     applyFilterAndSearch(filter, searchText, selectedFilter);
-  }, [filter, searchText, selectedFilter]);
+  }, [filter, searchText, selectedFilter, allBooks]); // allBooks가 업데이트되면 필터 다시 적용
 
-  const handleModeToggle = () => {
-    setIsAccessibilityMode((prev) => !prev);
-  };
+  const applyFilterAndSearch = (
+    filterType: '전체' | '출판도서' | '등록도서',
+    searchText: string,
+    selectedFilter: string
+  ) => {
+    let filteredBooks = [...allBooks];
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible((prev) => !prev);
-  };
-
-  const applyFilterAndSearch = (filterType: '전체' | '출판도서' | '등록도서', searchText: string, selectedFilter: string) => {
-    let filteredBooks = [...dummyBooks];
-    // 필터링 (출판도서/등록도서)
-    if (filterType !== '전체') {
-      filteredBooks = filteredBooks.filter((book) => book.type === filterType);
+    if (filterType === '출판도서') {
+      filteredBooks = filteredBooks.filter((book) => book.dtype === 'PUBLISHED');
+    } else if (filterType === '등록도서') {
+      filteredBooks = filteredBooks.filter((book) => book.dtype === 'REGISTERED');
     }
-    // 검색어 필터링
+
     if (searchText) {
+      const lowercasedSearch = searchText.toLowerCase().trim();
       filteredBooks = filteredBooks.filter(
         (book) =>
-          book.title.includes(searchText) ||
-          book.author.includes(searchText) ||
-          book.publisher.includes(searchText)
+          book.title.toLowerCase().includes(lowercasedSearch) ||
+          book.author.toLowerCase().includes(lowercasedSearch) ||
+          book.publisher.toLowerCase().includes(lowercasedSearch)
       );
     }
 
-    // 정렬 필터 적용
     if (selectedFilter === '다운로드 순') {
       filteredBooks.sort((a, b) => new Date(b.downloadDate).getTime() - new Date(a.downloadDate).getTime());
     } else if (selectedFilter === '사전 순') {
@@ -90,17 +102,19 @@ const LibraryPage: React.FC<Props> = ({ navigation }) => {
     setBooks(filteredBooks);
   };
 
-  const handleTabClick = (selectedTab: '전체' | '출판도서' | '등록도서') => {
-    setFilter(selectedTab);
+  const toggleSidebar = () => {
+    setIsSidebarVisible((prev) => !prev);
   };
 
-  const handleSearch = (text: string) => {
-    setSearchText(text);
-  };
-
-  const handleFilterSelect = (filter: string) => {
-    setSelectedFilter(filter);
-    setIsSidebarVisible(false); // 사이드바를 닫습니다.
+  const handleDatabaseReset = async () => {
+    try {
+      await resetLocalDatabase();
+      setBooks([]);
+      setAllBooks([]);
+      Alert.alert('성공', '로컬 데이터베이스가 초기화되었습니다.');
+    } catch (error) {
+      Alert.alert('오류', '로컬 데이터베이스 초기화 중 문제가 발생했습니다.');
+    }
   };
 
   return (
@@ -108,30 +122,39 @@ const LibraryPage: React.FC<Props> = ({ navigation }) => {
       <MainHeader
         title="내 서재"
         isAccessibilityMode={isAccessibilityMode}
-        isUserVisuallyImpaired={isUserVisuallyImpaired}
-        onModeToggle={handleModeToggle}
+        onModeToggle={() => setIsAccessibilityMode((prev) => !prev)}
       />
+      <View style={styles.buttonContainer}>
+        <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
+        <Btn
+          title="로컬 DB 보기"
+          btnSize={1}
+          onPress={() => navigation.navigate('DatabaseViewer')}
+        />
+      </View>
       <FlatList
-        data={[]}
-        keyExtractor={() => 'dummy'} // 더미 키 설정
+        data={books}
+        keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={
           <View style={styles.contentContainer}>
-            <Tab onMenuPress={toggleSidebar} onTabClick={handleTabClick} onSearch={handleSearch} />
+            <Tab onMenuPress={toggleSidebar} onTabClick={setFilter} onSearch={setSearchText} />
+            <CurrentReadingStatus />
             {isAccessibilityMode ? (
-              <AccessibilityBookList books={books.filter((book) => book.type === '등록도서')} />
+              <AccessibilityBookList books={books.filter((book) => book.dtype === 'REGISTERED')} />
             ) : (
-              <>
-                <CurrentReadingStatus />
-                <GeneralBookList books={books} />
-              </>
+              <GeneralBookList books={books} />
             )}
           </View>
         }
+        extraData={books} // 상태 변경 감지
       />
       {isSidebarVisible && (
         <Sidebar
           onClose={toggleSidebar}
-          onFilterSelect={handleFilterSelect}
+          onFilterSelect={(filter) => {
+            setSelectedFilter(filter);
+            toggleSidebar();
+          }}
           selectedFilter={selectedFilter}
           categories={categories}
         />
@@ -145,14 +168,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 5,
+    width: '60%',
+  },
   contentContainer: {
     flex: 1,
     paddingBottom: 100,
-  },
-  innerContainer: {
-    flex: 1,
-    paddingHorizontal: 4,
-    paddingTop: 4,
   },
 });
 

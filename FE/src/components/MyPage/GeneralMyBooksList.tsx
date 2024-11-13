@@ -47,10 +47,10 @@ const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchTe
       </TouchableOpacity>
       {filteredBooks.map((book) => (
         <View key={book.bookId} style={styles.card}>
-          <Image 
-            source={{ uri: book.cover }} 
-            style={styles.bookCover} 
-            accessibilityLabel={`${book.title} 표지`} 
+          <Image
+            source={{ uri: book.cover }}
+            style={styles.bookCover}
+            accessibilityLabel={`${book.title} 표지`}
           />
           <TouchableOpacity
             style={styles.textContainer}
@@ -60,15 +60,19 @@ const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchTe
             }}
             accessibilityLabel={`${book.title} 상세보기 버튼`}
           >
-            <Text 
-              style={styles.title} 
-              accessibilityLabel={`제목: ${book.title}`} 
-              numberOfLines={3} 
+            <Text
+              style={styles.title}
+              accessibilityLabel={`제목: ${book.title}`}
+              numberOfLines={2}
               ellipsizeMode="tail"
             >
               {book.title}
             </Text>
-            <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`}>
+            <Text
+              style={styles.author}
+              accessibilityLabel={`저자: ${book.author}`}
+              numberOfLines={2}
+              ellipsizeMode="tail">
               {book.author}
             </Text>
           </TouchableOpacity>
