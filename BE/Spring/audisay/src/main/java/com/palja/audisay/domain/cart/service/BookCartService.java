@@ -59,6 +59,7 @@ public class BookCartService {
 				.author(book.getAuthor())
 				.bookId(book.getBookId())
 				.dType(book.getDType())
+				.epubFlag(book.getEpub() != null) // epubFlag 추가
 				.build())
 			.collect(Collectors.toList());
 		return MemberPublishedBookListDto.builder().bookList(bookList).build();
