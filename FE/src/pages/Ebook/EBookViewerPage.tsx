@@ -1,5 +1,5 @@
 // src/pages/Ebook/EBookViewerPage.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, Dimensions, Button } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -8,6 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Reader, useReader, Location, Annotation, AnnotationType } from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { getReadNote, createReadNote, deleteNote, ICreateNote } from '../../services/ViewerPage/readNotes';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import searchicon from '../../assets/icons/search.png';
 import ProgressBar from '../../components/viewer/ProgressBar';
@@ -54,10 +55,13 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
   const [ isTTSMode, setIsTTSMode ] = useState<boolean>(false);
   const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean | null>(null);
   const [ isSearching, setIsSearching ] = useState<boolean>(false);
-  const [ formArr, setFromArr ] = useState<FormContent[]>([]);
+  const [ formArr, setFormArr ] = useState<FormContent[]>([]);
   const [ tempMark, setTempMark ] = useState<Annotation | null>(null);
   const [ ttsIdx, setttsIdx ] = useState<number>(0);
   const [ lastInitialCfi, setLastInitialCfi ] = useState<string>('');
+
+  const formArrRef = useRef<FormContent[]>(formArr);
+  const ttsIdxRef = useRef<number>(ttsIdx);
 
   const { changeTheme, removeAnnotationByCfi, removeAnnotation, getCurrentLocation, annotations, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript, goNext  } = useReader();
 
@@ -74,6 +78,8 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     return () => subscription.remove(); // 컴포넌트 언마운트 시 리스너 제거
   }, []);
   const animHeight = screenDimensions.height * 0.20;
+
+  // 테스트용 epub 주소
   const saaa = `https://s3.ap-northeast-2.amazonaws.com/audisay/epub/published/valentin-hauy.epub?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20241112T070838Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=AKIA2YICALD7MZ3XV3TG%2F20241112%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Signature=6ec25ef2ea6ee821ad5b2007b86b1f9dae20975660c16328bab5063762a42864`
 
   // 애니메이션 설정
@@ -129,76 +135,95 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
     injectJavascript(sss);
   };
 
-  // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  // const handleReading = async (idx: number) => {
-  //   if (tempMark) { handleRemoveAnnotation(tempMark.cfiRange); }
-  //   if (formArr[idx].pagenum > -1) { goNext(); }
-  //   if (formArr.length > idx) {
-  //     addAnnotation("highlight", formArr[idx].cfisRange);
-  //     // await sleep(1500);
-  //     await setTimeout(() => { handleReading(idx + 1); }, 1500);
-  //   } else {
-  //     goNext();
-  //   }
-  // };
+  // 일종의 sleep같은 함수 커스텀 선언
+  // const delay = (ms: number): any => new Promise((resolve) => setTimeout(resolve, ms));
 
 
-  // WebView 단에서 동작하는 로직을 javascript를 주입하여 강제 실행
+
+  // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입하여, 
+  // cfisRange에 해당하는 문자열이 현재 페이지에 있는지 판별 후 페이지 이동
   const handlePageMoving = (cfisRange: string): void => {
     const allString: string = "handlePageMove(" + "'" + cfisRange + "'" + ")"
     injectJavascript(allString);
   };
 
-  const playTextSequentially = (idx: number = 0) => {
-    if (idx >= formArr.length) {
-      console.log("TTS 끝!");
-      setttsIdx(-1);
-      goNext();
-      if (isTTSPlaying) { setTimeout(() => {
-        console.log("실행실행");
-        if (formArr.length > 0) { playTextSequentially(0); }
-      }, 8000); }
-      return;
+  const setTtsReset = () => {
+    console.log(`formArr.length = ${formArrRef?.current.length}`);
+    setttsIdx((prev) => {
+      return 0;
+    });
+    playTextSequentially();
+  }
+
+// TTS가 완료되면(tttsIdx === formArr.length일 때) 호출
+const playTextSequentially = async () => {
+  if (ttsIdxRef.current >= formArrRef?.current.length) {
+    handleRemoveAnnotation(formArrRef.current[ttsIdxRef.current - 1].cfisRange);
+    setFormArr(() => { return []; }); // formArr 초기화
+    goNext(); // 페이지 이동
+    return await setTimeout(() => { setTtsReset(); }, 8000);
+  }
+  setttsIdx((prevIdx) => {
+    const item = formArrRef.current[prevIdx];
+    console.log(prevIdx, item.cfisRange, item.sentence);
+    Tts.speak(item.sentence); // tts 재생
+    addAnnotation('highlight', item.cfisRange); // 문장 하이라이트
+    if (prevIdx > 0) handleRemoveAnnotation(formArrRef.current[prevIdx - 1].cfisRange);  // 이전 하이라이트 제거
+    handlePageMoving(item.cfisRange); // 페이지 이동 판단
+
+    return prevIdx + 1; // 다음 ttsIdx로 이동
+  });
+};
+
+// formArr이 업데이트될 때마다 formArrRef에도 최신 값을 설정
+useEffect(() => {
+  formArrRef.current = formArr;
+}, [formArr]);
+
+// ttsIdx가 업데이트될 때마다 ttsIdxRef에 최신 값을 설정
+useEffect(() => {
+  ttsIdxRef.current = ttsIdx;
+}, [ttsIdx]);
+
+// TTS 종료 시 playTextSequentially 호출
+useEffect(() => {
+  const onTtsFinish = () => playTextSequentially();
+  Tts.addEventListener('tts-finish', onTtsFinish);
+  return () => Tts.removeAllListeners('tts-finish');
+}, [ttsIdx]);
+
+// TTS 재생 및 일시 정지 관리
+const handleTTSPlay = (): void => {
+  setIsTTSPlaying((prev) => {
+    const newStatus = !prev;
+    if (newStatus && formArr.length > 0) {
+      playTextSequentially();
     }
+    return newStatus;
+  });
+};
 
+  // 문장 저장
+  const handleReadNoteSave = (): void => {
+    const currentidx = ttsIdx - 1 ? ttsIdx - 1 : 0;
+    console.log(`index = ${currentidx}`);
+    console.log(`저장된 문장=${formArr[currentidx].sentence}`);
+    console.log(`저장된 cfi=${formArr[currentidx].cfisRange}`);
 
-    const item = formArr[idx];
-    console.log(idx, item.cfisRange, item.sentence);
-    setttsIdx(idx);
-    Tts.speak(item.sentence);
-    addAnnotation('highlight', item.cfisRange);
-    if (idx > 0) { handleRemoveAnnotation(formArr[idx - 1].cfisRange); }
-    handlePageMoving(item.cfisRange);
-    // TTS 음성이 종료되면 무언가의 로직을 처리하도록 하거나, 안되면 문자 길이에 따라 Time을 조절해야할듯
-    setTimeout(() => { playTextSequentially(idx + 1)}, 6000);
+    const data: ICreateNote = {
+      bookId: 10, // 지금 bookId가 string으로 받는데, 바꿔야함
+      progressRate: progress * 100,
+      sentence: formArr[currentidx].sentence,
+      sentenceId: formArr[currentidx].cfisRange,
+    };
+    createReadNote(data);
   };
 
-  // Tts.addEventListener('tts-finish', playTextSequentially);
-
-  const handleReadNoteSave = (): void => {
-    console.log(`문장 저장 성공! index = ${ttsIdx}`);
-    console.log(`저장된 문장=${formArr[ttsIdx].sentence}`);
-    console.log(`저장된 cfi=${formArr[ttsIdx].cfisRange}`);
-  }
 
   // 책 진행률 변경 핸들러
   const handleProgressGage = (): void => {
     const gage: number | undefined = getCurrentLocation()?.end.percentage;
     if (gage) { setProgress(gage); }
-  };
-
-  const handleTTSPlay = (): void => {
-    if (isTTSPlaying) {
-      setIsTTSPlaying(false);
-    } else if (isTTSPlaying === null) {
-      setIsTTSPlaying(true);
-      if (formArr.length > 0) {
-        playTextSequentially(0);
-      }
-    } else {
-      setIsTTSPlaying(true);
-      playTextSequentially(ttsIdx);
-    }
   };
 
   return (
@@ -245,19 +270,13 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
           onWebViewMessage={(message) => {
             console.log(message);
             if (message?.formArr) {
-              console.log("formArr 저장됨");
               if (formArr) {
-                setFromArr([...message.formArr]);
-              } else {
-                setFromArr([...formArr, ...message.formArr]);
+                setFormArr([...message.formArr]);
+                console.log("formArr 저장됨");
               }
             } else if (message?.gonextpage) {
               console.log("페이지 이동");
               goNext();
-            } else if (message?.resetFromArr) {
-              setFromArr([]);
-            } else if (message?.keepPlay) {
-              console.log("로직 생성 할지도?");
             }
              }}
           injectedJavascript={`
@@ -269,10 +288,6 @@ const handlePageMove = async (cfisRange) => {
   const vallnum = rendition.epubcfi.compare(cfisRange, currentLocEnd);
   if (vallnum > -1) {
     window.ReactNativeWebView.postMessage(JSON.stringify({ gonextpage: 1 }));
-  } else {
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ msg: "vallnum is -1" })
-    );
   }
 };
 
@@ -312,15 +327,67 @@ const getFormArr = async () => {
 };
 
 rendition.on("relocated", (location) => {
-  window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트" }));
+  window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트", pvi: nowIndex, ci: location.start.index }));
   if (location.start.index !== nowIndex) {
     nowIndex = location.start.index;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ resetFromArr: "0" }));
     getFormArr();
   }
-  window.ReactNativeWebView.postMessage(JSON.stringify({ stt: location?.start, endd: location?.end }));
-  window.ReactNativeWebView.postMessage(JSON.stringify({ nowIndex }));
 });
+
+
+// getFormArrForCustomBook에서 Range를 생성하고 cfisRange를 계산하는 함수
+const createCfiObject = (sentence, element, isNode) => {
+  const range = document.createRange();
+  try {
+    isNode ? range.selectNode(element) : range.setStart(element.firstChild, 0);
+    isNode || range.setEnd(element.firstChild, sentence.length);
+    const cfisRange = currentSection.cfiFromRange(range);
+    return { sentence, cfisRange };
+  } catch (error) {
+    return null;
+  }
+};
+
+
+// 커스텀북의 태그별로 처리하여 formArr 생성해 전송하는 함수
+const getFormArrForCustomBook = () => {
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ msgg: "CustomBook 로직 시작" })
+  );
+
+  const formArr = [];
+  const contentt = rendition.getContents();
+  const contents = contentt[0];
+  const currentView = rendition.manager.current();
+  const currentSection = currentView.section;
+  const elements = contents.document.querySelectorAll(
+    "img, p, h1, h2, h3, title"
+  );
+
+  // 요소별 로직 처리
+  for (const element of elements) {
+    const tagName = element.tagName.toLowerCase();
+
+    if (tagName === "p") {
+      const spanTags = element.querySelectorAll("span");
+      for (const line of spanTags) {
+        const sentence = line.textContent;
+        const tempObj = createCfiObject(sentence, line, false);
+        if (tempObj) formArr.push(tempObj);
+      }
+    } else if (tagName === "img") {
+      const sentence = element.alt;
+      const tempObj = createCfiObject(sentence, element, true);
+      if (tempObj) formArr.push(tempObj);
+    } else if (["title", "h1", "h2", "h3"].includes(tagName)) {
+      const sentence = element.textContent;
+      const tempObj = createCfiObject(sentence, element, false);
+      if (tempObj) formArr.push(tempObj);
+    }
+  }
+  window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
+};
+
         `}
         />
   </TouchableOpacity>
