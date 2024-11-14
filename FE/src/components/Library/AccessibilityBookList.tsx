@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, Dimensions, AccessibilityInfo, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,6 +13,8 @@ type Book = {
   progress?: number; // 진행도
 };
 
+
+
 type AccessibilityBookListProps = {
   books: Book[];
   currentBook: Book | null; // 현재 읽고 있는 책
@@ -23,6 +26,8 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
       AccessibilityInfo.announceForAccessibility(`현재 읽고 있는 책은 ${currentBook.title}입니다.`);
     }
   }, [currentBook]);
+
+  const navigation = useNavigation();
 
   return (
     <FlatList
@@ -68,6 +73,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
           style={styles.bookItem}
           onPress={() => {
             AccessibilityInfo.announceForAccessibility(`${item.title} 상세 보기 페이지로 이동합니다.`);
+            navigation.navigate('EBookViewer', { bookId: item.id });
           }}
           accessibilityLabel={`${item.title} 상세 보기`}
           accessibilityHint="이 책의 상세 정보를 확인하려면 두 번 탭하세요."

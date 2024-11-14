@@ -153,7 +153,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
         onClose={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          navigation.navigate('EBookReader', { bookId }); // eBook 리더로 이동
+          navigation.navigate('EbookViewer', { bookId }); // eBook 리더로 이동
         }}
       />
     </>
