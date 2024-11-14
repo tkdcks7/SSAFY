@@ -1,8 +1,18 @@
 package com.palja.audisay.domain.member.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.palja.audisay.domain.member.dto.LoginRequestDto;
 import com.palja.audisay.domain.member.service.AuthService;
 import com.palja.audisay.global.util.SessionUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,10 +20,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +40,7 @@ public class AuthController {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();
-			SessionUtil.clearSessionCookie(request, response);
+			// SessionUtil.clearSessionCookie(request, response);
 		}
 //		session.invalidate(); // 현재 세션 무효화 (삭제)
 //		SessionUtil.clearSessionCookie(request, response); // JSESSIONID 쿠키 삭제
@@ -65,7 +71,7 @@ public class AuthController {
 	public ResponseEntity<Void> logout(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 		SessionUtil.getMemberId(); // 현재 memberId 세션에 있는지 확인
 		session.invalidate(); // 현재 세션 무효화 (삭제)
-		SessionUtil.clearSessionCookie(request, response); // JSESSIONID 쿠키 삭제
+		//SessionUtil.clearSessionCookie(request, response); // JSESSIONID 쿠키 삭제
 		return ResponseEntity.ok().build();
 	}
 }
