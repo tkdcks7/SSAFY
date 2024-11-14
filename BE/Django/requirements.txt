@@ -93,7 +93,7 @@ pyOpenSSL==24.2.1
 pyparsing==3.2.0
 python-dateutil==2.9.0.post0
 pytz==2024.2
-pywin32==308
+
 pyzmq==26.2.0
 redis==5.2.0
 regex==2024.11.6
