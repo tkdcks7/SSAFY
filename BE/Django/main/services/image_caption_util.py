@@ -5,6 +5,9 @@ from azure.ai.vision.imageanalysis.models import VisualFeatures
 from azure.core.credentials import AzureKeyCredential
 import openai
 import base64
+import json 
+import tiktoken
+import re  
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -58,7 +61,7 @@ class AzureImageAnalysis:
 class OpenAIAnalysis:
     def __init__(self, **kwargs):
         # System, user 메시지 분리 
-        self.system_message = """
+        self.ic_system_message = """
         시각장애인을 위해 이미지 캡션을 추가하려고 합니다. 
         당신의 역할은 이미지를 한글로 설명하는 것입니다. 
         이미지 설명은 최대 2문장이어야 합니다. 첫 문장은 반드시 '~한 그림.' 혹은 '~한 사진.'으로 끝나고, 
@@ -67,9 +70,26 @@ class OpenAIAnalysis:
         모든 설명은 반드시 한글이어야 합니다!
         """
 
-        self.user_message_template = """
+        self.ic_user_message_template = """
         아래 그림을 설명해 주세요. 그림에서 중점적으로 볼 수 있는 키워드는 다음과 같습니다.
         keyword: {keyword}
+        """
+
+        self.pc_system_message = """
+        당신의 역할은 전자책의 띄어쓰기를 교정하는 것입니다.
+        이 띄어쓰기는 OCR 과정에서 발생하였습니다.
+
+        1. 주어진 [{data-index, text}, {data-index, text}, ... ] 배열에서 text를 읽고 띄어쓰기를 교정하시오.
+        이때, text의 다른 것이 바뀌면 안됩니다. 오로지 띄어쓰기만 수정되어야 합니다. 띄어쓰기가 아닌 맞춤법이 틀렸어도 그것을 수정할 수 없습니다.  
+        2. 결과는 반드시 다음과 같은 형식으로 반환하십시오. [{data-index, text}, {data-index, text}, ... ]
+        3. 이외 안내 메시지는 필요 없습니다. 
+        """
+
+        self.pc_user_message_template = """
+        
+        데이터는 다음과 같습니다. 
+
+        {data}
         """
 
         self.client = openai.OpenAI(api_key = base.OPENAI_AUTH)
@@ -85,12 +105,12 @@ class OpenAIAnalysis:
                 response = self.client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": self.system_message},
+                        {"role": "system", "content": self.ic_system_message},
                         {"role": "user", "content": 
                             [
                                 {
                                     "type": "text",
-                                    "text": self.user_message_template.format(keyword=azure_caption)
+                                    "text": self.ic_user_message_template.format(keyword=azure_caption)
                                 },
                                 {
                                     "type": "image_url",
@@ -110,6 +130,103 @@ class OpenAIAnalysis:
 
         return updated_images
 
+    # def correct_punctuation(self, processed_text):
+    #     result = processed_text
+    #     try:
+    #         # GPT-4 에게 규격화된 텍스트 데이터를 프롬프트로 전달
+    #         processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+
+    #         response = self.client.chat.completions.create(
+    #             model="gpt-4o-mini",
+    #             messages=[
+    #                 {"role": "system", "content": self.pc_system_message},
+    #                 {"role": "user", "content": 
+    #                     [
+    #                         {
+    #                             "type": "text",
+    #                             "text": self.pc_user_message_template.format(data=processed_text_str)
+    #                         }
+    #                     ]
+    #                 }   
+    #             ],
+    #         )
+    #         gpt_correction = response.choices[0].message.content
+    #         result = json.loads(gpt_correction)
+    #     except Exception as e:
+    #         print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+            
+    #     return result
+    
+    def correct_punctuation(self, processed_text):
+        result = []
+        try:
+            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+            token_limit = 15000  # 토큰 제한 (응답 제한이 16384기 때문) 
+
+            total_token_count = self.get_token_count(processed_text_str)
+            
+            if total_token_count > token_limit:
+                temp_text = []
+                temp_token_count = 0
+
+                for text_part in processed_text:
+                    part_token_count = self.get_token_count(json.dumps(text_part, ensure_ascii=False))
+                    
+                    if temp_token_count + part_token_count <= token_limit:
+                        temp_text.append(text_part)
+                        temp_token_count += part_token_count
+                    else:
+                        response = self.send_request(temp_text)
+                        result.extend(response)
+                        temp_text = [text_part]
+                        temp_token_count = part_token_count
+
+                if temp_text:
+                    response = self.send_request(temp_text)
+                    result.extend(response)
+
+            else:
+                response = self.send_request(processed_text)
+                result.extend(response)
+
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+
+        if len(result) == 0:
+            print("correct_punctuation: No Result")
+            result = processed_text 
+        return result
+
+    def send_request(self, text_part):
+        try:
+            text_part_str = json.dumps(text_part, ensure_ascii=False)
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": self.pc_system_message},
+                    {"role": "user", "content": self.pc_user_message_template.format(data=text_part_str)}
+                ],
+            )
+            gpt_correction = response.choices[0].message.content
+            return self.parse_json_data(gpt_correction)
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
+            return [] 
+    
+    def get_token_count(self, text, model_name="gpt-4o-mini"):
+        encoding = tiktoken.encoding_for_model(model_name)
+        tokens = encoding.encode(text)
+        return len(tokens)
+    
+    def parse_json_data(self, text):
+        pattern = r"\[.*\]"
+        matched_result = re.search(pattern, text) 
+        result = []
+        if matched_result:
+            result = json.loads(matched_result.group())
+        
+        return result 
+    
 
 ## -------------------------------------
 ## -       openai = 0.28 버전          -
