@@ -7,13 +7,18 @@ import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 const { width, height } = Dimensions.get('window');
 
+interface ReviewDistribution {
+  average: number;
+  totalCount: number;
+}
+
 interface Book {
   bookId: number;
   title: string;
   author: string;
   category: string;
-  reviewAver: number;
-  cover: any;
+  reviewDistribution: ReviewDistribution;
+  cover: string;
   publishedAt: string; // 출판일 필드 추가
 }
 
@@ -109,12 +114,19 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
       <ScrollView>
         {sortedBooks.map((book) => (
           <TouchableOpacity key={book.bookId} onPress={() => handleBookClick(book.bookId)} style={styles.bookItem}>
-            <Image source={book.cover} style={styles.bookImage} />
+            <Image source={{ uri: book.cover }} style={styles.bookImage} />
             <View style={styles.bookInfo}>
-              <Text style={styles.bookTitle}>{book.title}</Text>
+              <Text style={styles.bookTitle} numberOfLines={2}>{book.title}</Text>
               <Text style={styles.bookCategory}>장르: {book.category}</Text>
-              <Text style={styles.bookAuthor}>저자: {book.author}</Text>
-              {renderStars(book.reviewAver)}
+              <Text style={styles.bookAuthor} numberOfLines={1}>저자: {book.author}</Text>
+              {book.reviewDistribution && (
+                <View style={styles.reviewInfo}>
+                  {renderStars(book.reviewDistribution.average)}
+                  <Text style={styles.totalReviewCount}>
+                    ({book.reviewDistribution.totalCount} 리뷰)
+                  </Text>
+                </View>
+              )}
               <Text style={styles.bookPublishedAt}>출판일: {book.publishedAt}</Text>
             </View>
           </TouchableOpacity>
@@ -133,7 +145,7 @@ const styles = StyleSheet.create({
   sortContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: height * 0.02,
+    marginBottom: height * 0.01,
   },
   sortButton: {
     flex: 1,
@@ -162,22 +174,22 @@ const styles = StyleSheet.create({
   },
   bookItem: {
     flexDirection: 'row',
-    marginBottom: height * 0.04,
+    marginBottom: height * 0.02,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
-    paddingBottom: height * 0.02,
+    paddingBottom: height * 0.01,
   },
   bookImage: {
-    width: width * 0.25,
-    height: width * 0.35,
-    marginRight: width * 0.05, // 이미지와 텍스트 사이 여백 추가
+    width: width * 0.2,
+    height: width * 0.3,
+    marginRight: width * 0.05,
   },
   bookInfo: {
     flex: 1,
     justifyContent: 'center',
   },
   bookTitle: {
-    fontSize: width * 0.06, // 제목 크기 증가
+    fontSize: width * 0.045,
     fontWeight: 'bold',
     marginBottom: height * 0.01,
   },
@@ -191,11 +203,21 @@ const styles = StyleSheet.create({
   },
   bookPublishedAt: {
     fontSize: width * 0.04,
-    marginTop: height * 0.005, // 별점과 출판일 사이 여백 추가
+    marginTop: height * 0.005,
   },
   starContainer: {
     flexDirection: 'row',
-    marginBottom: height * 0.005, // 별점 아래 여백 추가
+    marginBottom: height * 0.005,
+  },
+  reviewInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: height * 0.005,
+  },
+  totalReviewCount: {
+    fontSize: width * 0.04,
+    color: '#666',
+    marginLeft: width * 0.02,
   },
 });
 
