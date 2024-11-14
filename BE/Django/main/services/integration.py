@@ -68,7 +68,7 @@ class Integration:
 
         # 접근성 적용
         epub_access = EpubAccessibilityConverter()
-        formatted_book = epub_access.apply_accessibility(captioned_book)
+        formatted_book = epub_access.apply_accessibility_for_integration(captioned_book)
 
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
@@ -150,7 +150,7 @@ class Integration:
 
         # 접근성 적용
         epub_access = EpubAccessibilityConverter()
-        formatted_book = epub_access.apply_accessibility(captioned_book)
+        formatted_book = epub_access.apply_accessibility_for_integration(captioned_book)
 
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
