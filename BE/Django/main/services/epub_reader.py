@@ -124,9 +124,9 @@ class EpubReader:
                         "data-index": span['data-index'],
                         "text": span.get_text()
                     }   
-                    sentence_list.append(current) 
+                    sentence_list.append(current)
         
-        return book
+        return sentence_list
 
     def set_sentence_text_with_index(book: epub.EpubBook, sentence_list):
         """
@@ -141,13 +141,18 @@ class EpubReader:
 
 
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
-            soup = BeautifulSoup(item.get_content(), 'html.parser')
-            spans = soup.find_all('span')
+            content = item.get_content()
+            soup = BeautifulSoup(content, 'html.parser')
 
+            head = soup.head
+            body = soup.body
+
+            spans = body.find_all('span')
             for span in spans:
                 if span['data-index'] in sentence_dict:
                     span.string = sentence_dict[span['data-index']]
 
-            item.set_content(str(soup))
+            updated_content = f"<html>{head}{body}</html>"
+            item.set_content(updated_content.encode('utf-8'))
 
         return book

@@ -22,6 +22,9 @@ import datetime
 #------- sse
 from .services.sse import send_sse_message
 
+## ----------------- correction
+from main.services.punctuation_converter import PunctuationConverter
+
 # Create your views here.
 
 MEMBER_ID = 1
@@ -207,3 +210,26 @@ class Epub2BookConverter(APIView):
         except Exception as e:
             print(e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+## 띄어쓰기 교정 테스트 
+@method_decorator(csrf_exempt, name='dispatch')
+class CorrectionTest(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    # 테스트용. 지정된 path에서 파일을 가져온다. 
+    def get(self, request):
+        path = request.query_params.get('path')
+        if not path:
+            return Response({"error": "Path parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        epub = EpubReader.read_epub_from_local(path)
+        if epub is None:
+            return Response({"error": "File not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        corrected_book = PunctuationConverter.fix_punctuation(epub)
+        EpubReader.write_epub_to_local("staticfiles/", "smile_corrected_book", corrected_book)
+        
+        return Response("go")

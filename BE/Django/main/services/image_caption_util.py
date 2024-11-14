@@ -5,6 +5,7 @@ from azure.ai.vision.imageanalysis.models import VisualFeatures
 from azure.core.credentials import AzureKeyCredential
 import openai
 import base64
+import json 
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -127,8 +128,11 @@ class OpenAIAnalysis:
         return updated_images
 
     def correct_punctuation(self, processed_text):
+        result = processed_text
         try:
             # GPT-4 에게 규격화된 텍스트 데이터를 프롬프트로 전달
+            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -137,18 +141,18 @@ class OpenAIAnalysis:
                         [
                             {
                                 "type": "text",
-                                "text": self.pc_user_message_template.format(data=processed_text)
+                                "text": self.pc_user_message_template.format(data=processed_text_str)
                             }
                         ]
                     }   
                 ],
             )
             gpt_correction = response.choices[0].message.content
+            result = json.loads(gpt_correction)
         except Exception as e:
             print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
             
-            
-        return gpt_correction
+        return result
     
 
 ## -------------------------------------
