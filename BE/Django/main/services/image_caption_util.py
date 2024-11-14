@@ -6,6 +6,7 @@ from azure.core.credentials import AzureKeyCredential
 import openai
 import base64
 import json 
+import tiktoken 
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -127,32 +128,93 @@ class OpenAIAnalysis:
 
         return updated_images
 
-    def correct_punctuation(self, processed_text):
-        result = processed_text
-        try:
-            # GPT-4 에게 규격화된 텍스트 데이터를 프롬프트로 전달
-            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+    # def correct_punctuation(self, processed_text):
+    #     result = processed_text
+    #     try:
+    #         # GPT-4 에게 규격화된 텍스트 데이터를 프롬프트로 전달
+    #         processed_text_str = json.dumps(processed_text, ensure_ascii=False)
 
+    #         response = self.client.chat.completions.create(
+    #             model="gpt-4o-mini",
+    #             messages=[
+    #                 {"role": "system", "content": self.pc_system_message},
+    #                 {"role": "user", "content": 
+    #                     [
+    #                         {
+    #                             "type": "text",
+    #                             "text": self.pc_user_message_template.format(data=processed_text_str)
+    #                         }
+    #                     ]
+    #                 }   
+    #             ],
+    #         )
+    #         gpt_correction = response.choices[0].message.content
+    #         result = json.loads(gpt_correction)
+    #     except Exception as e:
+    #         print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+            
+    #     return result
+    
+    def correct_punctuation(self, processed_text):
+        result = []
+        try:
+            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+            token_limit = 15000  # 토큰 제한 (응답 제한이 16384기 때문) 
+
+            total_token_count = self.get_token_count(processed_text_str)
+            print(f"total_token_count={total_token_count}")
+            
+            if total_token_count > token_limit:
+                temp_text = []
+                temp_token_count = 0
+
+                for text_part in processed_text:
+                    part_token_count = self.get_token_count(json.dumps(text_part, ensure_ascii=False))
+                    
+                    if temp_token_count + part_token_count <= token_limit:
+                        temp_text.append(text_part)
+                        temp_token_count += part_token_count
+                    else:
+                        response = self.send_request(temp_text)
+                        result.extend(response)
+                        temp_text = [text_part]
+                        temp_token_count = part_token_count
+
+                if temp_text:
+                    response = self.send_request(temp_text)
+                    result.extend(response)
+
+            else:
+                response = self.send_request(processed_text)
+                result.extend(response)
+
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+
+        return result
+
+    def send_request(self, text_part):
+        try:
+            text_part_str = json.dumps(text_part, ensure_ascii=False)
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.pc_system_message},
-                    {"role": "user", "content": 
-                        [
-                            {
-                                "type": "text",
-                                "text": self.pc_user_message_template.format(data=processed_text_str)
-                            }
-                        ]
-                    }   
+                    {"role": "user", "content": self.pc_user_message_template.format(data=text_part_str)}
                 ],
             )
             gpt_correction = response.choices[0].message.content
-            result = json.loads(gpt_correction)
+            return json.loads(gpt_correction)
         except Exception as e:
-            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
-            
-        return result
+            print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
+            return [] 
+    
+    def get_token_count(self, text, model_name="gpt-4o-mini"):
+        encoding = tiktoken.encoding_for_model(model_name)
+        tokens = encoding.encode(text)
+        return len(tokens)
+    
+
     
 
 ## -------------------------------------
