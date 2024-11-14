@@ -1,3 +1,5 @@
+from rest_framework.views import exception_handler
+from rest_framework.exceptions import APIException
 from django.http import JsonResponse
 import logging
 from typing import Set
@@ -9,6 +11,7 @@ class APIAuthMiddleware:
         self.public_paths: Set[str] = {
             # '/api/registration/test',
             '/api/registration/image-caption/',
+            '/api/registration/error-test'
             # 필요한 public endpoint 추가
         }
 
@@ -42,3 +45,37 @@ class APIAuthMiddleware:
             path.startswith(public_path)
             for public_path in self.public_paths
         )
+
+def custom_exception_handler(exc, context):
+    """DRF 예외 핸들러"""
+    response = exception_handler(exc, context)
+
+    if response is not None:
+        data = {
+            "code": "X001",
+            "message": "서버 오류"
+        }
+        response.data = data
+
+    return response
+
+class ExceptionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            response = self.get_response(request)
+            return response
+        except Exception as e:
+            return self.handle_exception(e)
+
+    def handle_exception(self, exc):
+        """
+        Exception 터지면 500 Internal Server Error 반환
+        """
+        data = {
+            "code": "X001",
+            "message": "서버 오류"
+        }
+        return JsonResponse(data, status=500, json_dumps_params={'ensure_ascii': False})
