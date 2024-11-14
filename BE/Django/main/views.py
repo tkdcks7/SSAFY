@@ -23,7 +23,7 @@ import datetime
 from .services.sse import send_sse_message
 
 #-------- member verification
-from main.services.member_auth import get_member_id, verify_member
+from rest_framework import exceptions
 
 # Create your views here.
 
@@ -84,45 +84,40 @@ class Image2BookConverter(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        try:
-            MEMBER_ID = request.member.member_id
-            channel = request.headers.get('X-Request-ID', 'default-channel')
-            # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            files = request.FILES.getlist('uploadFile')
-            cover = request.FILES.get('cover')
+        MEMBER_ID = request.member.member_id
+        channel = request.headers.get('X-Request-ID', 'default-channel')
+        # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
+        files = request.FILES.getlist('uploadFile')
+        cover = request.FILES.get('cover')
 
-            if not files or not cover:
-                return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
-            try:
-                metadata = json.loads(request.POST.get('metadata', '{}'))
-            except json.JSONDecodeError:
-                return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            cover = np.array(Image.open(io.BytesIO(cover.read())))
-            metadata['cover'] = cover
-            metadata['dtype'] = 'REGISTERED'
-            
-            # ebook 만드는 프로세스
-            filename = f'{uuid.uuid4()}.epub'
-            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename, channel=channel)
-
-            # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
-            
-            # response 가공
-            response_body = {
-                'epub': epub_data['epub'],
-                'metadata': metadata
-            }
-
-            # 특별히 오류가 발생하지 않으면 성공으로 간주
-            return Response(response_body, status=status.HTTP_200_OK)
+        if not files or not cover:
+            return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
         
-        except Exception as e:
-            print(e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
+        try:
+            metadata = json.loads(request.POST.get('metadata', '{}'))
+        except json.JSONDecodeError:
+            return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cover = np.array(Image.open(io.BytesIO(cover.read())))
+        metadata['cover'] = cover
+        metadata['dtype'] = 'REGISTERED'
+        
+        # ebook 만드는 프로세스
+        filename = f'{uuid.uuid4()}.epub'
+        book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename, channel=channel)
+
+        # ebook을 s3에 저장
+        epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
+        
+        # response 가공
+        response_body = {
+            'epub': epub_data['epub'],
+            'metadata': metadata
+        }
+
+        return Response(response_body, status=status.HTTP_200_OK)
+        
 
 
 # pdf 업로드시 ebook으로 변환 후 반환
@@ -132,45 +127,41 @@ class Pdf2BookConverter(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        try:
-            MEMBER_ID = request.member.member_id
-            channel = request.headers.get('X-Request-ID', 'default-channel')
-            # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            file = request.FILES.get('uploadFile')
-            cover = request.FILES.get('cover')
+        MEMBER_ID = request.member.member_id
+        channel = request.headers.get('X-Request-ID', 'default-channel')
+        # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
+        file = request.FILES.get('uploadFile')
+        cover = request.FILES.get('cover')
 
-            if not file or not cover:
-                return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 메타데이터 받기 (작가명, 제목, 카테고리) + 메타데이터 추가 (커버 이미지, 생성일시)
-            try:
-                metadata = json.loads(request.POST.get('metadata', '{}'))
-            except json.JSONDecodeError:
-                return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            cover = np.array(Image.open(io.BytesIO(cover.read())))
-            metadata['dtype'] = 'REGISTERED'
-            metadata['cover'] = cover
-            
-            # ebook 만드는 프로세스
-            filename = f'{datetime.datetime.now()}.epub'
-            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
-
-            # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
-            
-            # response 가공
-            response_body = {
-                'epub': epub_data['epub'],
-                'metadata': metadata
-            }
-
-            # 특별히 오류가 발생하지 않으면 성공으로 간주
-            return Response(response_body, status=status.HTTP_200_OK)
+        if not file or not cover:
+            return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
         
-        except Exception as e:
-            print(e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # 메타데이터 받기 (작가명, 제목, 카테고리) + 메타데이터 추가 (커버 이미지, 생성일시)
+        try:
+            metadata = json.loads(request.POST.get('metadata', '{}'))
+        except json.JSONDecodeError:
+            return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cover = np.array(Image.open(io.BytesIO(cover.read())))
+        metadata['dtype'] = 'REGISTERED'
+        metadata['cover'] = cover
+        
+        # ebook 만드는 프로세스
+        filename = f'{datetime.datetime.now()}.epub'
+        book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
+
+        # ebook을 s3에 저장
+        epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
+        
+        # response 가공
+        response_body = {
+            'epub': epub_data['epub'],
+            'metadata': metadata
+        }
+
+        # 특별히 오류가 발생하지 않으면 성공으로 간주
+        return Response(response_body, status=status.HTTP_200_OK)
+        
         
 
 # epub 업로드시 접근성 적용한 ebook으로 변환 후 반환
@@ -180,45 +171,59 @@ class Epub2BookConverter(APIView):
         super().__init__(**kwargs)
     
     def post(self, request):
-        try:
-            MEMBER_ID = request.member.member_id
-            # 헤더에서 채널명 받기
-            channel = request.headers.get('X-Request-ID', 'default-channel')
+        MEMBER_ID = request.member.member_id
+        # 헤더에서 채널명 받기
+        channel = request.headers.get('X-Request-ID', 'default-channel')
 
-            # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
-            file = request.FILES.get('uploadFile')
-            cover = request.FILES.get('cover')
+        # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
+        file = request.FILES.get('uploadFile')
+        cover = request.FILES.get('cover')
 
-            if not file or not cover:
-                return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
-            try:
-                metadata = json.loads(request.POST.get('metadata', '{}'))
-            except json.JSONDecodeError:
-                return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            cover = np.array(Image.open(io.BytesIO(cover.read())))
-            metadata['dtype'] = 'REGISTERED'
-            metadata['cover'] = cover
-            
-            # ebook 만드는 프로세스
-            filename = f'{datetime.datetime.now()}.epub'
-            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
-
-            # s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
-            
-            # response 가공
-            response_body = {
-                'epub': epub_data['epub'],
-                'metadata': metadata
-            }
-
-            # 특별히 오류가 발생하지 않으면 성공으로 간주
-            return Response(response_body, status=status.HTTP_200_OK)
-
+        if not file or not cover:
+            return Response({'error: 파일 없음'}, status=status.HTTP_400_BAD_REQUEST)
         
-        except Exception as e:
-            print(e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # 메타데이터 받기 (작가명, 제목) + 메타데이터 추가 (커버 이미지, 생성일시)
+        try:
+            metadata = json.loads(request.POST.get('metadata', '{}'))
+        except json.JSONDecodeError:
+            return Response({'error': '잘못된 JSON 형식'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cover = np.array(Image.open(io.BytesIO(cover.read())))
+        metadata['dtype'] = 'REGISTERED'
+        metadata['cover'] = cover
+        
+        # ebook 만드는 프로세스
+        filename = f'{datetime.datetime.now()}.epub'
+        book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
+
+        # s3에 저장
+        epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
+        
+        # response 가공
+        response_body = {
+            'epub': epub_data['epub'],
+            'metadata': metadata
+        }
+
+        # 특별히 오류가 발생하지 않으면 성공으로 간주
+        return Response(response_body, status=status.HTTP_200_OK)
+
+class TestExceptionView(APIView):
+    def get(self, request):
+        # 테스트할 예외 종류별로 파라미터 받기
+        error_type = request.GET.get('error_type', '')
+        
+        if error_type == 'validation':
+            raise exceptions.ValidationError('데이터 유효성 검증 실패')
+            
+        elif error_type == 'permission':
+            raise exceptions.PermissionDenied('권한이 없습니다')
+            
+        elif error_type == 'not_found':
+            raise exceptions.NotFound('리소스를 찾을 수 없습니다')
+            
+        elif error_type == 'server':
+            # 일반 Python 예외 (500 에러 테스트)
+            raise Exception('서버 내부 오류 테스트')
+            
+        return Response({'message': 'OK'})

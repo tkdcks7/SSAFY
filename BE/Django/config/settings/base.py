@@ -63,9 +63,15 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'main.middleware.APIAuthMiddleware', # 사용자 인증 middleware
+    'main.middleware.ExceptionMiddleware', # 예외처리 middleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Django REST Framework 예외처리 커스텀
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'main.middleware.custom_exception_handler'
+}
 
 ROOT_URLCONF = 'config.urls'
 
