@@ -40,8 +40,9 @@ class EpubReader:
             body = soup.body
 
             print("decoded body: ", body)
-            if body is None:
+            if not body or body is None:
                 continue 
+            print("body is not none")
 
             # 이미지의 alt 속성 업데이트
             for image_id, caption, _ in image_list:
@@ -65,9 +66,9 @@ class EpubReader:
             head = soup.head
             body = soup.body
             print("undecoded body: ", body)
-            if body is None:
+            if not body or body is None:
                 continue 
-
+            print("body is not none")
             # 이미지의 alt 속성 업데이트
             for image_id, caption, _ in image_list:
                 img_tag = body.find('img', {'src': image_id})
