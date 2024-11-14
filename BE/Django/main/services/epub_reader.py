@@ -108,3 +108,47 @@ class EpubReader:
             item.set_content(str(soup).encode())
         
         return book
+
+    def get_sentence_with_index(book: epub.EpubBook):
+        """
+            book에서 문장 추출
+            : data-index, text가 담긴 리스트로 반환 
+        """
+        sentence_list = [] 
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+            spans = soup.find_all('span')
+
+            for span in spans:
+                if span['data-index']:
+                    current = {
+                        "data-index": span['data-index'],
+                        "text": span.get_text()
+                    }   
+                    sentence_list.append(current) 
+        
+        return book
+
+    def set_sentence_text_with_index(book: epub.EpubBook, sentence_list):
+        """
+            수정된 문장을 book에 적용
+        """
+
+        # 딕셔너리로 변환 
+        sentence_dict = {
+            sentence['data-index']: sentence['text'] 
+            for sentence in sentence_list
+        }
+
+
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+            spans = soup.find_all('span')
+
+            for span in spans:
+                if span['data-index'] in sentence_dict:
+                    span.string = sentence_dict[span['data-index']]
+
+            item.set_content(str(soup))
+
+        return book

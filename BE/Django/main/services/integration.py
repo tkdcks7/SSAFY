@@ -15,6 +15,7 @@ from .sse import send_sse_message
 
 ### ------------------------
 from main.services.epub_accessibility_util import EpubAccessibilityConverter
+from main.services.punctuation_converter import PunctuationConverter
 
 class Integration:
     def __init__(self):
@@ -73,6 +74,9 @@ class Integration:
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
 
+        # 띄어쓰기 교정 
+        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
+
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
@@ -91,7 +95,7 @@ class Integration:
         # SSE 메세지 보내기
         send_sse_message(channel, '완료', 100)
 
-        return (indexed_book, metadata)
+        return (corrected_book, metadata)
     
     
     def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
@@ -150,6 +154,9 @@ class Integration:
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(captioned_book)
 
+        # 띄어쓰기 교정 
+        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
+
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
@@ -168,7 +175,7 @@ class Integration:
         # SSE 메세지 보내기
         send_sse_message(channel, '완료', 100)
 
-        return (indexed_book, metadata)    
+        return (corrected_book, metadata)    
     
 
     def epub_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: int) -> Tuple[epub.EpubBook, Dict]:
@@ -200,6 +207,9 @@ class Integration:
                 # ebook span태그에 index 붙이기
                 indexed_book = EpubReader.set_sentence_index(processed_book)
 
+                # 띄어쓰기 교정 
+                corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
+
                 # mysql에 정보 저장
                 dbutil = MysqlUtil()
                 saved_book = dbutil.save_book(
@@ -218,7 +228,7 @@ class Integration:
                 # SSE 메세지 보내기
                 send_sse_message(channel, '거의 완료되었어요', 100)
 
-                return (indexed_book, metadata)
+                return (corrected_book, metadata)
             
             finally:
                 # 임시 파일 삭제

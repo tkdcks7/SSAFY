@@ -58,7 +58,7 @@ class AzureImageAnalysis:
 class OpenAIAnalysis:
     def __init__(self, **kwargs):
         # System, user 메시지 분리 
-        self.system_message = """
+        self.ic_system_message = """
         시각장애인을 위해 이미지 캡션을 추가하려고 합니다. 
         당신의 역할은 이미지를 한글로 설명하는 것입니다. 
         이미지 설명은 최대 2문장이어야 합니다. 첫 문장은 반드시 '~한 그림.' 혹은 '~한 사진.'으로 끝나고, 
@@ -67,7 +67,7 @@ class OpenAIAnalysis:
         모든 설명은 반드시 한글이어야 합니다!
         """
 
-        self.user_message_template = """
+        self.ic_user_message_template = """
         아래 그림을 설명해 주세요. 그림에서 중점적으로 볼 수 있는 키워드는 다음과 같습니다.
         keyword: {keyword}
         """
@@ -85,12 +85,12 @@ class OpenAIAnalysis:
                 response = self.client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": self.system_message},
+                        {"role": "system", "content": self.ic_system_message},
                         {"role": "user", "content": 
                             [
                                 {
                                     "type": "text",
-                                    "text": self.user_message_template.format(keyword=azure_caption)
+                                    "text": self.ic_user_message_template.format(keyword=azure_caption)
                                 },
                                 {
                                     "type": "image_url",
@@ -110,6 +110,7 @@ class OpenAIAnalysis:
 
         return updated_images
 
+    
 
 ## -------------------------------------
 ## -       openai = 0.28 버전          -
