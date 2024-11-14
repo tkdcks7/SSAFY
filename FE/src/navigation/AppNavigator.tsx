@@ -50,7 +50,7 @@ export type RootStackParamList = {
   };
   MyBooks: undefined;
   MyLikedBooks: undefined;
-  EBookViewer: { bookId: string };
+  EBookViewer: { bookId: number };
   BookDetail: { bookId: number };
   Review: { bookId: number };
   DatabaseViewer: undefined; // ViewDatabase 경로 추가

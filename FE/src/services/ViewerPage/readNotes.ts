@@ -2,7 +2,7 @@ import { HttpStatusCode } from "axios";
 import apiAuth from "../../utils/apiAuth";
 
 
-interface IReadNote {
+export interface IReadNote {
     noteId: number;
     title: string;
     progressRate: number;
@@ -13,17 +13,20 @@ interface IReadNote {
 
 export interface ICreateNote {
     bookId: number;
-    progressRate: number; // float로 줘야할듯?
+    progressRate: number;
     sentence: string;
     sentenceId: string; // cfiRange
   }
 
+export interface INoteList {
+    noteList: IReadNote[];
+}
 
 // 내 책의 독서노트 조회
-export const getReadNote = async (bookId: number): Promise<IReadNote | undefined> => {
+export const getReadNote = async (bookId: number): Promise<IReadNote[] | undefined> => {
 return apiAuth
-    .get<IReadNote>(`/notes/${bookId}`)
-    .then((res) => res.data)
+    .get<INoteList>(`/notes/${bookId}`)
+    .then((res) => res.data.noteList)
     .catch((err) => {
     console.log(err);
     return undefined;
@@ -34,7 +37,9 @@ return apiAuth
 export const createReadNote = async (payload: ICreateNote): Promise<HttpStatusCode> => {
     return apiAuth
         .post("/notes", payload)
-        .then( (res) => res.status )
+        .then( (res) => {
+            console.log(`독서노트 생성됨. 문장=${payload.sentence}`);
+            res.status} )
         .catch((err) => { return err.status; });
     };
 
