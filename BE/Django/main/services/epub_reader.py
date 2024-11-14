@@ -96,7 +96,6 @@ class EpubReader:
 
             # 모든 span 태그 찾기
             spans = soup.find_all('span')
-            bs4.element.PageElement
 
             # 각 span 태그에 data-index 속성 추가
             for span in spans:
