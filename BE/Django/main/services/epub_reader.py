@@ -11,6 +11,11 @@ class EpubReader:
         images = book.get_items_of_type(ebooklib.ITEM_IMAGE)
         return images
 
+    ## 표지 처리 함수 
+    def read_cover_image_from_epub(book: epub.EpubBook):
+        cover_image = book.get_items_of_type(ebooklib.ITEM_COVER)
+        return list(cover_image)
+    
     def read_epub_from_s3_path(path: str):
         pass 
 
@@ -30,15 +35,18 @@ class EpubReader:
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             content = item.get_content().decode('utf-8')
             soup = BeautifulSoup(content, 'html.parser')
-            
+
+            head = soup.head
+            body = soup.body
+
             # 이미지의 alt 속성 업데이트
             for image_id, caption, _ in image_list:
-                img_tag = soup.find('img', {'src': image_id})
+                img_tag = body.find('img', {'src': image_id})
                 if img_tag:
                     img_tag['alt'] = caption
             
             # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
-            updated_content = str(soup)
+            updated_content = f"<html>{head}{body}</html>"
             item.set_content(updated_content.encode('utf-8'))
 
         return book 
@@ -50,14 +58,17 @@ class EpubReader:
             content = item.get_content()
             soup = BeautifulSoup(content, 'html.parser')
             
+            head = soup.head
+            body = soup.body
+
             # 이미지의 alt 속성 업데이트
             for image_id, caption, _ in image_list:
-                img_tag = soup.find('img', {'src': image_id})
+                img_tag = body.find('img', {'src': image_id})
                 if img_tag:
                     img_tag['alt'] = caption
             
             # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
-            updated_content = str(soup)
+            updated_content = f"<html>{head}{body}</html>"
             item.set_content(updated_content.encode('utf-8'))
 
         return book 
