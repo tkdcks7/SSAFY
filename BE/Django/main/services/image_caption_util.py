@@ -6,7 +6,8 @@ from azure.core.credentials import AzureKeyCredential
 import openai
 import base64
 import json 
-import tiktoken 
+import tiktoken
+import re  
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -80,7 +81,8 @@ class OpenAIAnalysis:
 
         1. 주어진 [{data-index, text}, {data-index, text}, ... ] 배열에서 text를 읽고 띄어쓰기를 교정하시오.
         이때, text의 다른 것이 바뀌면 안됩니다. 오로지 띄어쓰기만 수정되어야 합니다. 띄어쓰기가 아닌 맞춤법이 틀렸어도 그것을 수정할 수 없습니다.  
-        2. 교정된 결과를 [{data-index, text}, {data-index, text}, ... ]의 형식으로 반환하세요.
+        2. 결과는 반드시 다음과 같은 형식으로 반환하십시오. [{data-index, text}, {data-index, text}, ... ]
+        3. 이외 안내 메시지는 필요 없습니다. 
         """
 
         self.pc_user_message_template = """
@@ -162,7 +164,6 @@ class OpenAIAnalysis:
             token_limit = 15000  # 토큰 제한 (응답 제한이 16384기 때문) 
 
             total_token_count = self.get_token_count(processed_text_str)
-            print(f"total_token_count={total_token_count}")
             
             if total_token_count > token_limit:
                 temp_text = []
@@ -191,6 +192,9 @@ class OpenAIAnalysis:
         except Exception as e:
             print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
 
+        if len(result) == 0:
+            print("correct_punctuation: No Result")
+            result = processed_text 
         return result
 
     def send_request(self, text_part):
@@ -204,7 +208,7 @@ class OpenAIAnalysis:
                 ],
             )
             gpt_correction = response.choices[0].message.content
-            return json.loads(gpt_correction)
+            return self.parse_json_data(gpt_correction)
         except Exception as e:
             print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
             return [] 
@@ -214,7 +218,14 @@ class OpenAIAnalysis:
         tokens = encoding.encode(text)
         return len(tokens)
     
-
+    def parse_json_data(self, text):
+        pattern = r"\[.*\]"
+        matched_result = re.search(pattern, text) 
+        result = []
+        if matched_result:
+            result = json.loads(matched_result.group())
+        
+        return result 
     
 
 ## -------------------------------------
