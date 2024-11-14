@@ -3,7 +3,7 @@
 from django.urls import path, include
 import django_eventstream
 
-from .views import ImageCaptioningView, Image2BookConverter, Pdf2BookConverter, Epub2BookConverter, CorrectionTest
+from .views import ImageCaptioningView, Image2BookConverter, Pdf2BookConverter, Epub2BookConverter, CorrectionTest, TestExceptionView
 from . import views 
 
 urlpatterns = [
@@ -13,5 +13,6 @@ urlpatterns = [
     path('upload/pdf', Pdf2BookConverter.as_view(), name='pdf2ebook'),
     path('upload/epub', Epub2BookConverter.as_view(), name='epub2ebook'),
     path('events/<channel>', include(django_eventstream.urls)), # SSE 연결 요청
-    path('correction/', CorrectionTest.as_view(), name='correction test' )
+    path('correction/', CorrectionTest.as_view(), name='correction test' ),
+    path('error-test', TestExceptionView.as_view(), name='test_exception_view')
 ]
