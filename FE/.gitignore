@@ -493,4 +493,7 @@ fabric.properties
 
 !/gradle/wrapper/gradle-wrapper.jar
 
+# React Native bundle files
+android/app/src/main/assets/index.android.bundle 
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,reactnative,androidstudio,windows
