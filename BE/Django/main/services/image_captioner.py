@@ -58,6 +58,7 @@ class ImageCaptioner:
 
         # 1. epub 파일에서 이미지 읽기
         image_list = EpubReader.read_images_from_epub(book)
+        cover_image = EpubReader.read_cover_image_from_epub(book)
         # 2. 이미지 파일을 azure로 이미지 캡셔닝
         processed_images = []
         azure_image_analysis = AzureImageAnalysis()
@@ -65,6 +66,9 @@ class ImageCaptioner:
             for im in image_list:
                 azure_result = await azure_image_analysis.analyze_image_async(im.get_content())
                 processed_images.append((im.file_name, azure_result.caption.text, im.get_content()))
+            for cm in cover_image:
+                azure_result = await azure_image_analysis.analyze_image_async(cm.get_content())
+                processed_images.append((cm.file_name, azure_result.caption.text, cm.get_content()))
         finally:
             await azure_image_analysis.close_async_client()
 
