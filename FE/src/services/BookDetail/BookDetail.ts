@@ -26,19 +26,20 @@ export const toggleLikeBook = async (bookId: number, likedFlag: boolean) => {
   }
 };
 
-// 도서 담기 API
-export const addBookToCart = async (bookId: number) => {
+// 도서 담기/삭제 API
+export const toggleBookCart = async (bookId: number, cartFlag: boolean) => {
   try {
     const response = await apiAuth.post('/published-books/book-cart', {
       bookId,
-      cartFlag: true, // 담기 상태를 설정
+      cartFlag, // true: 담기, false: 삭제
     });
-    return response.data; // 서버에서 반환된 데이터
+    return response.data;
   } catch (error) {
-    console.error('Failed to add book to cart:', error);
+    console.error('Failed to toggle book cart status:', error);
     throw error;
   }
 };
+
 
 /**
  * 도서 다운로드 요청 API

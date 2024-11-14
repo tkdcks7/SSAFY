@@ -44,7 +44,7 @@ public class Note {
 	@JoinColumn(name = "book_id", nullable = false)
 	private Book book;
 
-	@Column(columnDefinition = "varchar(20)", nullable = false)
+	@Column(columnDefinition = "varchar(50)", nullable = false)
 	private String sentenceId;
 
 	@Column(columnDefinition = "datetime default current_timestamp", nullable = false)

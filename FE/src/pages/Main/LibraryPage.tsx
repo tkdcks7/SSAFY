@@ -140,7 +140,7 @@ const LibraryPage: React.FC = () => {
             <Tab onMenuPress={toggleSidebar} onTabClick={setFilter} onSearch={setSearchText} />
             <CurrentReadingStatus />
             {isAccessibilityMode ? (
-              <AccessibilityBookList books={books.filter((book) => book.dtype === 'REGISTERED')} />
+              <AccessibilityBookList books={books} />
             ) : (
               <GeneralBookList books={books} />
             )}

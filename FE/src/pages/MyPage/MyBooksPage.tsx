@@ -6,7 +6,7 @@ import { handleScrollEndAnnouncement } from '../../utils/announceScrollEnd';
 import MyBooksTab from '../../components/MyPage/MyBooksTab';
 import AccessibilityMyBooksList from '../../components/MyPage/AccessibilityMyBooksList';
 import GeneralMyBooksList from '../../components/MyPage/GeneralMyBooksList';
-import { getMyBooks } from '../../services/Mypage/MyBooks'; // API 함수 임포트
+import { getMyBooks } from '../../services/Mypage/MyBooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,7 +23,7 @@ const MyBooksPage: React.FC = () => {
     const fetchBooks = async () => {
       try {
         const books = await getMyBooks();
-        setAllBooks(books); // 전체 도서 목록 설정
+        setAllBooks(books);
       } catch (error: any) {
         console.error(error.message);
       } finally {
@@ -35,14 +35,16 @@ const MyBooksPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // 탭 및 검색어에 따라 도서 필터링
     let filtered = allBooks.filter((book) =>
       selectedTab === '출판도서' ? book.dtype === 'PUBLISHED' : book.dtype === 'REGISTERED'
     );
 
     if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (book) => book.title.includes(searchQuery) || book.author.includes(searchQuery)
+        (book) =>
+          book.title.toLowerCase().includes(lowerCaseQuery) ||
+          book.author.toLowerCase().includes(lowerCaseQuery)
       );
     }
 
@@ -100,12 +102,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: height * 0.05,
-    marginBottom: height * 0.05,
   },
   innerContainer: {
     flex: 1,
     paddingHorizontal: width * 0.02,
-    marginBottom: height * 0.05,
   },
 });
 

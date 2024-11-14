@@ -5,10 +5,10 @@ import styles from '../../styles/BookDetail/ActionButtonsStyle';
 import { useNavigation } from '@react-navigation/native';
 import {
   downloadBook,
-  addBookToCart,
   saveBookToLocalDatabase,
   downloadFileFromUrl,
-  isBookAlreadyDownloaded
+  isBookAlreadyDownloaded,
+  toggleBookCart, // 새로운 함수 import
 } from '../../services/BookDetail/BookDetail';
 import DownloadModal from './DownloadModal';
 
@@ -24,7 +24,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
   const navigation = useNavigation();
   const [isModalVisible, setModalVisible] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [cartFlag, setCartFlag] = useState(initialCartFlag);
+  const [cartFlag, setCartFlag] = useState(initialCartFlag); // true: 담기된 상태, false: 담기되지 않음
   const [isAlreadyDownloaded, setAlreadyDownloaded] = useState(false);
 
   useEffect(() => {
@@ -49,10 +49,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
       const metadata = await downloadBook(bookId);
       const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
 
-      // 다운로드 시점 추가
-      const downloadDate = new Date().toISOString(); // ISO 형식으로 다운로드 시점 기록
-
-      // 필요한 데이터만 저장하도록 수정
+      const downloadDate = new Date().toISOString();
       const bookData = {
         bookId: metadata.bookId,
         title: metadata.title,
@@ -82,16 +79,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
     }
   };
 
-
-  const handleAddToCart = async () => {
+  const handleToggleCart = async () => {
     try {
-      await addBookToCart(bookId); // 도서 담기 API 호출
-      setCartFlag(true); // 담기 성공 시 상태 업데이트
-      AccessibilityInfo.announceForAccessibility('도서가 담겼습니다.');
-      Alert.alert('성공', '도서가 담겼습니다.');
+      await toggleBookCart(bookId, !cartFlag); // cartFlag 반전하여 요청
+      setCartFlag((prev) => !prev);
+      AccessibilityInfo.announceForAccessibility(
+        cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.'
+      );
+      Alert.alert('성공', cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.');
     } catch (error) {
-      AccessibilityInfo.announceForAccessibility('도서를 담는 데 실패했습니다.');
-      Alert.alert('오류', '도서를 담을 수 없습니다.');
+      AccessibilityInfo.announceForAccessibility('도서 상태 변경에 실패했습니다.');
+      Alert.alert('오류', '도서 상태를 변경할 수 없습니다.');
     }
   };
 
@@ -117,17 +115,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
         </View>
       </View>
 
-      {/* 도서 담기와 다운로드 아이콘 */}
+      {/* 도서 담기/삭제와 다운로드 아이콘 */}
       <View style={styles.buttonContainerWithMargin}>
         <View style={styles.buttonWrapper}>
           <Btn
-            title={cartFlag ? '담긴 도서' : '도서 담기'}
+            title={cartFlag ? '담은 도서 빼기' : '도서 담기'}
             btnSize={1}
-            onPress={handleAddToCart}
-            disabled={cartFlag}
-            style={[cartFlag && styles.disabledButton]}
-            accessibilityLabel={cartFlag ? '이미 담긴 도서 버튼' : '도서 담기 버튼'}
-            accessibilityHint={cartFlag ? '이미 담은 도서입니다.' : '도서를 담을 수 있습니다.'}
+            onPress={handleToggleCart}
+            accessibilityLabel={cartFlag ? '담은 도서 빼기 버튼' : '도서 담기 버튼'}
+            accessibilityHint={cartFlag ? '도서를 담은 목록에서 제거합니다.' : '도서를 담을 수 있습니다.'}
           />
         </View>
         <View style={styles.iconWrapper}>

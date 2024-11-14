@@ -1,4 +1,3 @@
-// src/components/Search/AccessibilityBookList.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -12,7 +11,7 @@ interface Book {
   title: string;
   author: string;
   publishedAt: string;
-  cover: any;
+  cover: string; // 변경: URL로 올 경우 string 타입으로 설정
 }
 
 interface AccessibilityBookListProps {
@@ -72,10 +71,10 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ bookList 
       <ScrollView>
         {sortedBooks.map((book) => (
           <TouchableOpacity key={book.bookId} onPress={() => handleBookClick(book.bookId)} style={styles.bookItem}>
-            <Image source={book.cover} style={styles.bookImage} />
+            <Image source={{ uri: book.cover }} style={styles.bookImage} />
             <View style={styles.bookInfo}>
-              <Text style={styles.bookTitle}>{book.title}</Text>
-              <Text style={[styles.bookAuthor, styles.textSpacing]}>저자: {book.author}</Text>
+              <Text style={styles.bookTitle} numberOfLines={2}>{book.title}</Text>
+              <Text style={[styles.bookAuthor, styles.textSpacing]} numberOfLines={1}>저자: {book.author}</Text>
               <Text style={[styles.bookPublishedAt, styles.textSpacing]}>출판일: {book.publishedAt}</Text>
             </View>
           </TouchableOpacity>
