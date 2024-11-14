@@ -65,6 +65,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
         dtype: metadata.dtype,
         filePath,
         downloadDate, // 다운로드 날짜 추가
+        currentCfi: '',
+        progressRate: 0,
       };
 
       await saveBookToLocalDatabase(bookData);

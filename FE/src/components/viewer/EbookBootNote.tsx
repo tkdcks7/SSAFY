@@ -4,29 +4,21 @@ import { Text, View, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Image
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import Animated, { useAnimatedStyle, SharedValue } from 'react-native-reanimated';
 import BookNoteContent from './BookNoteContent';
+import { IReadNote } from '../../services/ViewerPage/readNotes';
 
 // 하위 컴포넌트의 Props 타입 정의
 type SidebarProps = {
   bookNoteSideBarX: SharedValue<number>;
   toggleBookNote: () => void;
+  readNoteArr: IReadNote[];
 };
 
-interface IBookNote {
-    noteId: number;
-    bookId: number;
-    title: string;
-    progressRate: number;
-    createdAt: string;
-    sentence: string;
-    sentenceId: string;
-};
 
 
 // 임시 데이터
-const noteList: IBookNote[] = [
+const noteList: IReadNote[] = [
           {
             "noteId": 1356,
-            "bookId": 16142,
             "title": "제목",
             "progressRate": 42,
             "createdAt": "2024-10-18 23:44",
@@ -35,7 +27,6 @@ const noteList: IBookNote[] = [
         },
         {
             "noteId": 1357,
-            "bookId": 16143,
             "title": "두 번째 제목",
             "progressRate": 25,
             "createdAt": "2024-10-19 08:22",
@@ -44,7 +35,6 @@ const noteList: IBookNote[] = [
         },
         {
             "noteId": 1358,
-            "bookId": 16144,
             "title": "세 번째 제목",
             "progressRate": 60,
             "createdAt": "2024-10-20 15:18",
@@ -53,7 +43,6 @@ const noteList: IBookNote[] = [
         },
         {
             "noteId": 1359,
-            "bookId": 16145,
             "title": "네 번째 제목",
             "progressRate": 80,
             "createdAt": "2024-10-21 10:30",
@@ -62,7 +51,6 @@ const noteList: IBookNote[] = [
         },
         {
             "noteId": 1360,
-            "bookId": 16146,
             "title": "다섯 번째 제목",
             "progressRate": 95,
             "createdAt": "2024-10-22 21:00",
@@ -74,7 +62,7 @@ const noteList: IBookNote[] = [
 
 const { width, height } = Dimensions.get('window');
 
-const EbookBookNote: React.FC<SidebarProps> = ({ bookNoteSideBarX, toggleBookNote }) => {
+const EbookBookNote: React.FC<SidebarProps> = ({ bookNoteSideBarX, toggleBookNote, readNoteArr }) => {
   const animatedIndexStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: bookNoteSideBarX.value }],
   }));
@@ -95,7 +83,7 @@ const EbookBookNote: React.FC<SidebarProps> = ({ bookNoteSideBarX, toggleBookNot
             <View style={styles.titleBox}>
                 <Text style={styles.bookTitle}>책 제목</Text>
             </View>
-            { noteList.map((item, index) => {
+            { readNoteArr.map((item, index) => {
                 return <BookNoteContent key={index} title={item.title} progress={item.progressRate} date={item.createdAt}/>
                 })}
         </ScrollView>

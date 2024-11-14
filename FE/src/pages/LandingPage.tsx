@@ -32,7 +32,7 @@ const LandingPage: React.FC<Props> = ({ navigation }) => {
       />
       <Btn
       isWhite={true}
-      onPress={() => navigation.navigate('EBookViewer', { bookId: '123' })}
+      onPress={() => navigation.navigate('EBookViewer', { bookId: 1 })}
       title='이북'
       />
     </PageWrapper>
