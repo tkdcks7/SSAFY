@@ -155,6 +155,9 @@ class EpubReader:
             head = soup.head
             body = soup.body
 
+            if not body or body is None:
+                continue 
+
             spans = body.find_all('span')
             for span in spans:
                 if span['data-index'] in sentence_dict:
