@@ -12,4 +12,7 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
+# WSGI 설정
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
+# ASGI 설정
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]

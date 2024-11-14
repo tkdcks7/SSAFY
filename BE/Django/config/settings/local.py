@@ -1,6 +1,6 @@
 from .base import *
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['5f3f-211-194-200-134.ngrok-free.app', 'localhost']
 
 DATABASES = {
     'default': {

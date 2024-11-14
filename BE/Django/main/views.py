@@ -19,10 +19,18 @@ from PIL import Image
 import numpy as np
 import datetime
 
+#------- sse
+from .services.sse import send_sse_message
+
 # Create your views here.
+
+MEMBER_ID = 1
 
 ## 테스트용 API
 def test_view(request):
+    channel = request.headers.get('X-Request-ID', 'default-channel')
+    print('test_view 호출')
+    send_sse_message(channel=channel, status='테스트', progress=80)
     return JsonResponse({"message": "hello world"}) 
 
 
@@ -65,6 +73,7 @@ class Image2BookConverter(APIView):
     
     def post(self, request):
         try:
+            channel = request.headers.get('X-Request-ID', 'default-channel')
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             files = request.FILES.getlist('uploadFile')
             cover = request.FILES.get('cover')
@@ -84,10 +93,10 @@ class Image2BookConverter(APIView):
             
             # ebook 만드는 프로세스
             filename = f'{uuid.uuid4()}.epub'
-            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename)
+            book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename, channel=channel)
 
             # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {
@@ -111,6 +120,7 @@ class Pdf2BookConverter(APIView):
     
     def post(self, request):
         try:
+            channel = request.headers.get('X-Request-ID', 'default-channel')
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             file = request.FILES.get('uploadFile')
             cover = request.FILES.get('cover')
@@ -130,10 +140,10 @@ class Pdf2BookConverter(APIView):
             
             # ebook 만드는 프로세스
             filename = f'{datetime.datetime.now()}.epub'
-            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename)
+            book, metadata = Integration().pdf_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
 
             # ebook을 s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {
@@ -157,6 +167,9 @@ class Epub2BookConverter(APIView):
     
     def post(self, request):
         try:
+            # 헤더에서 채널명 받기
+            channel = request.headers.get('X-Request-ID', 'default-channel')
+
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             file = request.FILES.get('uploadFile')
             cover = request.FILES.get('cover')
@@ -176,10 +189,10 @@ class Epub2BookConverter(APIView):
             
             # ebook 만드는 프로세스
             filename = f'{datetime.datetime.now()}.epub'
-            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename)
+            book, metadata = Integration().epub_to_ebook(metadata=metadata, file=file, file_name=filename, channel=channel)
 
             # s3에 저장
-            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata)
+            epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
             
             # response 가공
             response_body = {

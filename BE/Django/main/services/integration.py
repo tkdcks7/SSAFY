@@ -11,12 +11,19 @@ from django.conf import settings
 from .s3_storage import S3Client
 import os
 import tempfile
+from .sse import send_sse_message
+
+### ------------------------
+from main.services.epub_accessibility_util import EpubAccessibilityConverter
 
 class Integration:
     def __init__(self):
         self.member_id = 1 # 일단 static으로 설정
 
-    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str) -> Tuple[epub.EpubBook, Dict]:
+    def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
+        # SSE 메세지 보내기
+        send_sse_message(channel, '문서 레이아웃 분석중', 20)
+
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
 
@@ -32,13 +39,22 @@ class Integration:
         pages = LayoutAnalyze.load_and_check_npz(response.content)
         data = {'metadata': metadata, 'pages': pages}
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '텍스트 추출중', 40)
+
         # ocr 변환
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, 'ebook 변환중', 60)
+
         # ebook 변환
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
+
+        # SSE 메세지 보내기
+        send_sse_message(channel, '시각장애인을 위한 접근성 적용중', 80)
 
         # 이미지 캡셔닝
         captioner = ImageCaptioner()
@@ -49,9 +65,13 @@ class Integration:
         metadata['cover'] = url
 
         # 접근성 적용
+        epub_access = EpubAccessibilityConverter()
+        epub_access.set_epub(captioned_book)
+        epub_access.format_body()
+        formatted_book = epub_access.get_epub()
 
         # ebook span태그에 index 붙이기
-        indexed_book = EpubReader.set_sentence_index(captioned_book)
+        indexed_book = EpubReader.set_sentence_index(formatted_book)
 
         # mysql에 정보 저장
         dbutil = MysqlUtil()
@@ -68,15 +88,24 @@ class Integration:
         metadata['book_id'] = saved_book.book_id
         metadata['created_at'] = saved_book.created_at
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '완료', 100)
+
         return (indexed_book, metadata)
     
     
-    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str) -> Tuple[epub.EpubBook, Dict]:
+    def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
+        # SSE 메세지 보내기
+        send_sse_message(channel, 'pdf를 이미지로 변환중', 20)
+        
         # pdf -> image list
         images = PdfConverter().convert_pdf_to_images(file)
 
         # image list를 http 파일로 보낼 준비
         files_to_send = PdfConverter().pilImages_to_bytesImages(images)
+
+        # SSE 메세지 보내기
+        send_sse_message(channel, '문서 레이아웃 분석중', 40)
 
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         response = requests.post(
@@ -91,13 +120,22 @@ class Integration:
         pages = LayoutAnalyze.load_and_check_npz(response.content)
         data = {'metadata': metadata, 'pages': pages}
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '텍스트 추출중', 60)
+
         # ocr 변환
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, 'ebook으로 변환중', 80)
+
         # ebook 변환
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
+
+        # SSE 메세지 보내기
+        send_sse_message(channel, '시각장애인을 위한 접근성 적용중', 90)
 
         # 이미지 캡셔닝
         captioner = ImageCaptioner()
@@ -127,10 +165,13 @@ class Integration:
         metadata['book_id'] = saved_book.book_id
         metadata['created_at'] = saved_book.created_at
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '완료', 100)
+
         return (indexed_book, metadata)    
     
 
-    def epub_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str) -> Tuple[epub.EpubBook, Dict]:
+    def epub_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: int) -> Tuple[epub.EpubBook, Dict]:
         # epub 임시파일 생성
         with tempfile.NamedTemporaryFile(delete=False, suffix='.epub') as temp_file:
             # delete = False 이유: true로 설정하면 with 블록 안에서(파일이 열린 상태에서) read_epub()에서 임시 파일을 읽으려 시도할 때 windows에서 접근 거부 오류 발생
@@ -140,6 +181,9 @@ class Integration:
                 for chunk in file.chunks():
                     temp_file.write(chunk)
                 temp_file.flush()
+
+                # SSE 메세지 보내기
+                send_sse_message(channel, 'Ebook에 접근성 적용중', 40)
 
                 # epub 파일 읽기
                 book = epub.read_epub(temp_file.name)        
@@ -170,6 +214,9 @@ class Integration:
                 )
                 metadata['book_id'] = saved_book.book_id
                 metadata['created_at'] = saved_book.created_at
+
+                # SSE 메세지 보내기
+                send_sse_message(channel, '거의 완료되었어요', 100)
 
                 return (indexed_book, metadata)
             
