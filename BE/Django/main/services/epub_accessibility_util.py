@@ -6,6 +6,11 @@ import re
 class EpubAccessibilityConverter:
     def __init__(self) -> None:
         self.epub = None 
+
+    def apply_accessibility(self, book: epub.EpubBook):
+        self.set_epub(book)
+        self.format_body()
+        return self.epub 
     
     def set_epub(self, book: epub.EpubBook):
         self.epub = book 

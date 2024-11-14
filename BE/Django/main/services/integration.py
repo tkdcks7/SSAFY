@@ -67,9 +67,7 @@ class Integration:
 
         # 접근성 적용
         epub_access = EpubAccessibilityConverter()
-        epub_access.set_epub(captioned_book)
-        epub_access.format_body()
-        formatted_book = epub_access.get_epub()
+        formatted_book = epub_access.apply_accessibility(captioned_book)
 
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
@@ -150,9 +148,11 @@ class Integration:
         metadata['cover'] = url
 
         # 접근성 적용
+        epub_access = EpubAccessibilityConverter()
+        formatted_book = epub_access.apply_accessibility(captioned_book)
 
         # ebook span태그에 index 붙이기
-        indexed_book = EpubReader.set_sentence_index(captioned_book)
+        indexed_book = EpubReader.set_sentence_index(formatted_book)
 
         # 띄어쓰기 교정 
         corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
@@ -196,16 +196,18 @@ class Integration:
                 book = epub.read_epub(temp_file.name)        
 
                 # 이미지 캡셔닝
-                processed_book, metadata = async_to_sync(ImageCaptioner().image_captioning)(book, metadata)
+                captioned_book, metadata = async_to_sync(ImageCaptioner().image_captioning)(book, metadata)
 
                 # 커버 이미지 S3에 저장
                 url = S3Client().save_numpy_to_s3(metadata['cover'], f'image/cover/{metadata['title']}_cover.jpg')
                 metadata['cover'] = url
 
                 # 접근성 적용
+                epub_access = EpubAccessibilityConverter()
+                formatted_book = epub_access.apply_accessibility(captioned_book)
 
                 # ebook span태그에 index 붙이기
-                indexed_book = EpubReader.set_sentence_index(processed_book)
+                indexed_book = EpubReader.set_sentence_index(formatted_book)
 
                 # 띄어쓰기 교정 
                 corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
