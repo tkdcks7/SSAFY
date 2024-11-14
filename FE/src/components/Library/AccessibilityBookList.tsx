@@ -1,40 +1,96 @@
-// src/components/Library/AccessibilityBookList.tsx
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, Dimensions } from 'react-native';
-import { dummyBooks, currentBook } from '../../data/dummyBooks';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, Dimensions, AccessibilityInfo, TouchableOpacity } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const AccessibilityBookList: React.FC = () => {
+type Book = {
+  id: number;
+  title: string;
+  author: string;
+  cover: string;
+  publisher: string;
+  progress?: number; // 진행도
+};
+
+type AccessibilityBookListProps = {
+  books: Book[];
+  currentBook: Book | null; // 현재 읽고 있는 책
+};
+
+const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, currentBook }) => {
+  useEffect(() => {
+    if (currentBook) {
+      AccessibilityInfo.announceForAccessibility(`현재 읽고 있는 책은 ${currentBook.title}입니다.`);
+    }
+  }, [currentBook]);
+
   return (
     <FlatList
-      data={dummyBooks}
+      data={books}
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
-        <View>
+        currentBook ? (
           <View style={styles.currentBookContainer}>
-            <Text style={styles.currentBookTitle}>현재 읽고 있는 책</Text>
+            <Text
+              style={styles.currentBookTitle}
+              accessibilityLabel={`현재 읽고 있는 책: ${currentBook.title}`}
+            >
+              현재 읽고 있는 책
+            </Text>
             <View style={styles.bookItem}>
-              <Image source={currentBook.coverImage} style={styles.bookImage} />
+              <Image
+                source={{
+                  uri: currentBook.cover.startsWith('http') ? currentBook.cover : `file://${currentBook.cover}`,
+                }}
+                style={styles.bookImage}
+                accessibilityLabel={`표지 이미지: ${currentBook.title}`}
+              />
               <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle}>{currentBook.title}</Text>
-                <Text style={styles.bookAuthor}>저자: {currentBook.author}</Text>
-                <Text style={styles.bookProgress}>진행도: {currentBook.progress}%</Text>
+                <Text style={styles.bookTitle} accessibilityLabel={`제목: ${currentBook.title}`}>
+                  {currentBook.title}
+                </Text>
+                <Text style={styles.bookAuthor} accessibilityLabel={`저자: ${currentBook.author}`}>
+                  저자: {currentBook.author}
+                </Text>
+                <Text
+                  style={styles.bookProgress}
+                  accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
+                >
+                  진행도: {currentBook.progress ?? 0}%
+                </Text>
               </View>
             </View>
           </View>
-          <Text style={styles.remainingBooksTitle}>내 서재 도서 목록</Text>
-        </View>
+        ) : null
       }
       renderItem={({ item }) => (
-        <View style={styles.bookItem}>
-          <Image source={item.coverImage} style={styles.bookImage} />
+        <TouchableOpacity
+          style={styles.bookItem}
+          onPress={() => {
+            AccessibilityInfo.announceForAccessibility(`${item.title} 상세 보기 페이지로 이동합니다.`);
+          }}
+          accessibilityLabel={`${item.title} 상세 보기`}
+          accessibilityHint="이 책의 상세 정보를 확인하려면 두 번 탭하세요."
+        >
+          <Image
+            source={{
+              uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}`,
+            }}
+            style={styles.bookImage}
+            accessibilityLabel={`표지 이미지: ${item.title}`}
+          />
           <View style={styles.bookInfo}>
-            <Text style={styles.bookTitle}>{item.title}</Text>
-            <Text style={styles.bookAuthor}>저자: {item.author}</Text>
-            <Text style={styles.bookPublisher}>출판사: {item.publisher}</Text>
+            <Text style={styles.bookTitle} numberOfLines={2} accessibilityLabel={`제목: ${item.title}`}>
+              {item.title}
+            </Text>
+            <Text style={styles.bookAuthor} numberOfLines={2} accessibilityLabel={`저자: ${item.author}`}>
+              저자: {item.author}
+            </Text>
+            <Text style={styles.bookPublisher} accessibilityLabel={`출판사: ${item.publisher}`}>
+              출판사: {item.publisher}
+            </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       )}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       contentContainerStyle={styles.flatListContent}
@@ -43,42 +99,24 @@ const AccessibilityBookList: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: width * 0.04,
-    margin: width * 0.04,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: width * 0.07,
-    fontWeight: 'bold',
-    marginBottom: height * 0.03,
-    color: '#3943B7',
-    paddingHorizontal: width * 0.04,
-  },
   currentBookContainer: {
     marginBottom: height * 0.02,
-    paddingHorizontal: width * 0.04,
+    paddingHorizontal: width * 0.02,
   },
   currentBookTitle: {
-    fontSize: width * 0.1,
+    fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#3943B7',
     marginBottom: height * 0.02,
   },
-  remainingBooksTitle: {
-    fontSize: width * 0.1,
-    fontWeight: 'bold',
-    color: '#3943B7',
-    paddingHorizontal: width * 0.04,
-  },
   flatListContent: {
-    paddingBottom: height * 0.02,
+    paddingBottom: height * 0.01,
   },
   bookItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: height * 0.03,
-    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.02,
     backgroundColor: '#ffffff',
     borderRadius: width * 0.03,
     shadowColor: '#000',
@@ -86,7 +124,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: width * 0.02,
     elevation: 5,
-    marginBottom: height * 0.02,
   },
   bookImage: {
     width: width * 0.25,
@@ -98,13 +135,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bookTitle: {
-    fontSize: width * 0.1,
+    fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: height * 0.01,
   },
   bookAuthor: {
-    fontSize: width * 0.07,
+    fontSize: width * 0.05,
     color: '#666666',
     marginBottom: height * 0.01,
   },
@@ -113,7 +150,7 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   bookProgress: {
-    fontSize: width * 0.05,
+    fontSize: width * 0.035,
     color: '#3943B7',
     marginTop: height * 0.01,
   },
