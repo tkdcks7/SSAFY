@@ -39,6 +39,7 @@ class EpubReader:
             head = soup.head
             body = soup.body
 
+            print("decoded body: ", body)
             if body is None:
                 continue 
 
@@ -63,7 +64,7 @@ class EpubReader:
             
             head = soup.head
             body = soup.body
-
+            print("undecoded body: ", body)
             if body is None:
                 continue 
 
