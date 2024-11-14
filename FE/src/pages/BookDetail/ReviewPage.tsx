@@ -1,12 +1,11 @@
-// 추가 구현해야 할 것 : 리뷰 실제 수정 , 삭제 요청 연결
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Modal,  AccessibilityInfo } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Modal, AccessibilityInfo, Alert, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import CustomHeader from '../../components/CustomHeader';
-import { dummyInitialReviewResponse, dummyLoadMoreReviewResponse } from '../../data/dummyReview';
 import styles from '../../styles/BookDetail/ReviewPageStyle';
+import { createReview, deleteReview, updateReview, fetchReviews } from '../../services/BookDetail/BookReview';
+import { useRoute } from '@react-navigation/native';
+import { handleScrollEndAnnouncement } from '../../utils/announceScrollEnd'; // 스크롤 끝 감지 함수 import
 
-// 인터페이스 정의
 interface Review {
   reviewId: number;
   nickname: string;
@@ -23,9 +22,11 @@ interface MemberReview {
 }
 
 const ReviewPage = () => {
+  const route = useRoute();
+  const { bookId } = route.params as { bookId: number };
+
   const [reviewList, setReviewList] = useState<Review[]>([]);
   const [memberReview, setMemberReview] = useState<MemberReview | null>(null);
-  const [lastDateTime, setLastDateTime] = useState<string | null>(null);
   const [lastId, setLastId] = useState<number | null>(null);
   const [newReviewContent, setNewReviewContent] = useState<string>('');
   const [newReviewScore, setNewReviewScore] = useState<number>(0);
@@ -34,53 +35,75 @@ const ReviewPage = () => {
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    // 실제 API 호출 대신 더미 데이터 사용
-    const initialData = dummyInitialReviewResponse;
-    setMemberReview(initialData.memberReview);
-    setReviewList(initialData.reviewList);
-    setLastDateTime(initialData.lastDateTime);
-    setLastId(initialData.lastId);
-  }, []);
+    fetchInitialReviews();
+  }, [bookId]);
 
-  const handleLoadMore = () => {
-    if (lastDateTime && lastId) {
-      // 더미 데이터 추가로 불러오기
-      const loadMoreData = dummyLoadMoreReviewResponse;
-      setReviewList((prev) => [...prev, ...loadMoreData.reviewList]);
-      setLastDateTime(loadMoreData.lastDateTime);
-      setLastId(loadMoreData.lastId);
+  const fetchInitialReviews = async () => {
+    try {
+      const response = await fetchReviews(bookId);
+      setReviewList(response.reviewList);
+      setMemberReview(response.memberReview);
+      setLastId(response.lastReviewId);
+    } catch (error: any) {
+      Alert.alert('리뷰 조회 실패', error.message || '알 수 없는 오류');
     }
   };
 
-  const handleReviewSubmit = () => {
-    if (newReviewScore === 0) return; // 평점이 선택되지 않으면 작성 불가
+  const handleLoadMore = async () => {
+    if (lastId) {
+      try {
+        const response = await fetchReviews(bookId, lastId);
+        setReviewList((prev) => [...prev, ...response.reviewList]);
+        setLastId(response.lastReviewId);
+      } catch (error: any) {
+        Alert.alert('리뷰 더 불러오기 실패', error.message || '알 수 없는 오류');
+      }
+    }
+  };
 
-    if (isEditing) {
-      // 리뷰 수정 요청 로직 (API 호출)
-      setIsEditing(false);
-      if (memberReview) {
+  const handleReviewSubmit = async () => {
+    if (newReviewScore === 0) return;
+
+    try {
+      if (isEditing && memberReview) {
+        await updateReview(memberReview.reviewId, newReviewScore, newReviewContent);
         setMemberReview({
           ...memberReview,
           content: newReviewContent,
           score: newReviewScore,
           updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
         });
+        AccessibilityInfo.announceForAccessibility('리뷰가 수정되었습니다.');
+      } else {
+        const newReview = await createReview(bookId, newReviewScore, newReviewContent);
+        setMemberReview(newReview);
+        AccessibilityInfo.announceForAccessibility('리뷰가 작성되었습니다.');
       }
-      AccessibilityInfo.announceForAccessibility('리뷰가 수정되었습니다.');
-    } else {
-      // 리뷰 작성 요청 로직 (API 호출)
-      setMemberReview({
-        reviewId: Date.now(), // 임시로 생성한 reviewId
-        content: newReviewContent,
-        score: newReviewScore,
-        updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      });
-      AccessibilityInfo.announceForAccessibility('리뷰가 작성되었습니다.');
+
+      fetchInitialReviews(); // 최신 데이터를 가져와 화면 갱신
+    } catch (error: any) {
+      Alert.alert('리뷰 저장 실패', error.message || '알 수 없는 오류');
     }
 
-    // 입력 폼 초기화
     setNewReviewContent('');
     setNewReviewScore(0);
+    setIsEditing(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!memberReview) return;
+
+    try {
+      await deleteReview(memberReview.reviewId);
+      setMemberReview(null);
+      setNewReviewContent('');
+      setNewReviewScore(0);
+      setShowDeleteModal(false);
+      AccessibilityInfo.announceForAccessibility('리뷰가 삭제되었습니다.');
+      fetchInitialReviews();
+    } catch (error: any) {
+      Alert.alert('리뷰 삭제 실패', error.message || '알 수 없는 오류');
+    }
   };
 
   const handleModify = () => {
@@ -95,19 +118,6 @@ const ReviewPage = () => {
     setNewReviewScore(0);
   };
 
-  const handleDelete = () => {
-    setShowDeleteModal(true);
-    AccessibilityInfo.announceForAccessibility('리뷰 삭제 확인 모달이 나타났습니다.');
-  };
-
-  const confirmDelete = () => {
-    setShowDeleteModal(false);
-    setMemberReview(null);
-    setNewReviewContent('');
-    setNewReviewScore(0);
-    AccessibilityInfo.announceForAccessibility('리뷰가 삭제되었습니다.');
-  };
-
   const toggleExpandReview = (reviewId: number) => {
     setExpandedReviews((prev) => {
       const newSet = new Set(prev);
@@ -120,57 +130,9 @@ const ReviewPage = () => {
     });
   };
 
-  const renderMemberReview = () => (
-    <View style={styles.memberReviewContainer}>
-      <View style={styles.reviewHeader}>
-        <Text style={styles.memberReviewText}>나의 리뷰</Text>
-        <View style={styles.ratingContainer}>
-          {[...Array(5)].map((_, index) => (
-            <Text
-              key={index}
-              style={index < memberReview!.score ? styles.starFilled : styles.starEmpty}
-              accessibilityLabel={`별점 ${index + 1} ${index < memberReview!.score ? '채워짐' : '비어있음'}`}
-            >
-              ★
-            </Text>
-          ))}
-        </View>
-      </View>
-      <Text style={styles.memberReviewContent}>
-        {expandedReviews.has(memberReview!.reviewId) ? memberReview!.content : memberReview!.content.slice(0, 100)}
-        {memberReview!.content.length > 100 && (
-          <Text
-            style={styles.moreButton}
-            onPress={() => toggleExpandReview(memberReview!.reviewId)}
-            accessibilityRole="button"
-            accessibilityLabel={expandedReviews.has(memberReview!.reviewId) ? '접기' : '더보기'}
-          >
-            {expandedReviews.has(memberReview!.reviewId) ? ' [접기]' : ' [더보기]'}
-          </Text>
-        )}
-      </Text>
-      <TouchableOpacity
-        style={styles.modifyButton}
-        onPress={handleModify}
-        accessibilityRole="button"
-        accessibilityLabel="리뷰 수정"
-      >
-        <Text style={styles.modifyButtonText}>수정</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={handleDelete}
-        accessibilityRole="button"
-        accessibilityLabel="리뷰 삭제"
-      >
-        <Text style={styles.deleteButtonText}>삭제</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   const renderReviewInput = () => (
     <View style={styles.reviewInputContainer}>
-      <Text style={styles.ratingLabel}>평점</Text>
+      <Text style={styles.ratingLabel} accessibilityLabel="별점 입력">평점</Text>
       <View style={styles.ratingContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
@@ -178,16 +140,8 @@ const ReviewPage = () => {
             onPress={() => setNewReviewScore(star)}
             accessibilityRole="button"
             accessibilityLabel={`별점 ${star}점`}
-            accessibilityHint="별점을 선택합니다."
           >
-            <Text
-              style={[
-                styles.star,
-                newReviewScore === star && styles.starSelected,
-              ]}
-            >
-              {star}
-            </Text>
+            <Text style={[styles.star, newReviewScore === star && styles.starSelected]}>{star}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -197,9 +151,8 @@ const ReviewPage = () => {
         onChangeText={setNewReviewContent}
         placeholder="리뷰를 남겨보세요(최대 500자)"
         maxLength={500}
-        multiline // 줄바꿈 가능하도록 설정
+        multiline
         accessibilityLabel="리뷰 입력"
-        accessibilityHint="여기에 리뷰 내용을 작성하세요."
       />
       <TouchableOpacity
         style={[styles.submitButton, newReviewScore === 0 && styles.submitButtonDisabled]}
@@ -211,85 +164,89 @@ const ReviewPage = () => {
         <Text style={styles.submitButtonText}>{isEditing ? '수정 완료' : '작성'}</Text>
       </TouchableOpacity>
       {isEditing && (
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelEdit}
-          accessibilityRole="button"
-          accessibilityLabel="수정 취소"
-          accessibilityHint="수정을 취소하고 작성한 리뷰 내용을 원래 상태로 돌립니다."
-        >
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancelEdit}>
           <Text style={styles.cancelButtonText}>취소</Text>
         </TouchableOpacity>
       )}
     </View>
   );
 
+  const renderMemberReview = () => (
+    <View style={styles.memberReviewContainer}>
+      <View style={styles.reviewHeader}>
+        <Text style={styles.memberReviewText}>나의 리뷰</Text>
+        <View style={styles.ratingContainer}>
+          {[...Array(5)].map((_, index) => (
+            <Text key={index} style={index < memberReview!.score ? styles.starFilled : styles.starEmpty}>
+              ★
+            </Text>
+          ))}
+        </View>
+      </View>
+      <Text style={styles.memberReviewContent}>
+        {expandedReviews.has(memberReview!.reviewId)
+          ? memberReview!.content
+          : memberReview!.content.slice(0, 100)}
+        {memberReview!.content.length > 100 && (
+          <Text
+            style={styles.moreButton}
+            onPress={() => toggleExpandReview(memberReview!.reviewId)}
+          >
+            {expandedReviews.has(memberReview!.reviewId) ? ' [접기]' : ' [더보기]'}
+          </Text>
+        )}
+      </Text>
+      <TouchableOpacity style={styles.modifyButton} onPress={handleModify}>
+        <Text style={styles.modifyButtonText}>수정</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => setShowDeleteModal(true)}>
+        <Text style={styles.deleteButtonText}>삭제</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <CustomHeader
-        title="리뷰 페이지"
-        accessibilityRole="header"
-        accessibilityLabel="리뷰 페이지 헤더"
-      />
+      <CustomHeader title="리뷰 페이지" accessibilityLabel="리뷰 페이지 헤더" />
       {isEditing ? renderReviewInput() : memberReview ? renderMemberReview() : renderReviewInput()}
       <FlatList
         data={reviewList}
         keyExtractor={(item) => item.reviewId.toString()}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>
-            <View style={styles.reviewHeader}>
-              <Text style={styles.nickname}>{item.nickname}</Text>
-              <View style={styles.ratingContainer}>
-                {[...Array(5)].map((_, index) => (
-                  <Text
-                    key={index}
-                    style={index < item.score ? styles.starFilled : styles.starEmpty}
-                    accessibilityLabel={`별점 ${index + 1} ${index < item.score ? '채워짐' : '비어있음'}`}
-                  >
-                    ★
-                  </Text>
-                ))}
-              </View>
+            <Text style={styles.nickname}>{item.nickname}</Text>
+            <View style={styles.ratingContainer}>
+              {[...Array(5)].map((_, index) => (
+                <Text key={index} style={index < item.score ? styles.starFilled : styles.starEmpty}>
+                  ★
+                </Text>
+              ))}
             </View>
             <Text style={styles.reviewContent}>
               {expandedReviews.has(item.reviewId) ? item.content : item.content.slice(0, 100)}
-              {item.content.length > 100 && (
-                <Text
-                  style={styles.moreButton}
-                  onPress={() => toggleExpandReview(item.reviewId)}
-                  accessibilityRole="button"
-                  accessibilityLabel={expandedReviews.has(item.reviewId) ? '접기' : '더보기'}
-                >
-                  {expandedReviews.has(item.reviewId) ? ' [접기]' : ' [더보기]'}
-                </Text>
-              )}
             </Text>
-            <Text style={styles.date}>{item.updatedAt}</Text>
+            {item.content.length > 100 && (
+              <Text
+                style={styles.moreButton}
+                onPress={() => toggleExpandReview(item.reviewId)}
+              >
+                {expandedReviews.has(item.reviewId) ? ' [접기]' : ' [더보기]'}
+              </Text>
+            )}
           </View>
         )}
+        onScroll={(event) => handleScrollEndAnnouncement(event)}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
       />
-
-      {/* 삭제 확인 모달 */}
-      <Modal transparent={true} visible={showDeleteModal} animationType="slide">
+      <Modal transparent visible={showDeleteModal} animationType="slide">
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalText}>정말 삭제할까요?</Text>
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={confirmDelete}
-              accessibilityRole="button"
-              accessibilityLabel="리뷰 삭제 확인"
-            >
+            <TouchableOpacity style={styles.submitButton} onPress={confirmDelete}>
               <Text style={styles.submitButtonText}>확인</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowDeleteModal(false)}
-              accessibilityRole="button"
-              accessibilityLabel="리뷰 삭제 취소"
-            >
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setShowDeleteModal(false)}>
               <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           </View>
