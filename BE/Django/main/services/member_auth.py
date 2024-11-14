@@ -3,10 +3,12 @@ import javaobj
 import logging
 from .mysql_util import MysqlUtil
 from main.models import Member
+import base64
 
 def get_member_id(request) -> int:
     # 세션 ID 받기
-    session_id = request.COOKIES.get('JSESSIONID')
+    encoded_session_id = request.COOKIES.get('JSESSIONID')
+    session_id = base64.b64decode(encoded_session_id).decode('utf-8')
     if not session_id:
         return None
 
@@ -36,6 +38,7 @@ def verify_member(request) -> Member:
     try:
         member = MysqlUtil().find_member_by_member_id(member_id)
         return member
-    except:
-        logging.error(str(e))
+    except Exception as e:
+        logging.error(f'멤버 인증 과정에서 문제 발생 {str(e)}')
         return None
+    

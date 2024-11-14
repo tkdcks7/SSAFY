@@ -34,12 +34,12 @@ def test_view(request):
     member_id = get_member_id(request)
     member = verify_member(request)
     if member_id is None or member is None:
-        return Response({"error": "멤버 인증 실패"}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({"error": "멤버 인증 실패"}, status=status.HTTP_403_FORBIDDEN)
     
     data = {
         "member_id": member_id,
         "verified": True,
-        "member_info": member,
+        "member_info": member.name,
         "message": "hello world"
     }
     return JsonResponse(data) 
