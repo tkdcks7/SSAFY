@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AppNavigator'; // 네비게이션 타입 임포트
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { downloadBook, saveBookToLocalDatabase, downloadFileFromUrl, isBookAlreadyDownloaded } from '../../services/BookDetail/BookDetail';
+import DownloadModal from '../../components/BookDetail/DownloadModal';
 
 interface Book {
   bookId: number;
   title: string;
   author: string;
-  cover: string; // 원격 URL 이미지
+  cover: string;
   isDownloaded: boolean;
+  epubFlag: boolean; // 다운로드 가능 여부
 }
 
 interface AccessibilityMyBooksListProps {
   books: Book[];
-  searchQuery: string; // 검색어 상태를 전달받음
+  searchQuery: string;
 }
 
 type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
@@ -22,23 +25,74 @@ type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDet
 const { width, height } = Dimensions.get('window');
 
 const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ books, searchQuery }) => {
+  const [downloadedBooks, setDownloadedBooks] = useState<{ [key: number]: boolean }>({});
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
+  const [downloading, setDownloading] = useState<{ [key: number]: boolean }>({});
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [currentBookId, setCurrentBookId] = useState<number | null>(null);
   const navigation = useNavigation<BookDetailNavigationProp>();
 
-  // 검색어와 다운로드되지 않은 도서만 보기 설정에 따라 도서 목록 필터링
+  useEffect(() => {
+    const checkDownloadedStatus = async () => {
+      const status: { [key: number]: boolean } = {};
+      for (const book of books) {
+        const isDownloaded = await isBookAlreadyDownloaded(book.bookId, book.title);
+        status[book.bookId] = isDownloaded;
+      }
+      setDownloadedBooks(status);
+    };
+
+    checkDownloadedStatus();
+  }, [books]);
+
   const filteredBooks = books.filter((book) => {
-    if (showOnlyNotDownloaded && book.isDownloaded) {
-      return false;
+    if (showOnlyNotDownloaded) {
+      return book.epubFlag && !downloadedBooks[book.bookId];
     }
-    if (
-      searchQuery &&
-      !book.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !book.author.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
+    return (
+      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
+
+  const handleDownload = async (book: Book) => {
+    try {
+      if (downloading[book.bookId]) return;
+
+      setDownloading((prev) => ({ ...prev, [book.bookId]: true }));
+
+      const metadata = await downloadBook(book.bookId);
+      const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
+
+      const bookData = {
+        bookId: metadata.bookId,
+        title: metadata.title,
+        cover: metadata.cover,
+        category: metadata.category,
+        author: metadata.author,
+        publisher: metadata.publisher,
+        publishedAt: metadata.publishedAt,
+        myTtsFlag: metadata.myTtsFlag,
+        dtype: metadata.dtype,
+        filePath,
+        downloadDate: new Date().toISOString(),
+        currentCfi: '',
+        progressRate: 0,
+      };
+
+      await saveBookToLocalDatabase(bookData);
+
+      setDownloadedBooks((prev) => ({ ...prev, [book.bookId]: true }));
+      setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
+      setCurrentBookId(book.bookId);
+      setModalVisible(true);
+
+      AccessibilityInfo.announceForAccessibility(`${book.title} 다운로드가 완료되었습니다.`);
+    } catch (error) {
+      setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
+      Alert.alert('다운로드 실패', '도서를 다운로드할 수 없습니다.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -54,33 +108,50 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
       {filteredBooks.map((book) => (
         <View key={book.bookId} style={styles.card}>
           <View style={styles.leftSection}>
-            <Text style={styles.title} accessibilityLabel={`제목: ${book.title}`} numberOfLines={2} ellipsizeMode="tail">
+            <Text
+              style={styles.title}
+              accessibilityLabel={`제목: ${book.title}`}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
               {book.title}
             </Text>
-            <Text style={styles.author} accessibilityLabel={`저자: ${book.author}`} numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              style={styles.author}
+              accessibilityLabel={`저자: ${book.author}`}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {book.author}
             </Text>
           </View>
-          {book.isDownloaded ? (
-            <View style={styles.middleSectionDownloaded} accessibilityLabel={`${book.title} 다운로드 완료`}>
-              <Text style={styles.downloadedText}>다운완료</Text>
-            </View>
-          ) : (
+          {book.epubFlag && !downloadedBooks[book.bookId] ? (
             <TouchableOpacity
               style={styles.middleSection}
-              onPress={() => {
-                AccessibilityInfo.announceForAccessibility(`${book.title} 다운로드 중입니다.`);
-              }}
+              onPress={() => handleDownload(book)}
+              disabled={downloading[book.bookId]}
               accessibilityLabel={`${book.title} 다운로드 버튼`}
+              accessibilityHint={
+                downloading[book.bookId]
+                  ? '다운로드 중입니다.'
+                  : '이 도서를 다운로드합니다.'
+              }
             >
               <Text style={styles.downloadText}>다운로드</Text>
             </TouchableOpacity>
+          ) : (
+            <View
+              style={styles.middleSectionDownloaded}
+              accessibilityLabel={`${book.title} 다운로드 완료`}
+            >
+              <Text style={styles.downloadedText}>다운완료</Text>
+            </View>
           )}
           <TouchableOpacity
             style={styles.rightSection}
             onPress={() => {
               AccessibilityInfo.announceForAccessibility(`${book.title} 상세보기 페이지로 이동합니다.`);
-              navigation.navigate('BookDetail', { bookId: book.bookId }); // bookId 전달
+              navigation.navigate('BookDetail', { bookId: book.bookId });
             }}
             accessibilityLabel={`${book.title} 상세보기 버튼`}
           >
@@ -88,6 +159,14 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
           </TouchableOpacity>
         </View>
       ))}
+      <DownloadModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={() => {
+          setModalVisible(false);
+          navigation.navigate('EBookReader', { bookId: currentBookId });
+        }}
+      />
     </View>
   );
 };
@@ -95,7 +174,7 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: width * 0.04,
+    marginBottom: height * 0.05,
   },
   filterButton: {
     alignSelf: 'center',
@@ -139,16 +218,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#0000ff',
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
   },
   middleSectionDownloaded: {
     flex: 1,
     backgroundColor: '#aaa',
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
   },
   downloadText: {
     color: '#fff',
@@ -168,8 +243,6 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
   },
   detailText: {
     color: '#000',

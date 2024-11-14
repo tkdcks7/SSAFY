@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, Dimensions, TouchableOpacity, AccessibilityInfo } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -7,7 +7,7 @@ type Book = {
   id: number;
   title: string;
   author: string;
-  cover: string; // 로컬 파일 경로나 URL
+  cover: string;
 };
 
 type GeneralBookListProps = {
@@ -19,16 +19,30 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
     <FlatList
       data={books}
       keyExtractor={(item) => item.id.toString()}
-      numColumns={3} // 한 줄에 3개씩 표시
+      numColumns={3}
       renderItem={({ item }) => (
-        <View style={styles.bookItem}>
+        <TouchableOpacity
+          style={styles.bookItem}
+          onPress={() => {
+            AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기 페이지로 이동합니다.`);
+          }}
+          accessibilityLabel={`${item.title} 선택됨`}
+          accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
+        >
           <Image
             source={{ uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}` }}
             style={styles.bookImage}
+            accessibilityLabel={`표지 이미지: ${item.title}`}
           />
-
-          <Text style={styles.bookTitle} numberOfLines={2} ellipsizeMode='tail'>{item.title}</Text>
-        </View>
+          <Text
+            style={styles.bookTitle}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+            accessibilityLabel={`제목: ${item.title}`}
+          >
+            {item.title}
+          </Text>
+        </TouchableOpacity>
       )}
       contentContainerStyle={styles.flatListContent}
     />
@@ -56,11 +70,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     fontWeight: 'bold',
-  },
-  bookAuthor: {
-    fontSize: 10,
-    textAlign: 'center',
-    color: '#666',
   },
 });
 
