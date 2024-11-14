@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     padding: responsiveHeight(1.5),
-    marginBottom: responsiveHeight(2),
+    marginBottom: responsiveHeight(1),
     textAlign: 'center',
     fontSize: responsiveFontSize(4),
     multiline: true, // 줄바꿈 가능하도록 설정
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: responsiveWidth(30),
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: responsiveHeight(2),
+    marginBottom: responsiveHeight(1),
   },
   submitButtonDisabled: {
     backgroundColor: '#ccc', // 비활성화 색상 변경
@@ -129,14 +129,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: responsiveHeight(1),
   },
   nickname: {
     fontSize: responsiveFontSize(6),
     fontWeight: 'bold',
   },
   reviewContent: {
-    fontSize: responsiveFontSize(5),
+    fontSize: responsiveFontSize(6),
   },
   moreButton: {
     color: '#3943B7',
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: responsiveFontSize(6),
     fontWeight: 'bold',
-    marginBottom: responsiveHeight(3),
+    marginBottom: responsiveHeight(1),
   },
 });
 

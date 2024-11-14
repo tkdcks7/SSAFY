@@ -22,6 +22,9 @@ import datetime
 #------- sse
 from .services.sse import send_sse_message
 
+#-------- member verification
+from main.services.member_auth import get_member_id, verify_member
+
 ## ----------------- correction
 from main.services.punctuation_converter import PunctuationConverter
 
@@ -31,10 +34,19 @@ MEMBER_ID = 1
 
 ## 테스트용 API
 def test_view(request):
-    channel = request.headers.get('X-Request-ID', 'default-channel')
-    print('test_view 호출')
-    send_sse_message(channel=channel, status='테스트', progress=80)
-    return JsonResponse({"message": "hello world"}) 
+    # member_id = get_member_id(request)
+    # member = verify_member(request)
+    # if member_id is None or member is None:
+    #     return JsonResponse({"error": "멤버 인증 실패"}, status=status.HTTP_403_FORBIDDEN)
+    
+    member = request.member
+    data = {
+        "member_id": member.member_id,
+        "verified": True,
+        "member_info": member.name,
+        "message": "hello world"
+    }
+    return JsonResponse(data) 
 
 
 ## 이미지 캡셔닝 테스트 
@@ -76,6 +88,7 @@ class Image2BookConverter(APIView):
     
     def post(self, request):
         try:
+            MEMBER_ID = request.member.member_id
             channel = request.headers.get('X-Request-ID', 'default-channel')
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             files = request.FILES.getlist('uploadFile')
@@ -123,6 +136,7 @@ class Pdf2BookConverter(APIView):
     
     def post(self, request):
         try:
+            MEMBER_ID = request.member.member_id
             channel = request.headers.get('X-Request-ID', 'default-channel')
             # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
             file = request.FILES.get('uploadFile')
@@ -170,6 +184,7 @@ class Epub2BookConverter(APIView):
     
     def post(self, request):
         try:
+            MEMBER_ID = request.member.member_id
             # 헤더에서 채널명 받기
             channel = request.headers.get('X-Request-ID', 'default-channel')
 
