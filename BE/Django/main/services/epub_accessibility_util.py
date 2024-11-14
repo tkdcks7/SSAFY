@@ -65,6 +65,8 @@ class EpubAccessibilityConverter:
             head = soup.head
             body = soup.body
             
+            if not body or body is None:
+                continue 
             # 1. 여러 줄 공백은 한 줄로 처리
             ## (1) \n 처리
             for p in body.find_all('p'):
