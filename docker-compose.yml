@@ -101,6 +101,7 @@ services:
       - OPENAI_AUTH=${OPENAI_AUTH}
       - FASTAPI_URL=${FASTAPI_URL}
       - MONGO_DB_URI=${MONGO_DB_URI}
+      - DAPHNE_WORKERS=4
     expose:
       - ${DJANGO_PORT}
     networks:
