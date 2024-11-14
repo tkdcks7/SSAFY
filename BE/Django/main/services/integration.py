@@ -24,7 +24,7 @@ class Integration:
 
     def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
         # SSE 메세지 보내기
-        send_sse_message(channel, '문서 레이아웃 분석중', 20)
+        send_sse_message(channel, '문서 레이아웃 분석 중', 20)
 
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
@@ -42,21 +42,21 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '텍스트 추출중', 40)
+        send_sse_message(channel, '텍스트 추출 중', 40)
 
         # ocr 변환
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, 'ebook 변환중', 60)
+        send_sse_message(channel, 'ebook 변환 중', 60)
 
         # ebook 변환
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '시각장애인을 위한 접근성 적용중', 80)
+        send_sse_message(channel, '시각장애인을 위한 접근성 적용 중', 80)
 
         # 이미지 캡셔닝
         captioner = ImageCaptioner()
@@ -99,7 +99,7 @@ class Integration:
     
     def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
         # SSE 메세지 보내기
-        send_sse_message(channel, 'pdf를 이미지로 변환중', 20)
+        send_sse_message(channel, 'pdf를 이미지로 변환 중', 20)
         
         # pdf -> image list
         images = PdfConverter().convert_pdf_to_images(file)
@@ -108,7 +108,7 @@ class Integration:
         files_to_send = PdfConverter().pilImages_to_bytesImages(images)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '문서 레이아웃 분석중', 40)
+        send_sse_message(channel, '문서 레이아웃 분석 중', 40)
 
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         response = requests.post(
@@ -124,21 +124,21 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '텍스트 추출중', 60)
+        send_sse_message(channel, '텍스트 추출 중', 60)
 
         # ocr 변환
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, 'ebook으로 변환중', 80)
+        send_sse_message(channel, 'ebook으로 변환 중', 80)
 
         # ebook 변환
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '시각장애인을 위한 접근성 적용중', 90)
+        send_sse_message(channel, '시각장애인을 위한 접근성 적용 중', 90)
 
         # 이미지 캡셔닝
         captioner = ImageCaptioner()
