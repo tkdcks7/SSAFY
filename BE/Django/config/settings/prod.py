@@ -18,3 +18,15 @@ FASTAPI_URL = env('FASTAPI_URL')
 
 # mongoDB 
 DATABASE_MONGO = env('MONGO_DB_URI')
+
+# redis 설정
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{env('REDIS_HOST')}:{env('REDIS_SERVER_PORT')}/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": env('REDIS_PASSWORD')
+        }
+    }
+}
