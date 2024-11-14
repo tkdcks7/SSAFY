@@ -72,6 +72,22 @@ class OpenAIAnalysis:
         keyword: {keyword}
         """
 
+        self.pc_system_message = """
+        당신의 역할은 전자책의 띄어쓰기를 교정하는 것입니다.
+        이 띄어쓰기는 OCR 과정에서 발생하였습니다.
+
+        1. 주어진 [{data-index, text}, {data-index, text}, ... ] 배열에서 text를 읽고 띄어쓰기를 교정하시오.
+        이때, text의 다른 것이 바뀌면 안됩니다. 오로지 띄어쓰기만 수정되어야 합니다. 띄어쓰기가 아닌 맞춤법이 틀렸어도 그것을 수정할 수 없습니다.  
+        2. 교정된 결과를 [{data-index, text}, {data-index, text}, ... ]의 형식으로 반환하세요.
+        """
+
+        self.pc_user_message_template = """
+        
+        데이터는 다음과 같습니다. 
+
+        {data}
+        """
+
         self.client = openai.OpenAI(api_key = base.OPENAI_AUTH)
 
     def analyze_openai_image(self, processed_images):
@@ -110,6 +126,29 @@ class OpenAIAnalysis:
 
         return updated_images
 
+    def correct_punctuation(self, processed_text):
+        try:
+            # GPT-4 에게 규격화된 텍스트 데이터를 프롬프트로 전달
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.pc_system_message},
+                    {"role": "user", "content": 
+                        [
+                            {
+                                "type": "text",
+                                "text": self.pc_user_message_template.format(data=processed_text)
+                            }
+                        ]
+                    }   
+                ],
+            )
+            gpt_correction = response.choices[0].message.content
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+            
+            
+        return gpt_correction
     
 
 ## -------------------------------------
