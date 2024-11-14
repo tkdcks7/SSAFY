@@ -1,12 +1,21 @@
-// src/pages/Main/SearchPage.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import AccessibilityBookList from '../../components/Search/AccessibilityBookList';
 import GeneralBookList from '../../components/Search/GeneralBookList';
 import { handleScrollEndAnnouncement } from '../../utils/announceScrollEnd';
-import { dummySearchBookList } from '../../data/dummySearchBookList'; // 임포트 추가
+import { searchBooks } from '../../services/SearchPage/SearchBook'; // API 호출 함수
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,32 +24,32 @@ const SearchPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [bookList, setBookList] = useState([]); // 검색 결과 리스트 상태
   const [hasSearched, setHasSearched] = useState(false);
+  const [isAscending, setIsAscending] = useState(true); // 정렬 방향 상태 추가
 
   const handleModeToggle = () => {
     setIsAccessibilityMode((prev) => !prev);
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchKeyword.trim() === '') {
       setBookList([]);
       setHasSearched(false);
       return;
     }
 
-    // keyword가 dummySearchBookList의 키워드와 일치하는지 체크
-    if (dummySearchBookList.keyword && dummySearchBookList.keyword.includes(searchKeyword)) {
-      setBookList(dummySearchBookList.bookList);
-    } else {
-      // 검색 로직: dummySearchBookList에서 검색 키워드와 일치하는 도서를 필터링
-      const filteredBooks = dummySearchBookList.bookList.filter((book) =>
-        book.title.includes(searchKeyword) ||
-        book.author.includes(searchKeyword) ||
-        book.publisher.includes(searchKeyword)
-      );
-
-      setBookList(filteredBooks);
+    try {
+      const response = await searchBooks({
+        keyword: searchKeyword,
+        pageSize: 10,
+        sortBy: isAccessibilityMode ? 'title' : 'published_date',
+        sortOrder: isAscending ? 'asc' : 'desc',
+      });
+      setBookList(response.bookList);
+      setHasSearched(true);
+    } catch (error) {
+      Alert.alert('검색 실패', '검색 중 오류가 발생했습니다.');
+      setBookList([]);
     }
-    setHasSearched(true);
   };
 
   const handleReset = () => {

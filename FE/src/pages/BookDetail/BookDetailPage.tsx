@@ -34,46 +34,46 @@ const BookDetailPage = () => {
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setBookDetail(null);
-      setSimilarBooks([]);
-      setLikedBooks([]);
-
-      try {
-        const data = await fetchBookDetail(bookId);
-        setBookDetail(data);
-
-        const similar = await fetchSimilarBooks(bookId);
-        setSimilarBooks(similar.map(({ bookId, cover, title, author }) => ({
-          bookId: String(bookId),
-          cover,
-          title,
-          author,
-        })));
-
-        const liked = await fetchBooksLikedByUsers(bookId);
-        setLikedBooks(liked.map(({ bookId, cover, title, author }) => ({
-          bookId: String(bookId),
-          cover,
-          title,
-          author,
-        })));
-      } catch (error) {
-        console.error('Failed to load book detail or related books:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ y: 0, animated: true });
-    }
-
-    AccessibilityInfo.announceForAccessibility('도서 상세 페이지가 로드되었습니다.');
   }, [bookId]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchBookDetail(bookId);
+      setBookDetail(data);
+
+      const similar = await fetchSimilarBooks(bookId);
+      setSimilarBooks(similar.map(({ bookId, cover, title, author }) => ({
+        bookId: String(bookId),
+        cover,
+        title,
+        author,
+      })));
+
+      const liked = await fetchBooksLikedByUsers(bookId);
+      setLikedBooks(liked.map(({ bookId, cover, title, author }) => ({
+        bookId: String(bookId),
+        cover,
+        title,
+        author,
+      })));
+    } catch (error) {
+      console.error('Failed to load book detail or related books:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 리뷰 페이지에서 작성/수정/삭제 후 호출될 함수
+  const refreshBookDetail = async () => {
+    try {
+      const updatedDetail = await fetchBookDetail(bookId);
+      setBookDetail(updatedDetail);
+    } catch (error) {
+      console.error('Failed to refresh book detail:', error);
+    }
+  };
 
   const handleLikeToggle = async () => {
     if (!bookDetail) return;
@@ -182,6 +182,7 @@ const BookDetailPage = () => {
           initialCartFlag={bookDetail.memberInfo.cartFlag}
           bookId={bookId}
           onLikeToggle={handleLikeToggle}
+          refreshBookDetail={refreshBookDetail} // 리뷰 수정/삭제 후 호출
         />
 
         <View>
@@ -201,7 +202,6 @@ const BookDetailPage = () => {
             </View>
           )}
         </View>
-
       </ScrollView>
       <MainFooter />
     </View>
