@@ -12,6 +12,7 @@ from .s3_storage import S3Client
 import os
 import tempfile
 from .sse import send_sse_message
+from .member_auth import get_member_id, verify_member
 
 class Integration:
     def __init__(self):

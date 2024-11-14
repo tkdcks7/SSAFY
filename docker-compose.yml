@@ -102,6 +102,7 @@ services:
       - FASTAPI_URL=${FASTAPI_URL}
       - MONGO_DB_URI=${MONGO_DB_URI}
       - DAPHNE_WORKERS=4
+      - REDIS_HOST=${REDIS_HOST}
     expose:
       - ${DJANGO_PORT}
     networks:

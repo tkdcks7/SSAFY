@@ -22,16 +22,27 @@ import datetime
 #------- sse
 from .services.sse import send_sse_message
 
+#-------- member verification
+from main.services.member_auth import get_member_id, verify_member
+
 # Create your views here.
 
 MEMBER_ID = 1
 
 ## 테스트용 API
 def test_view(request):
-    channel = request.headers.get('X-Request-ID', 'default-channel')
-    print('test_view 호출')
-    send_sse_message(channel=channel, status='테스트', progress=80)
-    return JsonResponse({"message": "hello world"}) 
+    member_id = get_member_id(request)
+    member = verify_member(request)
+    if member_id is None or member is None:
+        return Response({"error": "멤버 인증 실패"}, status=status.HTTP_403_FORBIDDEN)
+    
+    data = {
+        "member_id": member_id,
+        "verified": True,
+        "member_info": member,
+        "message": "hello world"
+    }
+    return JsonResponse(data) 
 
 
 ## 이미지 캡셔닝 테스트 
