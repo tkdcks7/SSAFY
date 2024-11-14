@@ -125,7 +125,14 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
               {book.author}
             </Text>
           </View>
-          {book.epubFlag && !downloadedBooks[book.bookId] ? (
+          {!book.epubFlag ? (
+            <View
+              style={styles.unavailableSection}
+              accessibilityLabel={`${book.title} 다운로드 불가`}
+            >
+              <Text style={styles.unavailableText}>다운불가</Text>
+            </View>
+          ) : !downloadedBooks[book.bookId] ? (
             <TouchableOpacity
               style={styles.middleSection}
               onPress={() => handleDownload(book)}
@@ -212,6 +219,18 @@ const styles = StyleSheet.create({
   author: {
     fontSize: width * 0.04,
     color: '#555',
+  },
+  unavailableSection: {
+    flex: 1,
+    backgroundColor: '#FF6347', // 밝은 빨간색으로 불가 상태 표시
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unavailableText: {
+    color: '#fff',
+    fontSize: width * 0.07,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   middleSection: {
     flex: 1,
