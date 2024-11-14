@@ -5,15 +5,17 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { LibraryStackParamList } from '../../navigation/LibraryNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Reader, useReader, Location, Annotation, AnnotationType } from '@epubjs-react-native/core';
+import { Reader, useReader, Location, Annotation, AnnotationType, Themes } from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { getReadNote, createReadNote, deleteNote, ICreateNote } from '../../services/ViewerPage/readNotes';
+import { getReadNote, createReadNote, deleteNote, ICreateNote, INoteList, IReadNote } from '../../services/ViewerPage/readNotes';
+import useSettingStore, { fontSizeTable } from '../../store/settingStore';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import searchicon from '../../assets/icons/search.png';
 import ProgressBar from '../../components/viewer/ProgressBar';
 import EbookSearch from '../../components/viewer/EbookSearch';
 import Tts from 'react-native-tts';
+import RNFS from 'react-native-fs';
 
 // 모달 등
 import EbookIndex from '../../components/viewer/EbookIndex';
@@ -56,15 +58,60 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
   const [ isTTSPlaying, setIsTTSPlaying ] = useState<boolean | null>(null);
   const [ isSearching, setIsSearching ] = useState<boolean>(false);
   const [ formArr, setFormArr ] = useState<FormContent[]>([]);
-  const [ tempMark, setTempMark ] = useState<Annotation | null>(null);
   const [ ttsIdx, setttsIdx ] = useState<number>(0);
-  const [ lastInitialCfi, setLastInitialCfi ] = useState<string>('');
+  const [ initialCfi, setInitialCfi ] = useState<string | undefined>(undefined);
+  const [ readNoteArr, setReadNoteArr ] = useState<IReadNote[]>([]);
+  const [ title, setTitle ] = useState<string>('');
+  const [ bookSrc, setBookSrc ] = useState<string>('');
+  const [ isCustomBook, setIsCustomBook ] = useState<boolean>(false);
+  
 
   const formArrRef = useRef<FormContent[]>(formArr);
   const ttsIdxRef = useRef<number>(ttsIdx);
+  const isTTSPlayingRef = useRef(isTTSPlaying);
 
-  const { changeTheme, removeAnnotationByCfi, removeAnnotation, getCurrentLocation, annotations, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript, goNext  } = useReader();
 
+  const { fontSizeSetting, isDarkMode } = useSettingStore();
+
+  const { changeTheme, getCurrentLocation, changeFontSize, getLocations, goToLocation, section, addAnnotation, injectJavascript, goNext  } = useReader();
+
+  useEffect(() => {
+    console.log("실행");
+    const getBookInfo = async () => {
+      try {
+          const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
+          const dbExists = await RNFS.exists(dbPath);
+          let library = [];
+          if (dbExists) {
+            const currentData = await RNFS.readFile(dbPath, 'utf8');
+            library = JSON.parse(currentData);
+          }
+          // 중복 확인 및 추가
+          const bookData = library.find((book: any) => book.bookId === bookId);
+          if (bookData && bookData.filePath) {
+            // setIsCustomBook(true);
+            console.log(bookData);
+            console.log(`bookData.filePath = ${bookData.filePath}`);
+            setBookSrc(bookData.filePath);
+            setTitle(bookData.title);
+            if (bookData.currentCfi) { setInitialCfi(bookData.currentCfi); }
+          } else {
+            throw new Error('Failed to read book metadata:');
+          }
+        } catch (error) {
+          console.error('Failed to read book metadata:', error);
+        }
+    };
+    getBookInfo();
+    getReadNote(bookId)
+    .then((readNotes) => {
+      if (readNotes !== undefined && readNotes?.length !== 0) {
+        setReadNoteArr(readNotes);
+      } else {
+        console.log("노트가 없습니다.");
+      }
+    });
+  }, []);
 
   // 화면 크기를 상태로 관리
   const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
@@ -128,6 +175,8 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
 
   // 현재 Section의 데이터를 긁어 formArr에 주입하는 로직을 Javascript inject
   const getFormArr = () => { injectJavascript(`getFormArr();`); };
+  const getFormArrForCustomBook = () => { injectJavascript(`getFormArrForCustomBook();`); };
+  const switchCustomBookMode = () => { injectJavascript(`isCustomBook = true; getFormArrForCustomBook(); `); };
 
   // annotation 제거를 Javascript를 주입하여 해결
   const handleRemoveAnnotation = (cfiRangeOfAnnotation: string) => {
@@ -140,7 +189,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
 
 
 
-  // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입하여, 
+  // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입
   // cfisRange에 해당하는 문자열이 현재 페이지에 있는지 판별 후 페이지 이동
   const handlePageMoving = (cfisRange: string): void => {
     const allString: string = "handlePageMove(" + "'" + cfisRange + "'" + ")"
@@ -149,7 +198,7 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
 
   const setTtsReset = () => {
     console.log(`formArr.length = ${formArrRef?.current.length}`);
-    setttsIdx((prev) => {
+    setttsIdx(() => {
       return 0;
     });
     playTextSequentially();
@@ -164,8 +213,8 @@ const playTextSequentially = async () => {
     return await setTimeout(() => { setTtsReset(); }, 8000);
   }
   setttsIdx((prevIdx) => {
+    if (!isTTSPlayingRef.current) { return prevIdx; }
     const item = formArrRef.current[prevIdx];
-    console.log(prevIdx, item.cfisRange, item.sentence);
     Tts.speak(item.sentence); // tts 재생
     addAnnotation('highlight', item.cfisRange); // 문장 하이라이트
     if (prevIdx > 0) handleRemoveAnnotation(formArrRef.current[prevIdx - 1].cfisRange);  // 이전 하이라이트 제거
@@ -180,27 +229,26 @@ useEffect(() => {
   formArrRef.current = formArr;
 }, [formArr]);
 
-// ttsIdx가 업데이트될 때마다 ttsIdxRef에 최신 값을 설정
+
+// ttsIdxRef 갱신 및 TTS 종료 시 playTextSequentially 호출
 useEffect(() => {
   ttsIdxRef.current = ttsIdx;
-}, [ttsIdx]);
-
-// TTS 종료 시 playTextSequentially 호출
-useEffect(() => {
   const onTtsFinish = () => playTextSequentially();
   Tts.addEventListener('tts-finish', onTtsFinish);
   return () => Tts.removeAllListeners('tts-finish');
 }, [ttsIdx]);
 
+useEffect(() => {
+  isTTSPlayingRef.current = isTTSPlaying;
+  if (isTTSPlaying && formArr.length > 0) {
+    playTextSequentially();
+  }
+}, [isTTSPlaying]);
+
+
 // TTS 재생 및 일시 정지 관리
 const handleTTSPlay = (): void => {
-  setIsTTSPlaying((prev) => {
-    const newStatus = !prev;
-    if (newStatus && formArr.length > 0) {
-      playTextSequentially();
-    }
-    return newStatus;
-  });
+  setIsTTSPlaying((prev) => !prev);
 };
 
   // 문장 저장
@@ -211,19 +259,28 @@ const handleTTSPlay = (): void => {
     console.log(`저장된 cfi=${formArr[currentidx].cfisRange}`);
 
     const data: ICreateNote = {
-      bookId: 10, // 지금 bookId가 string으로 받는데, 바꿔야함
+      bookId: bookId,
       progressRate: progress * 100,
       sentence: formArr[currentidx].sentence,
       sentenceId: formArr[currentidx].cfisRange,
     };
-    createReadNote(data);
+    console.log(data);
+    createReadNote(data).then((stat) => {
+        console.log(stat);
+        addAnnotation('underline', formArr[currentidx].cfisRange, undefined, { color: '#f6f8ff' } );
+      });
   };
-
 
   // 책 진행률 변경 핸들러
   const handleProgressGage = (): void => {
     const gage: number | undefined = getCurrentLocation()?.end.percentage;
     if (gage) { setProgress(gage); }
+  };
+
+  const handleOnReady = (): void => {
+    console.log(`isCustomBook=${isCustomBook}`);
+    isCustomBook ? switchCustomBookMode() : getFormArr();
+    changeFontSize(fontSizeTable[fontSizeSetting]);
   };
 
   return (
@@ -239,10 +296,10 @@ const handleTTSPlay = (): void => {
           )
           : (
           <>
-          <TouchableOpacity onPress={getFormArr}>
+          <TouchableOpacity onPress={() => {}}>
             <Image source={leftarrowicon} style={styles.icon} />
           </TouchableOpacity>
-            <Text style={styles.navBarText}>책 타이틀</Text>
+            <Text style={styles.navBarText}>{ title ? title : '책 타이틀' }</Text>
           <TouchableOpacity onPress={() => {}}>
             <Image source={searchicon} style={styles.icon} />
           </TouchableOpacity>
@@ -254,19 +311,21 @@ const handleTTSPlay = (): void => {
       {/* 사이드바 */}
       <EbookIndex indexSidebarX={indexSidebarX} toggleIndex={toggleIndex}/>
       {/* 독서노트 */}
-      <EbookBookNote bookNoteSideBarX={bookNoteSideBarX} toggleBookNote={toggleBookNote}/>
+      <EbookBookNote bookNoteSideBarX={bookNoteSideBarX} toggleBookNote={toggleBookNote} readNoteArr={readNoteArr}/>
       {/* 설정창 */}
-      <EbookSetting settingSideBarX={settingSideBarX} toggleSetting={toggleSetting}/>
+      <EbookSetting settingSideBarX={settingSideBarX} toggleSetting={toggleSetting} changeTheme={changeTheme} changeFontSize={changeFontSize}/>
       {/* TTS 설정창 */}
       <EbookTTSSetting settingTTSSideBarX={settingTTSSideBarX} toggleTTSSetting={toggleTTSSetting}/>
       <TouchableOpacity style={{ flex: 1 }} onPress={toggleNav}>
         <Reader
-          src={"https://s3.amazonaws.com/moby-dick/OPS/package.opf"}
+          src={bookSrc}
           fileSystem={useFileSystem}
           flow='paginated'
           onLocationChange={() => handleProgressGage()}
-          // onAddAnnotation={(annotation: Annotation<any>) => {setTempMark(annotation)}}
-          // initialLocation="epubcfi(/6/2!/4/486[rgn_cnt_0498],/1:0,/1:23)"
+          onReady={handleOnReady}  // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
+          initialLocation={initialCfi ? initialCfi : undefined}
+          defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
+          // onRendered={() => { console.log("렌더링됨") }}
           onWebViewMessage={(message) => {
             console.log(message);
             if (message?.formArr) {
@@ -281,6 +340,7 @@ const handleTTSPlay = (): void => {
              }}
           injectedJavascript={`
 let nowIndex = 0;
+let isCustomBook = false;
 
 const handlePageMove = async (cfisRange) => {
   const currentLoc = await rendition.currentLocation();
@@ -330,7 +390,8 @@ rendition.on("relocated", (location) => {
   window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트", pvi: nowIndex, ci: location.start.index }));
   if (location.start.index !== nowIndex) {
     nowIndex = location.start.index;
-    getFormArr();
+    if (isCustomBook) { getFormArrForCustomBook(); }
+    else { getFormArr(); }
   }
 });
 
@@ -432,7 +493,7 @@ const getFormArrForCustomBook = () => {
             <TouchableOpacity onPress={() => goNext()}>
               <Image source={indexmenuicon} style={styles.footericon} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsTTSMode(true)}>
+            <TouchableOpacity onPress={toggleIndex}>
               <Image source={headphoneicon} style={styles.footericon} />
             </TouchableOpacity>
             <TouchableOpacity onPress={toggleBookNote}>
@@ -546,3 +607,26 @@ const styles = StyleSheet.create({
 });
 
 export default EBookViewerPage;
+
+
+// initialAnnotations={[
+//   // Chapter 1
+//   {
+//     cfiRange: 'epubcfi(/6/10!/4/2/4,/1:0,/1:319)',
+//     data: {},
+//     sectionIndex: 4,
+//     styles: { color: '#23CE6B' },
+//     cfiRangeText:
+//       'The pale Usher—threadbare in coat, heart, body, and brain; I see him now. He was ever dusting his old lexicons and grammars, with a queer handkerchief, mockingly embellished with all the gay flags of all the known nations of the world. He loved to dust his old grammars; it somehow mildly reminded him of his mortality.',
+//     type: 'highlight',
+//   },
+//   // Chapter 5
+//   {
+//     cfiRange: 'epubcfi(/6/22!/4/2/4,/1:80,/1:88)',
+//     data: {},
+//     sectionIndex: 3,
+//     styles: { color: '#CBA135' },
+//     cfiRangeText: 'landlord',
+//     type: 'highlight',
+//   },
+// ]}

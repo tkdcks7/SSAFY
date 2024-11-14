@@ -19,11 +19,13 @@ interface SettingState {
   setIsAccessibilityMode: (value: boolean) => void;
 }
 
+export const fontSizeTable = ['12pt', '16pt', '20pt', '24pt', '36pt'];
+
 const useSettingStore = create<SettingState>()(
   persist(
     (set) => ({
       brightSetting: 5,
-      fontSizeSetting: 2,
+      fontSizeSetting: 0,
       lineHeightSetting: 2,
       isDarkMode: false,
       ttsSpeedSetting: 3,

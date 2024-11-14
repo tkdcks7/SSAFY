@@ -6,7 +6,7 @@ import EBookViewerPage from '../pages/Ebook/EBookViewerPage';
 
 export type LibraryStackParamList = {
   LibraryMain: undefined;
-  EBookViewer: { bookId: string };
+  EBookViewer: { bookId: number };
 };
 
 const Stack = createStackNavigator<LibraryStackParamList>();
