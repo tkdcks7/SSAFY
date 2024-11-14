@@ -47,9 +47,9 @@ class ImageCaptioner:
         epub_access.format_body()
         formatted_book = epub_access.get_epub()
 
-        EpubReader.write_epub_to_local("staticfiles/", "smile_formatted_book", formatted_book)
-        EpubReader.write_epub_to_local("staticfiles/", "smile_processed_book", processed_book)
-        EpubReader.write_epub_to_local("staticfiles/", "smile_book", book)
+        # EpubReader.write_epub_to_local("staticfiles/", "smile_formatted_book", formatted_book)
+        # EpubReader.write_epub_to_local("staticfiles/", "smile_processed_book", processed_book)
+        # EpubReader.write_epub_to_local("staticfiles/", "smile_book", book)
         # 6. 바뀐 책을 반환 
         return formatted_book, metadata 
     
