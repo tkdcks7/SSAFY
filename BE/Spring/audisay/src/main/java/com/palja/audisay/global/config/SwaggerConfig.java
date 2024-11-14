@@ -1,16 +1,17 @@
 package com.palja.audisay.global.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -26,7 +27,7 @@ public class SwaggerConfig {
         SecurityScheme auth = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.COOKIE)
-                .name("SESSION"); // 쿠키 이름을 SESSION으로 설정
+            .name("JSESSIONID"); // 쿠키 이름을 JSESSIONID으로 설정
 
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("cookieAuth"); // swagger에서 사용할 인증 스키마 이름
