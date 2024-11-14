@@ -28,10 +28,6 @@ from main.services.member_auth import get_member_id, verify_member
 ## ----------------- correction
 from main.services.punctuation_converter import PunctuationConverter
 
-# Create your views here.
-
-MEMBER_ID = 1
-
 ## 테스트용 API
 def test_view(request):
     # member_id = get_member_id(request)
