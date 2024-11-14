@@ -8,9 +8,9 @@ import base64
 def get_member_id(request) -> int:
     # 세션 ID 받기
     encoded_session_id = request.COOKIES.get('JSESSIONID')
-    session_id = base64.b64decode(encoded_session_id).decode('utf-8')
-    if not session_id:
+    if not encoded_session_id: 
         return None
+    session_id = base64.b64decode(encoded_session_id).decode('utf-8')
 
     # 세션 데이터 가져오기
     conn = get_redis_connection("default") # default: 세팅 CACHES에서 설정한 별칭
