@@ -10,7 +10,7 @@ import {
   Dimensions,
   Button,
 } from 'react-native';
-import {RouteProp} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '../../navigation/AppNavigator';
 import {LibraryStackParamList} from '../../navigation/LibraryNavigator';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -43,6 +43,7 @@ import ProgressBar from '../../components/viewer/ProgressBar';
 import EbookSearch from '../../components/viewer/EbookSearch';
 import Tts from 'react-native-tts';
 import RNFS from 'react-native-fs';
+import {compareCFIStrings} from '../../utils/cfiManager';
 
 // 모달 등
 import EbookIndex from '../../components/viewer/EbookIndex';
@@ -93,28 +94,26 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   const [isCustomBook, setIsCustomBook] = useState<boolean>(false);
   // 검색어 관리
   const [searchInput, setSearchInput] = useState('');
+  const [currentCfis, setCurrentCfis] = useState<string>();
 
   const formArrRef = useRef<FormContent[]>(formArr);
   const ttsIdxRef = useRef<number>(ttsIdx);
   const isTTSPlayingRef = useRef(isTTSPlaying);
 
-  const {fontSizeSetting, isDarkMode} = useSettingStore();
+  const {fontSizeSetting, isDarkMode, ttsSpeedSetting} = useSettingStore();
 
   const {
     changeTheme,
     getCurrentLocation,
     changeFontSize,
-    getLocations,
     goToLocation,
     clearSearchResults,
-    section,
     addAnnotation,
     injectJavascript,
     goNext,
   } = useReader();
 
   useEffect(() => {
-    console.log('실행');
     const getBookInfo = async () => {
       try {
         const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
@@ -126,13 +125,10 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
         }
         // 중복 확인 및 추가
         const bookData = library.find((book: any) => {
-          console.log(`book.bookId = ${book.bookId}, bookId = ${bookId}`);
           return book.bookId === bookId;
         });
         if (bookData && bookData.filePath) {
           // setIsCustomBook(true);
-          console.log(bookData);
-          console.log(`bookData.filePath = ${bookData.filePath}`);
           setBookSrc(bookData.filePath);
           setTitle(bookData.title);
           if (bookData.currentCfi) {
@@ -147,10 +143,10 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
     };
     getBookInfo();
     getReadNote(bookId).then(readNotes => {
-      if (readNotes !== undefined && readNotes?.length !== 0) {
-        setReadNoteArr(readNotes);
+      if (readNotes === undefined) {
+        console.log('readNote 없음');
       } else {
-        console.log('노트가 없습니다.');
+        setReadNoteArr(readNotes);
       }
     });
   }, []);
@@ -173,7 +169,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
     clearSearchResults();
     return () => subscription.remove(); // 컴포넌트 언마운트 시 리스너 제거
   }, []);
-  const animHeight = screenDimensions.height * 0.20;
+  const animHeight = screenDimensions.height * 0.2;
 
   // 테스트용 epub 주소
   const saaa = `https://s3.ap-northeast-2.amazonaws.com/audisay/epub/published/valentin-hauy.epub?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20241112T070838Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=AKIA2YICALD7MZ3XV3TG%2F20241112%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Signature=6ec25ef2ea6ee821ad5b2007b86b1f9dae20975660c16328bab5063762a42864`;
@@ -187,7 +183,9 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   const settingSideBarX = useSharedValue(width);
   const settingTTSSideBarX = useSharedValue(width);
 
+  // 나중에 한국어 모드 할거면 모드를 한국어로 변경
   Tts.setDefaultLanguage('en-US');
+  // Tts.setDefaultLanguage('ko-KR');
 
   // 네비게이션 바의 표시 여부 상태
   const isVisible = useSharedValue(false);
@@ -256,20 +254,50 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   const switchCustomBookMode = () => {
     injectJavascript(`isCustomBook = true; getFormArrForCustomBook(); `);
   };
+  const currentPageFirstIndex = () => {
+    const startCfi: string | undefined = getCurrentLocation()?.start.cfi;
+    if (startCfi) {
+      const arrString: string = JSON.stringify(formArrRef.current);
+      const functionString: string =
+        'currentPageFirstIndex(' +
+        "'" +
+        startCfi +
+        "'" +
+        ',' +
+        arrString +
+        ');';
+      injectJavascript(functionString);
+    } else {
+      console.log('startCfi가 없습니다.');
+    }
+  };
+
+  const trackCurrentTtsIdx = (): void => {
+    const startCfi: string | undefined = getCurrentLocation()?.start.cfi;
+    if (!startCfi) {
+      console.log('현재 위치의 cfi가 존재하지 않습니다.');
+      return;
+    }
+    const idx: number = formArr.findIndex(formItem => {
+      const vall: number = compareCFIStrings(formItem.cfisRange, startCfi);
+      return vall > -1;
+    });
+    if (idx !== -1) {
+      setttsIdx(idx);
+    }
+    return;
+  };
 
   // annotation 제거를 Javascript를 주입하여 해결
   const handleRemoveAnnotation = (cfiRangeOfAnnotation: string) => {
-    const sss: string =
+    const functionString: string =
       'rendition.annotations.remove(' +
       "'" +
       cfiRangeOfAnnotation +
       "'" +
       ", 'highlight');";
-    injectJavascript(sss);
+    injectJavascript(functionString);
   };
-
-  // 일종의 sleep같은 함수 커스텀 선언
-  // const delay = (ms: number): any => new Promise((resolve) => setTimeout(resolve, ms));
 
   // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입
   // cfisRange에 해당하는 문자열이 현재 페이지에 있는지 판별 후 페이지 이동
@@ -279,7 +307,6 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   };
 
   const setTtsReset = () => {
-    console.log(`formArr.length = ${formArrRef?.current.length}`);
     setttsIdx(() => {
       return 0;
     });
@@ -298,7 +325,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
       goNext(); // 페이지 이동
       return await setTimeout(() => {
         setTtsReset();
-      }, 8000);
+      }, 6000);
     }
     setttsIdx(prevIdx => {
       if (!isTTSPlayingRef.current) {
@@ -337,15 +364,30 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
 
   // TTS 재생 및 일시 정지 관리
   const handleTTSPlay = (): void => {
+    if (isTTSPlaying === null && initialCfi) {
+      setttsIdx(() => indexOfCfis(initialCfi));
+    }
+    trackCurrentTtsIdx();
     setIsTTSPlaying(prev => !prev);
+  };
+
+  //
+  const indexOfCfis = (cfiRange: string): number => {
+    const idx: number = formArr.findIndex(formItem => {
+      return formItem.cfisRange === cfiRange;
+    });
+    if (idx !== -1) {
+      return idx;
+    }
+    return 0;
   };
 
   // 문장 저장
   const handleReadNoteSave = (): void => {
     const currentidx = ttsIdx - 1 ? ttsIdx - 1 : 0;
-    console.log(`index = ${currentidx}`);
-    console.log(`저장된 문장=${formArr[currentidx].sentence}`);
-    console.log(`저장된 cfi=${formArr[currentidx].cfisRange}`);
+    // console.log(`index = ${currentidx}`);
+    // console.log(`저장된 문장=${formArr[currentidx].sentence}`);
+    // console.log(`저장된 cfi=${formArr[currentidx].cfisRange}`);
 
     const data: ICreateNote = {
       bookId: bookId,
@@ -353,9 +395,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
       sentence: formArr[currentidx].sentence,
       sentenceId: formArr[currentidx].cfisRange,
     };
-    console.log(data);
     createReadNote(data).then(stat => {
-      console.log(stat);
       addAnnotation('underline', formArr[currentidx].cfisRange, undefined, {
         color: '#f6f8ff',
       });
@@ -371,9 +411,56 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   };
 
   const handleOnReady = (): void => {
-    console.log(`isCustomBook=${isCustomBook}`);
+    // console.log(`isCustomBook=${isCustomBook}`);
     isCustomBook ? switchCustomBookMode() : getFormArr();
     changeFontSize(fontSizeTable[fontSizeSetting]);
+    console.log(`ttsSpeedSetting = ${ttsSpeedSetting}`);
+    Tts.setDefaultRate(ttsSpeedSetting / 2);
+    if (initialCfi) {
+      goToLocation(initialCfi);
+    }
+  };
+
+  // 특정 bookId를 가진 책의 currentCfi를 수정하는 함수
+  const updateLibraryInfoOfBook = async (newCfi: string) => {
+    try {
+      // JSON 파일 읽기
+      const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
+      const fileData = await RNFS.readFile(dbPath, 'utf8');
+      const library: any[] = JSON.parse(fileData);
+
+      // bookId를 기준으로 해당 책 찾기
+      const bookIndex = library.findIndex(book => book.bookId === bookId);
+      if (bookIndex === -1) {
+        console.log(`Book with ID ${bookId} not found`);
+        return;
+      }
+      // currentCfi 값 수정
+      library[bookIndex].currentCfi = newCfi;
+      library[bookIndex].progressRate = Number((progress * 100).toFixed(2));
+
+      // 수정된 데이터를 JSON 파일에 다시 저장
+      await RNFS.writeFile(dbPath, JSON.stringify(library), 'utf8');
+    } catch (error) {
+      console.error('Error updating currentCfi:', error);
+    }
+  };
+
+  const handlegoBack = () => {
+    if (formArr.length > ttsIdx) {
+      const currentCfi: string = formArr[ttsIdx - 1].cfisRange;
+      updateLibraryInfoOfBook(currentCfi);
+      console.log(
+        `currentCfi를 ${ttsIdx - 1} 번 인덱스의 값인 ${currentCfi}로 갱신!`,
+      );
+    } else {
+      console.log(
+        `currentCfi 갱신 못함. 인덱스 = ${ttsIdx - 1}, cfirange = ${
+          formArr[ttsIdx - 1].cfisRange
+        }`,
+      );
+    }
+    navigation.goBack();
   };
 
   return (
@@ -435,11 +522,12 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
           src={bookSrc}
           fileSystem={useFileSystem}
           flow="paginated"
-          onLocationChange={() => handleProgressGage()}
+          onLocationChange={() => {
+            handleProgressGage();
+          }}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
           initialLocation={initialCfi ? initialCfi : undefined}
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
-          // onRendered={() => { console.log("렌더링됨") }}
           onWebViewMessage={message => {
             console.log(message);
             if (message?.formArr) {
@@ -450,6 +538,8 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
             } else if (message?.gonextpage) {
               console.log('페이지 이동');
               goNext();
+            } else if (message?.updateIdx) {
+              setttsIdx(message.updateIdx);
             }
           }}
           injectedJavascript={`
@@ -464,6 +554,16 @@ const handlePageMove = async (cfisRange) => {
     window.ReactNativeWebView.postMessage(JSON.stringify({ gonextpage: 1 }));
   }
 };
+
+const currentPageFirstIndex = async (startCfi, arr) => {
+  const arrParse = JSON.parse(arr);
+  rendition.epubcfi.compare(startCfi, formItem.cfisRange);
+  const updateIdx = arrParse.findIndex((formItem) => {
+    const vall = rendition.epubcfi.compare(startCfi, formItem.cfisRange);
+    return vall < 1
+  });
+  window.ReactNativeWebView.postMessage(JSON.stringify({ updateIdx }));
+}
 
 const getFormArr = async () => {
   window.ReactNativeWebView.postMessage(
@@ -562,7 +662,6 @@ const getFormArrForCustomBook = () => {
   }
   window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
 };
-
         `}
         />
       </TouchableOpacity>
@@ -615,7 +714,7 @@ const getFormArrForCustomBook = () => {
               <TouchableOpacity onPress={() => goNext()}>
                 <Image source={indexmenuicon} style={styles.footericon} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={toggleIndex}>
+              <TouchableOpacity onPress={() => setIsTTSMode(true)}>
                 <Image source={headphoneicon} style={styles.footericon} />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleBookNote}>
@@ -676,7 +775,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.20,
+    height: height * 0.2,
     backgroundColor: 'white',
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -728,25 +827,3 @@ const styles = StyleSheet.create({
 });
 
 export default EBookViewerPage;
-
-// initialAnnotations={[
-//   // Chapter 1
-//   {
-//     cfiRange: 'epubcfi(/6/10!/4/2/4,/1:0,/1:319)',
-//     data: {},
-//     sectionIndex: 4,
-//     styles: { color: '#23CE6B' },
-//     cfiRangeText:
-//       'The pale Usher—threadbare in coat, heart, body, and brain; I see him now. He was ever dusting his old lexicons and grammars, with a queer handkerchief, mockingly embellished with all the gay flags of all the known nations of the world. He loved to dust his old grammars; it somehow mildly reminded him of his mortality.',
-//     type: 'highlight',
-//   },
-//   // Chapter 5
-//   {
-//     cfiRange: 'epubcfi(/6/22!/4/2/4,/1:80,/1:88)',
-//     data: {},
-//     sectionIndex: 3,
-//     styles: { color: '#CBA135' },
-//     cfiRangeText: 'landlord',
-//     type: 'highlight',
-//   },
-// ]}

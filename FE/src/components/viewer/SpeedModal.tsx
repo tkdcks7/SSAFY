@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet, Dimensions } from 'react-native';
 import Btn from '../Btn';
 import NumberPicker from './NumberPicker';
+import useSettingStore from '../../store/settingStore';
+import Tts from 'react-native-tts';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,9 +12,16 @@ type Props = {
 }
 
 const SpeedModal: React.FC<Props> = ({ closeModal }) => {
-    const [selectedValue, setSelectedValue] = useState<number>(1);
-
+    const { ttsSpeedSetting, setTtsSpeedSetting } = useSettingStore();
+    const [selectedValue, setSelectedValue] = useState<number>(ttsSpeedSetting);
     const arrData = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+    const handleChangeTtsSpeed = () => {
+        Tts.setDefaultRate(selectedValue / 2);
+        setTtsSpeedSetting(selectedValue);
+        closeModal();
+    };
+
   return (
     <View style={styles.container}>
         <View style={styles.titleBox}>
@@ -20,8 +29,8 @@ const SpeedModal: React.FC<Props> = ({ closeModal }) => {
         </View>
         <NumberPicker selectedValue={selectedValue} onValueChange={setSelectedValue} arrData={arrData} />
         <View style={styles.titleBox}>
-            <Btn title='완료' btnSize={0} style={{marginBottom: height*0.02}} onPress={closeModal} />
-            <Btn isWhite={true} title='취소' btnSize={0} style={{marginBottom: height*0.02}} onPress={closeModal} />
+            <Btn title='완료' btnSize={0} style={{marginBottom: height * 0.02}} onPress={handleChangeTtsSpeed} />
+            <Btn isWhite={true} title='취소' btnSize={0} style={{marginBottom: height * 0.02}} onPress={closeModal} />
         </View>
     </View>
   )
