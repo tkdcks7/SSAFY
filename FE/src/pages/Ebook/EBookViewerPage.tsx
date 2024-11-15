@@ -87,7 +87,10 @@ const EBookViewerPage: React.FC<Props> = ({ route, navigation }) => {
             library = JSON.parse(currentData);
           }
           // 중복 확인 및 추가
-          const bookData = library.find((book: any) => book.bookId === bookId);
+          const bookData = library.find((book: any) => {
+            console.log(`book.bookId = ${book.bookId}, bookId = ${bookId}`);
+            return book.bookId === bookId;
+          });
           if (bookData && bookData.filePath) {
             // setIsCustomBook(true);
             console.log(bookData);
