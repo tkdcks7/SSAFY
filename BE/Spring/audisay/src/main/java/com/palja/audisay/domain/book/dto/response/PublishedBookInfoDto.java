@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.palja.audisay.domain.book.entity.DType;
+import com.palja.audisay.global.config.DoubleSerializer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,16 +52,22 @@ public class PublishedBookInfoDto {
 	@Builder
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public static class ReviewDistribution {
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double average;
 		@JsonProperty("5")
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double five;
 		@JsonProperty("4")
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double four;
 		@JsonProperty("3")
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double three;
 		@JsonProperty("2")
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double two;
 		@JsonProperty("1")
+		@JsonSerialize(using = DoubleSerializer.class)
 		private Double one;
 		private Long totalCount;
 	}
