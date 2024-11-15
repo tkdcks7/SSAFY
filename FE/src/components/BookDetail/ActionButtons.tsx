@@ -70,9 +70,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         publishedAt: metadata.publishedAt,
         createdAt: metadata.createdAt,
         dtype: metadata.dtype,
+        myTtsFlag: metadata.myTtsFlag,
         filePath,
         downloadDate,
-        myTtsFlag: metadata.myTtsFlag,
         currentCfi: '',
         progressRate: 0,
       };
@@ -165,7 +165,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClose={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          navigation.navigate('EBookReader', { bookId }); // eBook 리더로 이동
+          navigation.navigate('EbookViewer', { bookId }); // eBook 리더로 이동
         }}
       />
     </>

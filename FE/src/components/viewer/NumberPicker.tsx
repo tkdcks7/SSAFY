@@ -11,7 +11,7 @@ type NumberPickerProps = {
 
 const NumberPicker: React.FC<NumberPickerProps> = ({ selectedValue, arrData, onValueChange }) => {
   const flatListRef = useRef<FlatList>(null);
-  const ITEM_HEIGHT = 120;
+  const ITEM_HEIGHT = 150;
 
   useEffect(() => {
     // selectedValue가 변경될 때마다 해당 위치로 스크롤

@@ -1,9 +1,11 @@
 // src/components/viewer/EBookSetting.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Image } from 'react-native';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import IndexChapter from './IndexChapter';
 import Animated, { useAnimatedStyle, SharedValue } from 'react-native-reanimated';
+import { Theme, Themes } from '@epubjs-react-native/core';
+import useSettingStore from '../../store/settingStore';
 
 // 모달
 import BrightSettingModal from './BrightSettingModal';
@@ -14,15 +16,19 @@ import LineSpaceSettingModal from './LineSpaceSettingModal';
 type SidebarProps = {
   settingSideBarX: SharedValue<number>;
   toggleSetting: () => void; // onPress는 반환값이 없는 함수 타입
+  changeFontSize: (size: string) => void;
+  changeTheme: (theme: Theme) => void;
 };
 
 const { width, height } = Dimensions.get('window');
 
-const EbookSetting: React.FC<SidebarProps> = ({ settingSideBarX, toggleSetting }) => {
+const EbookSetting: React.FC<SidebarProps> = ({ settingSideBarX, toggleSetting, changeFontSize, changeTheme }) => {
     // 모달 띄워진 상태
     const [ isBrightModalOpen, setIsBrightModalOpen ] = useState<boolean>(false);
     const [ isFontSizeModalOpen, setIsFontSizeModalOpen ] = useState<boolean>(false);
     const [ isLineSpaceModalOpen, setIsLineSpaceModalOpen ] = useState<boolean>(false);
+
+    const { isDarkMode, setIsDarkMode } = useSettingStore();
 
 
   const animatedIndexStyle = useAnimatedStyle(() => ({
@@ -39,6 +45,16 @@ const EbookSetting: React.FC<SidebarProps> = ({ settingSideBarX, toggleSetting }
 
   const handleLineSpaceModalClose = () => {
     setIsLineSpaceModalOpen(false);
+  };
+
+  // useEffect(() => {
+  //   const theme = isDarkMode ? Themes.DARK : Themes.LIGHT;
+  //   changeTheme(theme);
+  // }, [isDarkMode]);
+
+  // 다크 모드 OR 라이트 모드 전환
+  const handleSwitchDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
   }
 
   return (
@@ -57,10 +73,10 @@ const EbookSetting: React.FC<SidebarProps> = ({ settingSideBarX, toggleSetting }
             <IndexChapter chapter={'화면 밝기'} onPress={() => setIsBrightModalOpen(!isBrightModalOpen)}/>
             <IndexChapter chapter={'글자 크기'} onPress={() => setIsFontSizeModalOpen(!isFontSizeModalOpen)}/>
             <IndexChapter chapter={'줄간격'} onPress={() => setIsLineSpaceModalOpen(!isLineSpaceModalOpen)}/>
-            <IndexChapter chapter={'다크모드'}/>
+            <IndexChapter chapter={isDarkMode ? '라이트 모드 전환' : '다크 모드 전환'} onPress={handleSwitchDarkMode}/>
         </ScrollView>
         { isBrightModalOpen ? <BrightSettingModal closeModal={handleBrightModalClose} /> : null }
-        { isFontSizeModalOpen ? <FontSizeSettingModal closeModal={handleFontSizeModalClose} /> : null }
+        { isFontSizeModalOpen ? <FontSizeSettingModal changeFontSize={changeFontSize} closeModal={handleFontSizeModalClose} /> : null }
         { isLineSpaceModalOpen ? <LineSpaceSettingModal closeModal={handleLineSpaceModalClose} /> : null }
     </Animated.View>
   );

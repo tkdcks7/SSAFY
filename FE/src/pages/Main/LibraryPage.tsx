@@ -13,6 +13,7 @@ import Btn from '../../components/Btn';
 import { resetLocalDatabase } from '../../utils/readLocalDatabase';
 import { LibraryContext } from '../../contexts/LibraryContext';
 
+
 const LibraryPage: React.FC = () => {
   const navigation = useNavigation();
   const { allBooks, setAllBooks } = useContext(LibraryContext)!;
@@ -33,7 +34,7 @@ const LibraryPage: React.FC = () => {
         const fileContent = await RNFS.readFile(dbPath, 'utf8');
         const parsedBooks = JSON.parse(fileContent).map((book: any, index: number) => ({
           ...book,
-          id: book.id || index,
+          id: book.bookId || index,
         }));
         setAllBooks(parsedBooks);
 

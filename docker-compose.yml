@@ -6,7 +6,7 @@ services:
   nginx:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_NGINX}-latest
     container_name: ${DOCKER_TAG_NGINX}
-    ports: 
+    ports:
       - "80:80"
       - "443:443"
     environment:
@@ -67,6 +67,7 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_SERVER_PORT=${REDIS_SERVER_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ELASTIC_MIN_SCORE=${ELASTIC_MIN_SCORE}
     expose:
       - ${BACKEND_PORT}
     networks:
@@ -76,7 +77,7 @@ services:
       - redis
       - mongodb
       - kafka
-  
+
   django:
     image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
     container_name: ${DOCKER_TAG_DJANGO}
@@ -103,6 +104,10 @@ services:
       - MONGO_DB_URI=${MONGO_DB_URI}
       - DAPHNE_WORKERS=4
       - REDIS_HOST=${REDIS_HOST}
+      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SERVER_NAME=${SERVER_NAME}
+      - REDIS_BINDING_PORT=${REDIS_BINDING_PORT}
     expose:
       - ${DJANGO_PORT}
     networks:
@@ -111,9 +116,9 @@ services:
       - mysql
       - kafka
 
-  
+
   # db 컨테이너
-  mysql: 
+  mysql:
     image: mysql:8.0.32
     container_name: mysql-con
     environment:
@@ -125,7 +130,7 @@ services:
       - "${MYSQL_BINDING_PORT}:3306"
     networks:
       - backend-network
-  
+
   redis:
     image: redis:latest
     container_name: my-redis
@@ -139,12 +144,12 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
     networks:
       - backend-network
-  
+
   mongodb:
     image: mongo:latest
     container_name: mongodb-con
     volumes:
-      - mongo-vol:/data/db 
+      - mongo-vol:/data/db
     environment:
       - TZ=Asia/Seoul
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
@@ -166,7 +171,7 @@ services:
       - TZ=Asia/Seoul
     mem_limit: 1g # 보안 설정
     memswap_limit: 1g # 보안 설정
-  
+
   kafka:
     image: wurstmeister/kafka
     container_name: kafka
@@ -182,7 +187,7 @@ services:
       - TZ=Asia/Seoul
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - kafka-vol:/kafka 
+      - kafka-vol:/kafka
     networks:
       - backend-network
     depends_on:
@@ -211,7 +216,7 @@ services:
         hard: -1
     volumes:
       - es-vol:/usr/share/elasticsearch/data
-  
+
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.3
     container_name: kibana
@@ -252,7 +257,7 @@ services:
     volumes:
       - /home/ubuntu/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # logstash pipeline
       - /home/ubuntu/logstash/.logstash_jdbc_last_run:/usr/share/logstash/.logstash_jdbc_last_run
-  
+
 
 # 전역 설정
 volumes:
