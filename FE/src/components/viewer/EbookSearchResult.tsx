@@ -41,7 +41,10 @@ const EbookSearchResult = ({result, searchTerm, onLocationSelect, onClose}) => (
     <View style={styles.resultItem}>
       {highlightText(result.excerpt, searchTerm)}
       <View style={styles.divider} />
-      <Text style={styles.chapterText}>{result.section.label.trim()}</Text>
+      <Text style={styles.chapterText}>
+        {result.section?.label ? result.section.label.trim() : ''}
+      </Text>
+      <Text>{result.cfi}</Text>
     </View>
   </TouchableOpacity>
 );
