@@ -45,7 +45,7 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 				)
 			);
 			queryBuilder.withQuery(query)
-				.withMinScore(7.899f); // 검색 최소 일치도
+				.withMinScore(7.05f); // 검색 최소 일치도
 		}
 	}
 
