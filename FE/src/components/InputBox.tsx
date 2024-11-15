@@ -1,5 +1,6 @@
-import React, { forwardRef } from 'react';
-import { TextInput, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
+// src/components/InputBox.tsx
+import React, {forwardRef} from 'react';
+import {TextInput, StyleSheet, TextInputProps, ViewStyle} from 'react-native';
 
 interface CustomTextInputProps extends TextInputProps {
   size?: number;
@@ -11,42 +12,48 @@ interface CustomTextInputProps extends TextInputProps {
   onSubmitEditing?: () => void;
 }
 
-const InputBox = forwardRef<TextInput, CustomTextInputProps>(({
-  size = 0,
-  value,
-  onChangeText,
-  onSubmitEditing,
-  placeholder,
-  secureTextEntry = false,
-  style,
-  ...props
-}, ref) => {
-  const [isFocused, setIsFocused] = React.useState(false);
+const InputBox = forwardRef<TextInput, CustomTextInputProps>(
+  (
+    {
+      size = 0,
+      value,
+      onChangeText,
+      onSubmitEditing,
+      placeholder,
+      secureTextEntry = false,
+      style,
+      ...props
+    },
+    ref,
+  ) => {
+    const [isFocused, setIsFocused] = React.useState(false);
 
-  return (
-    <TextInput
-      ref={ref}  // forwardRef로 받은 ref를 TextInput에 전달
-      style={[
-        styles.inputBase,
-        isFocused && styles.focusedInput,
-        size === 1 && { height: '25%', minHeight: 120 },
-        style,
-      ]}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      secureTextEntry={secureTextEntry}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
-      onSubmitEditing={onSubmitEditing}
-      accessible={true}
-      accessibilityRole="text"
-      accessibilityLabel={`${placeholder} 입력칸`}
-      accessibilityValue={{ text: value }}
-      {...props}
-    />
-  );
-});
+    return (
+      <TextInput
+        ref={ref} // forwardRef로 받은 ref를 TextInput에 전달
+        style={[
+          styles.inputBase,
+          isFocused && styles.focusedInput,
+          size === 1 && {height: '25%', minHeight: 120},
+          style,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        secureTextEntry={secureTextEntry}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        onSubmitEditing={onSubmitEditing}
+        autoCapitalize="none"
+        accessible={true}
+        accessibilityRole="text"
+        accessibilityLabel={`${placeholder} 입력칸`}
+        accessibilityValue={{text: value}}
+        {...props}
+      />
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   inputBase: {

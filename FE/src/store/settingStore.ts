@@ -28,7 +28,7 @@ const useSettingStore = create<SettingState>()(
       fontSizeSetting: 0,
       lineHeightSetting: 2,
       isDarkMode: false,
-      ttsSpeedSetting: 3,
+      ttsSpeedSetting: 0.5,
       ttsVoiceIndex: 0,
       isAccessibilityMode: false,
 
