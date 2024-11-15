@@ -2,6 +2,7 @@ package com.palja.audisay.domain.book.repository;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
@@ -19,6 +20,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository {
+
+	@Value("${spring.elasticsearch.min.score}")
+	private float minScore;
+
 	private final ElasticsearchOperations elasticsearchOperations;
 
 	public SearchHits<BookIndex> searchPublishedBooks(SearchPaginationReqDto searchPaginationReqDto) {
@@ -45,7 +50,7 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 				)
 			);
 			queryBuilder.withQuery(query)
-				.withMinScore(7.899f); // 검색 최소 일치도
+				.withMinScore(minScore); // 검색 최소 일치도
 		}
 	}
 
