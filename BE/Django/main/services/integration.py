@@ -12,7 +12,7 @@ from .s3_storage import S3Client
 import os
 import tempfile
 from .sse import send_sse_message
-from .member_auth import get_member_id, verify_member
+import time
 
 ### ------------------------
 from main.services.epub_accessibility_util import EpubAccessibilityConverter
@@ -24,7 +24,7 @@ class Integration:
 
     def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
         # SSE 메세지 보내기
-        send_sse_message(channel, '문서 레이아웃 분석 중', 10)
+        layout_start = time.time()
 
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
@@ -42,46 +42,55 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '텍스트 추출 중', 20)
+        layout_time = time.time() - layout_start
+        send_sse_message(channel, f'레이아웃 분석 완료 (소요시간: {layout_time:.1f}초)', 15)
 
         # ocr 변환
+        ocr_start = time.time()
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, 'ebook 변환 중', 40)
+        ocr_time = time.time() - ocr_start
+        send_sse_message(channel, f'ocr 처리 완료 (소요시간: {ocr_time:.1f}초)', 40)
 
         # ebook 변환
+        ebook_start = time.time()
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '이미지 캡셔닝 중', 45)
+        ebook_time = time.time() - ebook_start
+        send_sse_message(channel, f'ebook 변환 완료 (소요시간: {ebook_time:.1f}초)', 45)
 
         # 이미지 캡셔닝
+        captioning_start = time.time()
         captioner = ImageCaptioner()
         captioned_book, metadata = async_to_sync(captioner.image_captioning_for_integration)(new_book, ocr_processed_data['metadata'])
+        captioning_time = time.time() - captioning_start
+        send_sse_message(channel, f'이미지 캡셔닝 완료 (소요시간: {captioning_time:.1f}초)', 55)
 
         # 커버 이미지 S3에 저장
         url = S3Client().save_numpy_to_s3(metadata['cover'], f'image/cover/{metadata['title']}_cover.jpg')
         metadata['cover'] = url
 
-        # SSE 메세지 보내기
-        send_sse_message(channel, '접근성 적용 중', 55)
         # 접근성 적용
+        access_start = time.time()
         epub_access = EpubAccessibilityConverter()
         formatted_book = epub_access.apply_accessibility_for_integration(captioned_book)
+        access_time = time.time() - access_start
+        send_sse_message(channel, f'접근성 적용 완료 (소요시간: {access_time:.1f}초)', 65)
 
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
 
-        # SSE 메세지 보내기
-        send_sse_message(channel, '띄어쓰기 교정 중', 65)
-        # 띄어쓰기 교정 
-        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
 
+        # 띄어쓰기 교정 
+        space_start = time.time()
+        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
+        space_time = time.time() - space_start
         # SSE 메세지 보내기
-        send_sse_message(channel, 'MySQL에 정보 저장 중', 95)
+        send_sse_message(channel, f'띄어쓰기 교정 완료 (소요시간: {space_time:.1f}초)', 95)
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
