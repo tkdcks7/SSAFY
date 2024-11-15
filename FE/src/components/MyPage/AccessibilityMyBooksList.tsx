@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { downloadBook, saveBookToLocalDatabase, downloadFileFromUrl, isBookAlreadyDownloaded } from '../../services/BookDetail/BookDetail';
+import {
+  downloadBook,
+  saveBookToLocalDatabase,
+  downloadFileFromUrl,
+  isBookAlreadyDownloaded,
+} from '../../services/BookDetail/BookDetail';
 import DownloadModal from '../../components/BookDetail/DownloadModal';
+import { LibraryContext } from '../../contexts/LibraryContext'; // 전역 상태 관리
 
 interface Book {
   bookId: number;
   title: string;
   author: string;
   cover: string;
+  coverAlt: string; // 추가된 coverAlt
   isDownloaded: boolean;
   epubFlag: boolean; // 다운로드 가능 여부
 }
@@ -25,6 +32,7 @@ type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDet
 const { width, height } = Dimensions.get('window');
 
 const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ books, searchQuery }) => {
+  const { addBook } = useContext(LibraryContext)!; // 전역 상태 관리 함수
   const [downloadedBooks, setDownloadedBooks] = useState<{ [key: number]: boolean }>({});
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
   const [downloading, setDownloading] = useState<{ [key: number]: boolean }>({});
@@ -65,9 +73,11 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
       const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
 
       const bookData = {
+        id: Date.now(), // 고유 ID 생성
         bookId: metadata.bookId,
         title: metadata.title,
         cover: metadata.cover,
+        coverAlt: metadata.coverAlt, // 추가된 coverAlt
         category: metadata.category,
         author: metadata.author,
         publisher: metadata.publisher,
@@ -81,7 +91,7 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
       };
 
       await saveBookToLocalDatabase(bookData);
-
+      addBook(bookData); // 전역 상태에 도서 추가
       setDownloadedBooks((prev) => ({ ...prev, [book.bookId]: true }));
       setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
       setCurrentBookId(book.bookId);

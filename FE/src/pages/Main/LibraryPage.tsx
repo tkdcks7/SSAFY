@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Alert, FlatList } from 'react-native';
 import RNFS from 'react-native-fs';
 import { useNavigation } from '@react-navigation/native';
@@ -11,21 +11,11 @@ import GeneralBookList from '../../components/Library/GeneralBookList';
 import CurrentReadingStatus from '../../components/Library/CurrentReadingStatus';
 import Btn from '../../components/Btn';
 import { resetLocalDatabase } from '../../utils/readLocalDatabase';
-
-type Book = {
-  id: number;
-  title: string;
-  author: string;
-  cover: string;
-  publisher: string;
-  category: string;
-  downloadDate: string;
-  dtype: 'PUBLISHED' | 'REGISTERED';
-};
+import { LibraryContext } from '../../contexts/LibraryContext';
 
 const LibraryPage: React.FC = () => {
   const navigation = useNavigation();
-  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const { allBooks, setAllBooks } = useContext(LibraryContext)!;
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [filter, setFilter] = useState<'전체' | '출판도서' | '등록도서'>('전체');
@@ -34,7 +24,6 @@ const LibraryPage: React.FC = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
 
-  // 데이터 로드 함수
   const loadBooks = async () => {
     try {
       const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
@@ -47,9 +36,9 @@ const LibraryPage: React.FC = () => {
           id: book.id || index,
         }));
         setAllBooks(parsedBooks);
-        setBooks(parsedBooks);
 
-        const uniqueCategories = Array.from(new Set(parsedBooks.map((book: Book) => book.category)));
+        // Update categories
+        const uniqueCategories = Array.from(new Set(parsedBooks.map((book) => book.category)));
         setCategories(uniqueCategories);
       } else {
         Alert.alert('알림', '로컬 데이터베이스에 저장된 도서가 없습니다.');
@@ -61,12 +50,14 @@ const LibraryPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadBooks(); // 컴포넌트가 처음 로드될 때 로컬 데이터 로드
+    loadBooks();
   }, []);
 
   useEffect(() => {
+    const uniqueCategories = Array.from(new Set(allBooks.map((book) => book.category)));
+    setCategories(uniqueCategories);
     applyFilterAndSearch(filter, searchText, selectedFilter);
-  }, [filter, searchText, selectedFilter, allBooks]); // allBooks가 업데이트되면 필터 다시 적용
+  }, [allBooks, filter, searchText, selectedFilter]);
 
   const applyFilterAndSearch = (
     filterType: '전체' | '출판도서' | '등록도서',
@@ -109,7 +100,6 @@ const LibraryPage: React.FC = () => {
   const handleDatabaseReset = async () => {
     try {
       await resetLocalDatabase();
-      setBooks([]);
       setAllBooks([]);
       Alert.alert('성공', '로컬 데이터베이스가 초기화되었습니다.');
     } catch (error) {
@@ -146,7 +136,7 @@ const LibraryPage: React.FC = () => {
             )}
           </View>
         }
-        extraData={books} // 상태 변경 감지
+        extraData={books}
       />
       {isSidebarVisible && (
         <Sidebar

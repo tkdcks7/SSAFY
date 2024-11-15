@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, AccessibilityInfo, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { downloadBook, saveBookToLocalDatabase, downloadFileFromUrl, isBookAlreadyDownloaded } from '../../services/BookDetail/BookDetail';
+import {
+  downloadBook,
+  saveBookToLocalDatabase,
+  downloadFileFromUrl,
+  isBookAlreadyDownloaded,
+} from '../../services/BookDetail/BookDetail';
 import DownloadModal from '../../components/BookDetail/DownloadModal';
+import { LibraryContext } from '../../contexts/LibraryContext'; // 전역 상태 관리
 
 interface Book {
   bookId: number;
   title: string;
   author: string;
   cover: string;
+  coverAlt: string; // 추가된 coverAlt
   isDownloaded: boolean;
   epubFlag: boolean; // 다운로드 가능 여부
 }
@@ -23,6 +30,7 @@ interface GeneralMyBooksListProps {
 type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 
 const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchText }) => {
+  const { addBook } = useContext(LibraryContext)!; // 전역 상태 관리 함수
   const [downloadedBooks, setDownloadedBooks] = useState<{ [key: number]: boolean }>({});
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
   const [downloading, setDownloading] = useState<{ [key: number]: boolean }>({});
@@ -46,12 +54,10 @@ const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchTe
   const normalizedSearchText = searchText ? searchText.toLowerCase() : '';
 
   const filteredBooks = books.filter((book) => {
-    // "다운로드되지 않은 도서만 보기"가 활성화된 경우
     if (showOnlyNotDownloaded) {
-      return book.epubFlag && !downloadedBooks[book.bookId]; // 파일은 있지만 아직 다운로드되지 않은 도서만
+      return book.epubFlag && !downloadedBooks[book.bookId];
     }
 
-    // 검색어 필터링 포함
     return (
       book.title.toLowerCase().includes(normalizedSearchText) ||
       book.author.toLowerCase().includes(normalizedSearchText)
@@ -68,22 +74,25 @@ const GeneralMyBooksList: React.FC<GeneralMyBooksListProps> = ({ books, searchTe
       const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
 
       const bookData = {
+        id: Date.now(), // 고유 ID 생성
         bookId: metadata.bookId,
         title: metadata.title,
         cover: metadata.cover,
+        coverAlt: metadata.coverAlt, // 추가된 coverAlt
         category: metadata.category,
         author: metadata.author,
         publisher: metadata.publisher,
         publishedAt: metadata.publishedAt,
-        myTtsFlag: metadata.myTtsFlag,
         dtype: metadata.dtype,
         filePath,
         downloadDate: new Date().toISOString(),
+        myTtsFlag: metadata.myTtsFlag,
         currentCfi: '',
         progressRate: 0,
       };
 
       await saveBookToLocalDatabase(bookData);
+      addBook(bookData); // 전역 상태에 도서 추가
       setDownloadedBooks((prev) => ({ ...prev, [book.bookId]: true }));
       setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
       setCurrentBookId(book.bookId);
