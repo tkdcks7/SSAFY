@@ -201,7 +201,7 @@ class OpenAIAnalysis:
         try:
             text_part_str = json.dumps(text_part, ensure_ascii=False)
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.pc_system_message},
                     {"role": "user", "content": self.pc_user_message_template.format(data=text_part_str)}
