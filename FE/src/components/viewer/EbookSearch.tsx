@@ -135,24 +135,69 @@ const EbookSearch: React.FC<EbookSearchProps> = ({
 };
 
 const styles = StyleSheet.create({
-    navBar: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: height * 0.1, // 상대적인 높이 (화면 높이의 10%)
-      backgroundColor: '#3943B7',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      zIndex: 12,
-      flexDirection: 'row',
-      paddingHorizontal: width * 0.03,
-    },
-    icon: {
-      width: width * 0.1, // 화면 너비의 10%
-      height: width * 0.1, // 화면 너비의 10% (정사각형)
-      tintColor: 'white',
-    },
-  });
+  container: {
+    width: '100%',
+    height: '100%',
+    zIndex: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3943B7',
+    paddingHorizontal: width * 0.03,
+    height: height * 0.1,
+  },
+  icon: {
+    width: width * 0.08,
+    height: width * 0.08,
+    tintColor: 'white',
+  },
+  inputBox: {
+    flex: 1,
+    height: '80%',
+    marginHorizontal: width * 0.03,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    paddingHorizontal: width * 0.03,
+  },
+  resultsContainer: {
+    marginTop: height * 0.02,
+    paddingHorizontal: width * 0.03,
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: width * 0.08,
+  },
+  noResultsText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: width * 0.05,
+    marginTop: height * 0.02,
+  },
+  resultCount: {
+    fontSize: width * 0.04,
+    fontWeight: 'bold',
+    color: '#333',
+    marginVertical: width * 0.02,
+  },
+  paginationContainer: {
+    flexDirection: 'column', // 세로로 버튼 배치
+  },
+  paginationButton: {
+    flex: 1,
+    paddingVertical: height * 0.015,
+    backgroundColor: '#3943B7',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginVertical: height * 0.005, // 버튼 간의 간격을 위해 추가
+  },
+  paginationText: {
+    color: 'white',
+    fontSize: width * 0.04,
+    fontWeight: 'bold',
+  },
+});
 
 export default EbookSearch;
