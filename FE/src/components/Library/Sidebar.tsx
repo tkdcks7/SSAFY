@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    height: '100%', // 화면 전체 높이를 차지하도록 설정
-    width: '100%', // 화면 전체 너비를 덮도록 변경
+    height: '100%',
+    width: '100%',
     backgroundColor: '#3943B7',
     padding: width * 0.04,
     zIndex: 10,
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#ffffff',
-    textAlign : 'center',
+    textAlign: 'center',
     fontSize: width * 0.07,
     fontWeight: 'bold',
   },
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   categoryScroll: {
-    maxHeight: height * 0.5, // 카테고리 리스트의 최대 높이 설정
+    maxHeight: height * 0.5,
   },
   categoryContainer: {
     marginLeft: width * 0.12,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     backgroundColor: '#ffffff',
     borderRadius: width * 0.02,
-    marginBottom: height * 0.01, // 닫기 버튼과의 간격 최소화
+    marginBottom: height * 0.01,
   },
   resetButtonText: {
     color: '#3943B7',
@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     backgroundColor: '#ffffff',
     borderRadius: width * 0.02,
-    marginBottom: 0, // 아래 여백 제거
   },
   closeButtonText: {
     color: '#3943B7',
@@ -143,6 +142,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 
 export default Sidebar;

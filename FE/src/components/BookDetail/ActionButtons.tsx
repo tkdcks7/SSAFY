@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, TouchableOpacity, Image, Alert, AccessibilityInfo } from 'react-native';
 import Btn from '../../components/Btn';
 import styles from '../../styles/BookDetail/ActionButtonsStyle';
@@ -8,9 +8,10 @@ import {
   saveBookToLocalDatabase,
   downloadFileFromUrl,
   isBookAlreadyDownloaded,
-  toggleBookCart, // 새로운 함수 import
+  toggleBookCart,
 } from '../../services/BookDetail/BookDetail';
 import DownloadModal from './DownloadModal';
+import { LibraryContext } from '../../contexts/LibraryContext';
 
 interface ActionButtonsProps {
   likedFlag: boolean;
@@ -20,8 +21,15 @@ interface ActionButtonsProps {
   onLikeToggle: () => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, initialCartFlag, bookId, onLikeToggle }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({
+  likedFlag,
+  epubFlag,
+  initialCartFlag,
+  bookId,
+  onLikeToggle,
+}) => {
   const navigation = useNavigation();
+  const { addBook } = useContext(LibraryContext)!; // LibraryContext에서 addBook 가져오기
   const [isModalVisible, setModalVisible] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [cartFlag, setCartFlag] = useState(initialCartFlag); // true: 담기된 상태, false: 담기되지 않음
@@ -51,22 +59,26 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ likedFlag, epubFlag, init
 
       const downloadDate = new Date().toISOString();
       const bookData = {
+        id: Date.now(), // 고유 ID 생성
         bookId: metadata.bookId,
         title: metadata.title,
         cover: metadata.cover,
+        coverAlt: metadata.coverAlt,
         category: metadata.category,
         author: metadata.author,
         publisher: metadata.publisher,
         publishedAt: metadata.publishedAt,
-        myTtsFlag: metadata.myTtsFlag,
+        createdAt: metadata.createdAt,
         dtype: metadata.dtype,
+        myTtsFlag: metadata.myTtsFlag,
         filePath,
-        downloadDate, // 다운로드 날짜 추가
+        downloadDate,
         currentCfi: '',
         progressRate: 0,
       };
 
       await saveBookToLocalDatabase(bookData);
+      addBook(bookData); // 전역 상태에 새 도서 추가
 
       setAlreadyDownloaded(true);
       setDownloading(false);
