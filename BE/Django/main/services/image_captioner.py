@@ -32,6 +32,7 @@ class ImageCaptioner:
 
         # 3. 이미지 파일을 openai로 이미지 캡셔닝
         open_ai_analyzer = OpenAIAnalysis()
+        open_ai_analyzer.set_sync_client()
         openai_result = open_ai_analyzer.analyze_openai_image(processed_images)
 
         # 4. 추가된 캡션을 이미지에 추가 
@@ -74,6 +75,7 @@ class ImageCaptioner:
 
         # 3. 이미지 파일을 openai로 이미지 캡셔닝
         open_ai_analyzer = OpenAIAnalysis()
+        open_ai_analyzer.set_sync_client()
         openai_result = open_ai_analyzer.analyze_openai_image(processed_images)
 
         # 4. 추가된 캡션을 이미지에 추가 

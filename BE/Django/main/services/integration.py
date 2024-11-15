@@ -13,6 +13,7 @@ import os
 import tempfile
 from .sse import send_sse_message
 import time
+import logging 
 
 ### ------------------------
 from main.services.epub_accessibility_util import EpubAccessibilityConverter
@@ -49,15 +50,25 @@ class Integration:
         ocr_start = time.time()
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
-
+        
         # SSE 메세지 보내기
         ocr_time = time.time() - ocr_start
         send_sse_message(channel, f'ocr 처리 완료 (소요시간: {ocr_time:.1f}초)', 40)
 
+
+        # 띄어쓰기 교정 
+        space_start = time.time()
+        corrected_data = async_to_sync(PunctuationConverter.fix_punctuation_by_list)(ocr_processed_data)
+        space_time = time.time() - space_start
+        # SSE 메세지 보내기
+        send_sse_message(channel, f'띄어쓰기 교정 완료 (소요시간: {space_time:.1f}초) {corrected_data}', 95)
+
+        
+
         # ebook 변환
         ebook_start = time.time()
         ebook_maker = InitialEbookConverter()
-        new_book = ebook_maker.make_book(ocr_processed_data)
+        new_book = ebook_maker.make_book(corrected_data)
 
         # SSE 메세지 보내기
         ebook_time = time.time() - ebook_start
@@ -85,12 +96,7 @@ class Integration:
         indexed_book = EpubReader.set_sentence_index(formatted_book)
 
 
-        # 띄어쓰기 교정 
-        space_start = time.time()
-        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
-        space_time = time.time() - space_start
-        # SSE 메세지 보내기
-        send_sse_message(channel, f'띄어쓰기 교정 완료 (소요시간: {space_time:.1f}초)', 95)
+        
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
@@ -109,7 +115,7 @@ class Integration:
         # SSE 메세지 보내기
         send_sse_message(channel, '완료', 100)
 
-        return (corrected_book, metadata)
+        return (indexed_book, metadata)
     
     
     def pdf_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:

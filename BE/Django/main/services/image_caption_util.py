@@ -8,6 +8,7 @@ import base64
 import json 
 import tiktoken
 import re  
+import asyncio
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -92,7 +93,28 @@ class OpenAIAnalysis:
         {data}
         """
 
+        self.apc_system_message = """
+        당신의 역할은 전자책의 띄어쓰기를 교정하는 것입니다.
+        이 띄어쓰기는 OCR 과정에서 발생하였습니다.
+
+        1. 주어진 [{sequence, text}, {sequence, text}, ... ] 배열에서 text를 읽고 띄어쓰기를 교정하시오.
+        이때, text의 다른 것이 바뀌면 안됩니다. 오로지 띄어쓰기만 수정되어야 합니다. 띄어쓰기가 아닌 맞춤법이 틀렸어도 그것을 수정할 수 없습니다.  
+        2. 결과는 반드시 다음과 같은 형식으로 반환하십시오. [{sequence, text}, {sequence, text}, ... ]
+        3. 이외 안내 메시지는 필요 없습니다. 
+        """
+
+        self.apc_user_message_template = """
+        
+        데이터는 다음과 같습니다. 
+
+        {data}
+        """
+
+    def set_sync_client(self):
         self.client = openai.OpenAI(api_key = base.OPENAI_AUTH)
+    
+    def set_async_client(self):
+        self.async_client = openai.AsyncOpenAI(api_key = base.OPENAI_AUTH)
 
     def analyze_openai_image(self, processed_images):
         updated_images = []
@@ -201,7 +223,7 @@ class OpenAIAnalysis:
         try:
             text_part_str = json.dumps(text_part, ensure_ascii=False)
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.pc_system_message},
                     {"role": "user", "content": self.pc_user_message_template.format(data=text_part_str)}
@@ -212,6 +234,68 @@ class OpenAIAnalysis:
         except Exception as e:
             print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
             return [] 
+        
+    async def send_async_request(self, text_part):
+        try:
+            text_part_str = json.dumps(text_part, ensure_ascii=False)
+            response = await self.async_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.apc_system_message},
+                    {"role": "user", "content": self.apc_user_message_template.format(data=text_part_str)}
+                ],
+            )
+            gpt_correction = response.choices[0].message.content
+            return self.parse_json_data(gpt_correction)
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
+            return [] 
+        
+    async def correct_punctuation_async(self, processed_text):
+        result = []
+        try:
+            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+            token_limit = 100 # 병렬 처리를 위해 max token을 하향 조정  
+
+            total_token_count = self.get_token_count(processed_text_str)
+            print(f"total_token_count {total_token_count}")
+            tasks = [] # 비동기로 수행될 작업들 
+            
+            if total_token_count > token_limit:
+                temp_text = []
+                temp_token_count = 0
+
+                for text_part in processed_text:
+                    part_token_count = self.get_token_count(json.dumps(text_part, ensure_ascii=False))
+                    
+                    if temp_token_count + part_token_count <= token_limit:
+                        temp_text.append(text_part)
+                        temp_token_count += part_token_count
+                    else:
+                        tasks.append(self.send_async_request(temp_text))
+                        temp_text = [text_part]
+                        temp_token_count = part_token_count
+
+                if temp_text:
+                    tasks.append(self.send_async_request(temp_text))
+
+            else:
+                tasks.append(self.send_async_request(processed_text))
+
+            responses = await asyncio.gather(*tasks, return_exceptions=True)
+            for response in responses:
+                if isinstance(response, list):
+                    result.extend(response)
+                else:
+                    print(f"OpenAIAnalysis GPT-4 응답 오류: {response}")
+
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+
+        if len(result) == 0:
+            print("correct_punctuation_async: No Result")
+            result = processed_text 
+        return result
     
     def get_token_count(self, text, model_name="gpt-4o-mini"):
         encoding = tiktoken.encoding_for_model(model_name)
