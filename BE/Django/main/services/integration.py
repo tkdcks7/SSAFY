@@ -24,7 +24,7 @@ class Integration:
 
     def image_to_ebook(self, metadata: Dict, files: List[UploadedFile], file_name: str, channel: str) -> Tuple[epub.EpubBook, Dict]:
         # SSE 메세지 보내기
-        send_sse_message(channel, '문서 레이아웃 분석 중', 20)
+        send_sse_message(channel, '문서 레이아웃 분석 중', 10)
 
         # gpu 서버에 레이아웃 분석 요청 -> .npz 파일 수령
         files_to_send = [('files', (file.name, file.read(), file.content_type)) for file in files]
@@ -42,21 +42,21 @@ class Integration:
         data = {'metadata': metadata, 'pages': pages}
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '텍스트 추출 중', 40)
+        send_sse_message(channel, '텍스트 추출 중', 20)
 
         # ocr 변환
         ocr_converter = OcrParallel() # 배치/병렬처리 O
         ocr_processed_data = ocr_converter.process_book(input_data=data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, 'ebook 변환 중', 60)
+        send_sse_message(channel, 'ebook 변환 중', 40)
 
         # ebook 변환
         ebook_maker = InitialEbookConverter()
         new_book = ebook_maker.make_book(ocr_processed_data)
 
         # SSE 메세지 보내기
-        send_sse_message(channel, '시각장애인을 위한 접근성 적용 중', 80)
+        send_sse_message(channel, '이미지 캡셔닝 중', 45)
 
         # 이미지 캡셔닝
         captioner = ImageCaptioner()
@@ -66,6 +66,8 @@ class Integration:
         url = S3Client().save_numpy_to_s3(metadata['cover'], f'image/cover/{metadata['title']}_cover.jpg')
         metadata['cover'] = url
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '접근성 적용 중', 55)
         # 접근성 적용
         epub_access = EpubAccessibilityConverter()
         formatted_book = epub_access.apply_accessibility_for_integration(captioned_book)
@@ -73,9 +75,13 @@ class Integration:
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, '띄어쓰기 교정 중', 65)
         # 띄어쓰기 교정 
         corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
 
+        # SSE 메세지 보내기
+        send_sse_message(channel, 'MySQL에 정보 저장 중', 95)
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
