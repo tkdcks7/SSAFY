@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   modalContent: {
     width: '85%',
     backgroundColor: 'white',
-    padding: 20,
+    padding: height * 0.03,
     borderRadius: 10,
   },
   title: {
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
     width: '70%',
     borderColor: '#CCCCCC',
     borderWidth: 1,
-    padding: 10,
+    padding: height * 0.015,
     borderRadius: 5,
     fontSize: width * 0.045,
   },
@@ -69,7 +69,7 @@ export const styles = StyleSheet.create({
     borderColor: '#CCCCCC',
     borderRadius: 5,
     backgroundColor: '#3943B7',
-    padding: 10,
+    padding: height * 0.015,
     alignItems: 'center',
   },
   pickerText: {
@@ -86,9 +86,11 @@ export const styles = StyleSheet.create({
   registerButton: {
     backgroundColor: '#3943B7',
     paddingVertical: height * 0.02,
-    width: '48%',
+    width: '90%',
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom: height * 0.015,
+    marginLeft: width * 0.04,
   },
   registerButtonText: {
     color: '#FFFFFF',
@@ -100,9 +102,10 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: '#FFFFFF',
     paddingVertical: height * 0.02,
-    width: '48%',
+    width: '90%',
     borderRadius: 8,
     alignItems: 'center',
+    marginLeft: width * 0.04,
   },
   cancelButtonText: {
     color: '#3943B7',
@@ -112,48 +115,39 @@ export const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#CCCCCC',
   },
-  customPickerContainer: {
-    flex: 1,
+  loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-  customPickerContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    width: '80%',
     padding: height * 0.03,
+    minHeight: height * 0.3,
   },
-  customPickerTitle: {
-    fontSize: width * 0.08,
+  loadingText: {
+    fontSize: width * 0.045,
     fontWeight: 'bold',
-    textAlign: 'center',
     marginBottom: height * 0.02,
+    textAlign: 'center',
   },
-  customPickerItem: {
-    paddingVertical: height * 0.02,
-    width: '100%',
-    alignItems: 'center',
+  progressText: {
+    fontSize: width * 0.045,
+    marginBottom: height * 0.01,
+    textAlign: 'center',
   },
-  customPickerItemText: {
-    fontSize: width * 0.05,
-    color: '#555',
+  activityIndicator: {
+    marginVertical: height * 0.02,
+    transform: [{ scale: 1.5 }],
   },
-  customPickerSelectedItem: {
-    color: '#3943B7',
+  statusMessage: {
+    fontSize: width * 0.045,
+    color: '#333',
+    textAlign: 'center',
+    marginTop: height * 0.01,
+    flexWrap: 'wrap',
+  },
+  timerText: {
+    fontSize: width * 0.045,
+    color: '#000',
     fontWeight: 'bold',
-  },
-  customPickerButton: {
     marginTop: height * 0.02,
-    backgroundColor: '#3943B7',
-    paddingVertical: height * 0.015,
-    width: '80%',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  customPickerButtonText: {
-    color: '#FFFFFF',
-    fontSize: width * 0.06,
-    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

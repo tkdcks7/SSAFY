@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   },
   modalContent: {
     width: '85%',
-    minHeight: 300, // 적절한 최소 높이를 추가해 모달이 너무 작아지지 않도록 함
+    minHeight: 300,
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
@@ -19,18 +19,43 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingContainer: {
-    flexDirection: 'column', // 메시지와 스피너를 세로로 정렬합니다.
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20, // 여백을 추가하여 텍스트와 스피너가 겹치지 않도록 합니다.
-    minHeight: 200, // 적당한 높이 값을 추가하여 요소들이 좁혀지지 않도록 합니다.
+    padding: 20,
+    minHeight: 200,
+    width: '100%',
   },
   loadingText: {
-    width: '100%', // 텍스트가 컨테이너의 너비를 모두 차지하도록 합니다.
+    width: '100%',
     fontSize: width * 0.05,
     fontWeight: 'bold',
-    marginBottom: 20, // 스피너와 텍스트 사이의 간격을 확보
+    marginBottom: 10, // 진행률과 상태 메시지 사이 간격
     textAlign: 'center',
+  },
+  guideText: {
+    fontSize: width * 0.045,
+    color: '#666666',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  statusMessage: {
+    fontSize: width * 0.045,
+    color: '#333333',
+    textAlign: 'center',
+    marginTop: 5, // 진행률과 상태 메시지 사이 간격
+    flexWrap: 'wrap', // 텍스트가 모달 너비를 넘어가면 줄바꿈
+  },
+  timerText: {
+    fontSize: width * 0.045,
+    color: '#000000',
+    fontWeight: 'bold',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  activityIndicator: {
+    marginVertical: 20,
+    transform: [{ scale: 2 }],
   },
   title: {
     fontSize: width * 0.07,
