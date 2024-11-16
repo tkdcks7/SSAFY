@@ -13,28 +13,32 @@ type MainHeaderProps = {
   isAccessibilityMode: boolean;
   isUserVisuallyImpaired: boolean;
   onModeToggle?: () => void; // 모드 전환 함수
+  isScrolled: boolean; // 스크롤 여부 prop 추가
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
-const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isUserVisuallyImpaired, onModeToggle }) => {
+const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isUserVisuallyImpaired, onModeToggle, isScrolled }) => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      isScrolled && styles.scrolledContainer
+      ]}>
       <View style={styles.leftContainer}>
         {!isUserVisuallyImpaired && (
           <TouchableOpacity style={styles.modeToggleButton} onPress={onModeToggle}>
-            <Image source={accessbilityicon} style={styles.icon} />
+            <Image source={accessbilityicon} style={[styles.icon, isScrolled && styles.scrolledIcon]} />
           </TouchableOpacity>
         )}
       </View>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, isScrolled && styles.scrolledTitle]}>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
         <TouchableOpacity style={styles.bookmarkButton} onPress={() => navigation.navigate('ReadingNotes')}>
-          <Image source={notesicon} style={styles.icon} />
+          <Image source={notesicon} style={[styles.icon, isScrolled && styles.scrolledIcon]} />
         </TouchableOpacity>
       </View>
     </View>
@@ -81,6 +85,16 @@ const styles = StyleSheet.create({
   bookmarkButton: {
     padding: width * 0.02,
   },
+  //여기서부터는 스크롤 효과
+  scrolledContainer: {
+    backgroundColor: '#F5F5F5',
+  },
+  scrolledTitle: {
+    color: '#3943B7',
+  },
+  scrolledIcon: {
+    tintColor: '#3943B7'
+  }
 });
 
 export default MainHeader;
