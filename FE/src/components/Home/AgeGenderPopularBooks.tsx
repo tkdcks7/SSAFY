@@ -108,12 +108,12 @@ const styles = StyleSheet.create({
     marginBottom: responsiveHeight(2),
   },
   bookList: {
-    paddingHorizontal: responsiveWidth(2),
+    // paddingHorizontal: responsiveWidth(2),
     alignItems: 'center',
   },
   bookItem: {
     width: responsiveWidth(28),
-    marginRight: responsiveWidth(2),
+    marginRight: responsiveWidth(4.2),
     alignItems: 'center',
   },
   bookImage: {

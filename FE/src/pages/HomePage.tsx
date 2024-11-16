@@ -41,6 +41,7 @@ const HomePage: React.FC = () => {
         <View style={styles.innerContainer}>
           {isAccessibilityMode ? (
             <>
+
               <AccessibilityCarousel />
               <AccessibilityBookInfo />
             </>
@@ -70,6 +71,10 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
   },
+  componentWrapper: {
+    marginHorizontal: 20,
+    marginVertical: 10
+  }
 });
 
 export default HomePage;

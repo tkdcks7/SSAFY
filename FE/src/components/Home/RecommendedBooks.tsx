@@ -124,18 +124,18 @@ const styles = StyleSheet.create({
     padding: responsiveWidth(4),
   },
   title: {
-    fontSize: responsiveFontSize(7),
+    fontSize: responsiveFontSize(7), //원래 7
     fontWeight: 'bold',
     color: '#3943B7',
     marginBottom: responsiveHeight(2),
   },
   bookList: {
-    paddingHorizontal: responsiveWidth(2),
+    // paddingHorizontal: responsiveWidth(2),
     alignItems: 'center',
   },
   bookItem: {
     width: responsiveWidth(28),
-    marginRight: responsiveWidth(2),
+    marginRight: responsiveWidth(4.2),
     alignItems: 'center',
   },
   bookImage: {
@@ -155,15 +155,16 @@ const styles = StyleSheet.create({
   },
   moreButton: {
     alignSelf: 'center',
-    width: responsiveWidth(80),
+    width: responsiveWidth(90),
     height: responsiveHeight(5),
-    marginTop: responsiveHeight(2),
+    // marginTop: responsiveHeight(2),
     minHeight: responsiveHeight(6),
   },
   moreButtonText: {
     fontSize: responsiveFontSize(6),
     color: 'white',
     fontWeight: 'bold',
+    lineHeight: responsiveFontSize(10),
   },
   loadingText: {
     fontSize: responsiveFontSize(5),

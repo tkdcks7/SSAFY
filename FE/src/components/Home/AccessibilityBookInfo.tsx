@@ -155,7 +155,8 @@ const AccessibilityBookIntro: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: responsiveWidth(5),
+    // padding: responsiveWidth(5),
+    paddingTop: responsiveWidth(7)
   },
   title: {
     fontSize: responsiveFontSize(7),
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookContainer: {
-    width: width * 0.85,
+    width: width * 0.95,
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: responsiveWidth(1),
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
   bookTopSection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: responsiveHeight(3),
+    marginBottom: responsiveHeight(2), //3
   },
   bookImage: {
     width: responsiveWidth(35),
@@ -198,29 +199,33 @@ const styles = StyleSheet.create({
   },
   bookTitle: {
     fontSize: responsiveFontSize(8),
-    textAlign: 'center',
+    textAlign: 'left',
     fontWeight: 'bold',
     marginBottom: responsiveHeight(3),
   },
   bookAuthor: {
     fontSize: responsiveFontSize(6),
-    textAlign: 'center',
+    textAlign: 'left',
     fontWeight: 'bold',
     marginBottom: responsiveHeight(3),
   },
   bookPublisher: {
     fontSize: responsiveFontSize(6),
-    textAlign: 'center',
+    textAlign: 'left',
     fontWeight: 'bold',
     marginBottom: responsiveHeight(1),
   },
   bookDescription: {
     fontSize: responsiveFontSize(5),
     textAlign: 'left',
+    marginHorizontal: responsiveWidth(2),
+    marginBottom: responsiveHeight(1)
   },
   moreButton: {
     alignSelf: 'center',
-    marginBottom: responsiveHeight(2),
+    marginBottom: responsiveHeight(9),
+    width: '95%',
+    // marginHorizontal: responsiveWidth(4),
   },
   moreButtonText: {
     fontSize: responsiveFontSize(11),
