@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions, AccessibilityInfo } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface DownloadModalProps {
   isVisible: boolean;
@@ -8,6 +9,8 @@ interface DownloadModalProps {
 }
 
 const DownloadModal: React.FC<DownloadModalProps> = ({ isVisible, onClose, onConfirm }) => {
+  const navigation = useNavigation();
+
   useEffect(() => {
     if (isVisible) {
       AccessibilityInfo.announceForAccessibility('다운로드가 완료되었습니다. 바로 eBook을 읽으시겠습니까?');
