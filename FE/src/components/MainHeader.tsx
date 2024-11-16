@@ -4,7 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import accessbilityicon from '../assets/icons/accessbility.png';
-import notesicon from '../assets/icons/notes.png';
+// import notesicon from '../assets/icons/notes.png';
+import notesicon from '../assets/icons/newnote.png';
 
 const { width, height } = Dimensions.get('window');
 
