@@ -8,6 +8,7 @@ import base64
 import json 
 import tiktoken
 import re  
+import asyncio
 
 class AzureImageAnalysis:
     def __init__(self):
@@ -92,7 +93,28 @@ class OpenAIAnalysis:
         {data}
         """
 
+        self.apc_system_message = """
+        당신의 역할은 전자책의 띄어쓰기를 교정하는 것입니다.
+        이 띄어쓰기는 OCR 과정에서 발생하였습니다.
+
+        1. 주어진 [{sequence, text}, {sequence, text}, ... ] 배열에서 text를 읽고 띄어쓰기를 교정하시오.
+        이때, text의 다른 것이 바뀌면 안됩니다. 오로지 띄어쓰기만 수정되어야 합니다. 띄어쓰기가 아닌 맞춤법이 틀렸어도 그것을 수정할 수 없습니다.  
+        2. 결과는 반드시 다음과 같은 형식으로 반환하십시오. [{sequence, text}, {sequence, text}, ... ]
+        3. 이외 안내 메시지는 필요 없습니다. 
+        """
+
+        self.apc_user_message_template = """
+        
+        데이터는 다음과 같습니다. 
+
+        {data}
+        """
+
+    def set_sync_client(self):
         self.client = openai.OpenAI(api_key = base.OPENAI_AUTH)
+    
+    def set_async_client(self):
+        self.async_client = openai.AsyncOpenAI(api_key = base.OPENAI_AUTH)
 
     def analyze_openai_image(self, processed_images):
         updated_images = []
@@ -129,6 +151,49 @@ class OpenAIAnalysis:
                 updated_images.append((file_name, f"Azure Caption: {azure_caption}. GPT-4 Caption: 실패", image_content))
 
         return updated_images
+    
+    # 비동기 처리 
+    async def analyze_openai_image_async(self, processed_images):
+        task_list = [] 
+        for file_name, azure_caption, image_content in processed_images:
+            task_list.append(self.send_async_image_request(file_name, azure_caption, image_content))
+        
+        # 비동기 작업 종료 후 결과 처리
+        updated_images = await asyncio.gather(*task_list)
+        return updated_images
+
+
+    async def send_async_image_request(self, file_name, azure_caption, image_content):
+        # image_content를 base64로 인코딩
+        image_base64 = base64.b64encode(image_content).decode("utf-8")  
+
+        try:
+            # GPT-4 Vision에게 base64 인코딩된 이미지 데이터를 프롬프트로 전달
+            response = await self.async_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.ic_system_message},
+                    {"role": "user", "content": 
+                        [
+                            {
+                                "type": "text",
+                                "text": self.ic_user_message_template.format(keyword=azure_caption)
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url":  f"data:image/jpeg;base64,{image_base64}"
+                                },
+                            },
+                        ]
+                    }   
+                ],
+            )
+            gpt_caption = response.choices[0].message.content
+            return (file_name, gpt_caption, image_content)
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 Vision 캡셔닝 오류: {e}")
+            return (file_name, f"Azure Caption: {azure_caption}. GPT-4 Caption: 실패", image_content)
 
     # def correct_punctuation(self, processed_text):
     #     result = processed_text
@@ -212,6 +277,68 @@ class OpenAIAnalysis:
         except Exception as e:
             print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
             return [] 
+        
+    async def send_async_request(self, text_part):
+        try:
+            text_part_str = json.dumps(text_part, ensure_ascii=False)
+            response = await self.async_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.apc_system_message},
+                    {"role": "user", "content": self.apc_user_message_template.format(data=text_part_str)}
+                ],
+            )
+            gpt_correction = response.choices[0].message.content
+            return self.parse_json_data(gpt_correction)
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 요청 오류: {e}")
+            return [] 
+        
+    async def correct_punctuation_async(self, processed_text):
+        result = []
+        try:
+            processed_text_str = json.dumps(processed_text, ensure_ascii=False)
+            token_limit = 100 # 병렬 처리를 위해 max token을 하향 조정  
+
+            total_token_count = self.get_token_count(processed_text_str)
+            print(f"total_token_count {total_token_count}")
+            task_list = [] # 비동기로 수행될 작업들 
+            
+            if total_token_count > token_limit:
+                temp_text = []
+                temp_token_count = 0
+
+                for text_part in processed_text:
+                    part_token_count = self.get_token_count(json.dumps(text_part, ensure_ascii=False))
+                    
+                    if temp_token_count + part_token_count <= token_limit:
+                        temp_text.append(text_part)
+                        temp_token_count += part_token_count
+                    else:
+                        task_list.append(self.send_async_request(temp_text))
+                        temp_text = [text_part]
+                        temp_token_count = part_token_count
+
+                if temp_text:
+                    task_list.append(self.send_async_request(temp_text))
+
+            else:
+                task_list.append(self.send_async_request(processed_text))
+
+            responses = await asyncio.gather(*task_list, return_exceptions=True)
+            for response in responses:
+                if isinstance(response, list):
+                    result.extend(response)
+                else:
+                    print(f"OpenAIAnalysis GPT-4 응답 오류: {response}")
+
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 띄어쓰기 교정 오류: {e}")
+
+        if len(result) == 0:
+            print("correct_punctuation_async: No Result")
+            result = processed_text 
+        return result
     
     def get_token_count(self, text, model_name="gpt-4o-mini"):
         encoding = tiktoken.encoding_for_model(model_name)
