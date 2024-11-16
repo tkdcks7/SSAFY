@@ -69,11 +69,14 @@ const styles = StyleSheet.create({
   titleContainer: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center'
   },
   title: {
     color: 'white',
-    fontSize: width * 0.1,
-    fontWeight: 'bold',
+    fontSize: width * 0.09,
+    // fontWeight: 'bold',
+    fontFamily: 'Bungee-Regular',
+    includeFontPadding: false //폰트 기본 패딩 제거
   },
   bookmarkButton: {
     padding: width * 0.02,
