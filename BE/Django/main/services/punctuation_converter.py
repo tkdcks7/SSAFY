@@ -62,6 +62,7 @@ class PunctuationConverter:
         openai.set_async_client()
         logging.info(f"변환 전 {[item["text"] for item in data_list]}")
         processed_sentence_list = await openai.correct_punctuation_async(data_list)
+        logging.info(f"processed_sentence_list 구조: {processed_sentence_list}")
         logging.info(f"변환 후 {[item["text"] for item in processed_sentence_list]}")
 
         # 결과 반환 

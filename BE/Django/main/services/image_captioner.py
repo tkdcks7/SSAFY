@@ -4,6 +4,8 @@ from .epub_reader import EpubReader
 from .image_caption_util import AzureImageAnalysis, OpenAIAnalysis
 from typing import Dict
 
+import asyncio
+
 ### ------------------------
 from main.services.epub_accessibility_util import EpubAccessibilityConverter
 
@@ -18,22 +20,25 @@ class ImageCaptioner:
         cover_image = EpubReader.read_cover_image_from_epub(book)
 
         # 2. 이미지 파일을 azure로 이미지 캡셔닝
-        processed_images = []
         azure_image_analysis = AzureImageAnalysis()
+        # asyncio.gather를 사용한 비동기 로직으로 수정
+        # 결과 처리를 위한 별도 함수 생성 
+        task_list = []
         try:
             for im in image_list:
-                azure_result = await azure_image_analysis.analyze_image_async(im.get_content())
-                processed_images.append((im.file_name, azure_result.caption.text, im.get_content()))
+                task_list.append(ImageCaptioner.process_single_image(im.file_name, im.get_content(), azure_image_analysis.analyze_image_async))
             for cm in cover_image:
-                azure_result = await azure_image_analysis.analyze_image_async(cm.get_content())
-                processed_images.append((cm.file_name, azure_result.caption.text, cm.get_content()))
+                task_list.append(ImageCaptioner.process_single_image(cm.file_name, cm.get_content(), azure_image_analysis.analyze_image_async))
+
+            # 모든 작업 실행
+            processed_images = await asyncio.gather(*task_list)
         finally:
             await azure_image_analysis.close_async_client()
 
         # 3. 이미지 파일을 openai로 이미지 캡셔닝
         open_ai_analyzer = OpenAIAnalysis()
-        open_ai_analyzer.set_sync_client()
-        openai_result = open_ai_analyzer.analyze_openai_image(processed_images)
+        open_ai_analyzer.set_async_client()
+        openai_result = await open_ai_analyzer.analyze_openai_image_async(processed_images)
 
         # 4. 추가된 캡션을 이미지에 추가 
         processed_book = EpubReader.append_alt_to_image(book, openai_result)
@@ -55,6 +60,11 @@ class ImageCaptioner:
         return formatted_book, metadata 
     
     @staticmethod
+    async def process_single_image(file_name, content, azure_analysis_func):
+        azure_result = await azure_analysis_func(content)
+        return file_name, azure_result.caption.text, content
+
+    @staticmethod
     async def image_captioning_for_integration(book: epub, metadata: Dict):
 
         # 1. epub 파일에서 이미지 읽기
@@ -63,20 +73,25 @@ class ImageCaptioner:
         # 2. 이미지 파일을 azure로 이미지 캡셔닝
         processed_images = []
         azure_image_analysis = AzureImageAnalysis()
+        # asyncio.gather를 사용한 비동기 로직으로 수정
+        # 결과 처리를 위한 별도 함수 생성 
+        task_list = []
         try:
             for im in image_list:
-                azure_result = await azure_image_analysis.analyze_image_async(im.get_content())
-                processed_images.append((im.file_name, azure_result.caption.text, im.get_content()))
+                task_list.append(ImageCaptioner.process_single_image(im.file_name, im.get_content(), azure_image_analysis.analyze_image_async))
             for cm in cover_image:
-                azure_result = await azure_image_analysis.analyze_image_async(cm.get_content())
-                processed_images.append((cm.file_name, azure_result.caption.text, cm.get_content()))
+                task_list.append(ImageCaptioner.process_single_image(cm.file_name, cm.get_content(), azure_image_analysis.analyze_image_async))
+
+            # 모든 작업 실행
+            processed_images = await asyncio.gather(*task_list)
         finally:
             await azure_image_analysis.close_async_client()
 
         # 3. 이미지 파일을 openai로 이미지 캡셔닝
         open_ai_analyzer = OpenAIAnalysis()
-        open_ai_analyzer.set_sync_client()
-        openai_result = open_ai_analyzer.analyze_openai_image(processed_images)
+        open_ai_analyzer.set_async_client()
+        openai_result = await open_ai_analyzer.analyze_openai_image_async(processed_images)
+
 
         # 4. 추가된 캡션을 이미지에 추가 
         processed_book = EpubReader.append_alt_to_image_without_decode(book, openai_result)

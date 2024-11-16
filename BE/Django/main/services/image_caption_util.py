@@ -151,6 +151,49 @@ class OpenAIAnalysis:
                 updated_images.append((file_name, f"Azure Caption: {azure_caption}. GPT-4 Caption: 실패", image_content))
 
         return updated_images
+    
+    # 비동기 처리 
+    async def analyze_openai_image_async(self, processed_images):
+        task_list = [] 
+        for file_name, azure_caption, image_content in processed_images:
+            task_list.append(self.send_async_image_request(file_name, azure_caption, image_content))
+        
+        # 비동기 작업 종료 후 결과 처리
+        updated_images = await asyncio.gather(*task_list)
+        return updated_images
+
+
+    async def send_async_image_request(self, file_name, azure_caption, image_content):
+        # image_content를 base64로 인코딩
+        image_base64 = base64.b64encode(image_content).decode("utf-8")  
+
+        try:
+            # GPT-4 Vision에게 base64 인코딩된 이미지 데이터를 프롬프트로 전달
+            response = await self.async_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.ic_system_message},
+                    {"role": "user", "content": 
+                        [
+                            {
+                                "type": "text",
+                                "text": self.ic_user_message_template.format(keyword=azure_caption)
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url":  f"data:image/jpeg;base64,{image_base64}"
+                                },
+                            },
+                        ]
+                    }   
+                ],
+            )
+            gpt_caption = response.choices[0].message.content
+            return (file_name, gpt_caption, image_content)
+        except Exception as e:
+            print(f"OpenAIAnalysis GPT-4 Vision 캡셔닝 오류: {e}")
+            return (file_name, f"Azure Caption: {azure_caption}. GPT-4 Caption: 실패", image_content)
 
     # def correct_punctuation(self, processed_text):
     #     result = processed_text
@@ -259,7 +302,7 @@ class OpenAIAnalysis:
 
             total_token_count = self.get_token_count(processed_text_str)
             print(f"total_token_count {total_token_count}")
-            tasks = [] # 비동기로 수행될 작업들 
+            task_list = [] # 비동기로 수행될 작업들 
             
             if total_token_count > token_limit:
                 temp_text = []
@@ -272,17 +315,17 @@ class OpenAIAnalysis:
                         temp_text.append(text_part)
                         temp_token_count += part_token_count
                     else:
-                        tasks.append(self.send_async_request(temp_text))
+                        task_list.append(self.send_async_request(temp_text))
                         temp_text = [text_part]
                         temp_token_count = part_token_count
 
                 if temp_text:
-                    tasks.append(self.send_async_request(temp_text))
+                    task_list.append(self.send_async_request(temp_text))
 
             else:
-                tasks.append(self.send_async_request(processed_text))
+                task_list.append(self.send_async_request(processed_text))
 
-            responses = await asyncio.gather(*tasks, return_exceptions=True)
+            responses = await asyncio.gather(*task_list, return_exceptions=True)
             for response in responses:
                 if isinstance(response, list):
                     result.extend(response)
