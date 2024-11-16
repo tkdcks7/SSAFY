@@ -26,7 +26,6 @@ class PunctuationConverter:
 
     @staticmethod
     async def fix_punctuation_by_list(input_data: List[Dict]):
-        logging.info("fix_punctuation_by_list")
         # 1. 페이지 별로 비동기 요청을 보낸다 
         # asyncio는 이벤트 루프 기반 (반복문 속 작업을 하나씩 실행, 실행한 작업이 응답을 기다린다면 다른 작업에게 권한 넘김)
         # task를 하나하나 등록해도 되지만, gather로 한번에 등록 가능  
@@ -38,7 +37,6 @@ class PunctuationConverter:
     
     @staticmethod
     async def process_pages(page):
-        logging.info("process_pages")
         # 2. 페이지 단위로, 여러 개의 섹션을 한번의 요청에 보낸다 
         sections = page["sections"]
         # section 데이터에서 sequence와 text만 추출
@@ -62,7 +60,6 @@ class PunctuationConverter:
         openai.set_async_client()
         logging.info(f"변환 전 {[item["text"] for item in data_list]}")
         processed_sentence_list = await openai.correct_punctuation_async(data_list)
-        logging.info(f"processed_sentence_list 구조: {processed_sentence_list}")
         logging.info(f"변환 후 {[item["text"] for item in processed_sentence_list]}")
 
         # 결과 반환 

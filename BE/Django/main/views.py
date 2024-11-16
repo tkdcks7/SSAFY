@@ -28,7 +28,6 @@ from rest_framework import exceptions
 ## ----------------- correction
 from main.services.punctuation_converter import PunctuationConverter
 
-import logging 
 
 ## 테스트용 API
 def test_view(request):

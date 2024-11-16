@@ -61,7 +61,7 @@ class Integration:
         corrected_data = async_to_sync(PunctuationConverter.fix_punctuation_by_list)(ocr_processed_data)
         space_time = time.time() - space_start
         # SSE 메세지 보내기
-        send_sse_message(channel, f'띄어쓰기 교정 완료 (소요시간: {space_time:.1f}초) {corrected_data}', 95)
+        send_sse_message(channel, f'띄어쓰기 교정 완료 (소요시간: {space_time:.1f}초)', 95)
 
         
 
