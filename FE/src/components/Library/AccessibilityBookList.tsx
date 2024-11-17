@@ -88,7 +88,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
         <TouchableOpacity
           style={styles.bookItem}
           onPress={() => {
-            AccessibilityInfo.announceForAccessibility(`${item.title} 상세 보기 페이지로 이동합니다.`);
+            AccessibilityInfo.announceForAccessibility(`${item.title} 뷰어로 이동합니다.`);
             navigation.navigate('EBookViewer', { bookId: item.id });
           }}
           accessibilityLabel={`${item.title} 도서 `}
