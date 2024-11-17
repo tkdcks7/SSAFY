@@ -1,5 +1,3 @@
-// src/components/CustomHeader.tsx
-
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -8,13 +6,14 @@ const { width, height } = Dimensions.get('window');
 
 type CustomHeaderProps = {
   title: string;
+  isScrolled?: boolean; // 스크롤 상태를 받는 prop 추가
 };
 
-const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
+const CustomHeader: React.FC<CustomHeaderProps> = ({ title, isScrolled = false }) => {
   const navigation = useNavigation();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isScrolled && styles.scrolledContainer]}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
@@ -23,13 +22,13 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
       >
         <Image
           source={require('../assets/icons/back.png')}
-          style={styles.icon}
+          style={[styles.icon, isScrolled && styles.scrolledIcon]} // 스크롤 상태에 따라 아이콘 스타일 변경
           accessible
           accessibilityLabel="뒤로가기 아이콘"
         />
       </TouchableOpacity>
       <Text
-        style={styles.title}
+        style={[styles.title, isScrolled && styles.scrolledTitle]} // 스크롤 상태에 따라 제목 스타일 변경
         accessible
         accessibilityLabel={`${title}`}
       >
@@ -61,6 +60,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: width * 0.1,
     fontWeight: 'bold',
+  },
+  // 스크롤 상태일 때 스타일
+  scrolledContainer: {
+    backgroundColor: '#F5F5F5',
+  },
+  scrolledIcon: {
+    tintColor: '#3943B7',
+  },
+  scrolledTitle: {
+    color: '#3943B7',
   },
 });
 
