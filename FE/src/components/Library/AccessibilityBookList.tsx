@@ -79,7 +79,9 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             </View>
           </View>
         ) : null
-        <Text style={styles.bookContainerTitle}>내 서재</Text>
+        <Text style={styles.bookContainerTitle}
+        accessibilityLabel="내 서재 도서 목록"
+        >내 서재</Text>
       </View>
       }
       renderItem={({ item }) => (
@@ -89,8 +91,8 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             AccessibilityInfo.announceForAccessibility(`${item.title} 상세 보기 페이지로 이동합니다.`);
             navigation.navigate('EBookViewer', { bookId: item.id });
           }}
-          accessibilityLabel={`${item.title} 상세 보기`}
-          accessibilityHint="이 책의 상세 정보를 확인하려면 두 번 탭하세요."
+          accessibilityLabel={`${item.title} 도서 `}
+          accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
         >
           <Image
             source={{
