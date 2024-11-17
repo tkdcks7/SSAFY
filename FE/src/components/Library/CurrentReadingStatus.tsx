@@ -1,30 +1,54 @@
 // src/components/Library/CurrentReadingStatus.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
-import { currentBook } from '../../data/dummyBooks';
+import {View, Text, StyleSheet, Image, Dimensions} from 'react-native';
+import {currentBook} from '../../data/dummyBooks';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
-const CurrentReadingStatus: React.FC = () => {
+// type Book = {
+//   id: number;
+//   title: string;
+//   author: string;
+//   cover: string;
+//   publisher: string;
+//   progress?: number;
+// };
+
+type Props = {
+  book: any;
+};
+
+const CurrentReadingStatus: React.FC<Props> = ({book}) => {
   return (
     <View style={styles.containerWrapper}>
       <Text style={styles.headerText}>현재 읽고 있는 책</Text>
-      <View style={styles.container}>
-        <Image source={currentBook.coverImage} style={styles.bookImage} />
-        <View style={styles.bookInfo}>
-          <View style={styles.bookTitleContainer}>
-            <Text
+      {book ? (
+        <View style={styles.container}>
+          <Image
+            source={{
+              uri: book.cover.startsWith('http')
+                ? book.cover
+                : `file://${book.cover}`,
+            }}
+            style={styles.bookImage}
+          />
+          <View style={styles.bookInfo}>
+            <View style={styles.bookTitleContainer}>
+              <Text
                 numberOfLines={2}
                 ellipsizeMode="tail"
                 style={styles.bookTitle}>
-              {currentBook.title}
-            </Text>
-          </View>
-          <View style={styles.progressContainer}>
-            <Text style={styles.readingProgress}>{currentBook.progress}%</Text>
+                {book.title}
+              </Text>
+            </View>
+            <View style={styles.progressContainer}>
+              <Text style={styles.readingProgress}>{book.progressRate}%</Text>
+            </View>
           </View>
         </View>
-      </View>
+      ) : (
+        <View style={styles.container}></View>
+      )}
     </View>
   );
 };
@@ -32,7 +56,7 @@ const CurrentReadingStatus: React.FC = () => {
 const styles = StyleSheet.create({
   containerWrapper: {
     // margin: width * 0.03,
-    marginHorizontal : width * 0.03,
+    marginHorizontal: width * 0.03,
   },
   headerText: {
     fontSize: width * 0.06,
@@ -44,8 +68,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     // padding: width * 0.02,
-    paddingVertical : width * 0.02,
-    paddingHorizontal : width * 0.03,
+    paddingVertical: width * 0.02,
+    paddingHorizontal: width * 0.03,
     backgroundColor: '#3943B7',
     marginVertical: height * 0.02,
     borderRadius: 8,

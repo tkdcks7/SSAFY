@@ -1,6 +1,6 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
@@ -39,7 +39,7 @@ export type RootStackParamList = {
   MyPage: undefined;
   UserInfo: undefined;
   PasswordEdit: undefined;
-  GeneralInfoEdit: { nickname: string; birth: string; blindFlag: boolean };
+  GeneralInfoEdit: {nickname: string; birth: string; blindFlag: boolean};
   MyReview: undefined;
   MyReviewEdit: {
     reviewId: number;
@@ -50,9 +50,9 @@ export type RootStackParamList = {
   };
   MyBooks: undefined;
   MyLikedBooks: undefined;
-  EBookViewer: { bookId: number };
-  BookDetail: { bookId: number };
-  Review: { bookId: number };
+  EBookViewer: {bookId: number};
+  BookDetail: {bookId: number};
+  Review: {bookId: number};
   DatabaseViewer: undefined; // ViewDatabase 경로 추가
 };
 
@@ -61,7 +61,9 @@ const Stack = createStackNavigator<RootStackParamList>();
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        initialRouteName="Landing"
+        screenOptions={{headerShown: false}}>
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Login" component={LoginPage} />
         <Stack.Screen name="Signup" component={SignupPage} />

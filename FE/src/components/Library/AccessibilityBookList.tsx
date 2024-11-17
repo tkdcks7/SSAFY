@@ -1,118 +1,140 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, Dimensions, AccessibilityInfo, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, {useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  Dimensions,
+  AccessibilityInfo,
+  TouchableOpacity,
+} from 'react-native';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../../navigation/AppNavigator';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
-type Book = {
-  id: number;
-  title: string;
-  author: string;
-  cover: string;
-  publisher: string;
-  progress?: number; // 진행도
-};
+// type Book = {
+//   id: number;
+//   title: string;
+//   author: string;
+//   cover: string;
+//   publisher: string;
+//   progress?: number; // 진행도
+// };
 
+// type AccessibilityBookListProps = {
+//   books: Book[];
+//   currentBook: Book | null; // 현재 읽고 있는 책
+// };
 
-
-type AccessibilityBookListProps = {
-  books: Book[];
-  currentBook: Book | null; // 현재 읽고 있는 책
-};
-
-const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, currentBook }) => {
+const AccessibilityBookList: React.FC<any> = ({books, currentBook}) => {
   useEffect(() => {
     if (currentBook) {
-      AccessibilityInfo.announceForAccessibility(`현재 읽고 있는 책은 ${currentBook.title}입니다.`);
+      AccessibilityInfo.announceForAccessibility(
+        `현재 읽고 있는 책은 ${currentBook.title}입니다.`,
+      );
     }
   }, [currentBook]);
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
     <FlatList
       data={books}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={item => item.id.toString()}
       style={styles.bookContainer}
       ListHeaderComponent={
-      <View>
-        currentBook ? (
-          <View style={styles.currentBookContainer}>
-            <Text
-              style={styles.currentBookTitle}
-              accessibilityLabel={`현재 읽고 있는 책: ${currentBook.title}`}
-            >
-              현재 읽고 있는 책
-            </Text>
-            <View style={[styles.bookItem, styles.currentBookItem]}>
-              <Image
-                source={{
-                  uri: currentBook.cover.startsWith('http') ? currentBook.cover : `file://${currentBook.cover}`,
-                }}
-                style={styles.bookImage}
-                accessibilityLabel={`표지 이미지: ${currentBook.title}`}
-              />
-              <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                      accessibilityLabel={`제목: ${currentBook.title}`}>
-                  {currentBook.title}
-                </Text>
-                <View style={styles.authorAndPublisherContainer}>
-                  <Text style={styles.bookAuthor}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        accessibilityLabel={`저자: ${currentBook.author}`}>
-                    저자: {currentBook.author}
+        <View>
+          {currentBook ? (
+            <View style={styles.currentBookContainer}>
+              <Text
+                style={styles.currentBookTitle}
+                accessibilityLabel={`현재 읽고 있는 책: ${currentBook.title}`}>
+                현재 읽고 있는 책
+              </Text>
+              <View style={[styles.bookItem, styles.currentBookItem]}>
+                <Image
+                  source={{
+                    uri: currentBook.cover.startsWith('http')
+                      ? currentBook.cover
+                      : `file://${currentBook.cover}`,
+                  }}
+                  style={styles.bookImage}
+                  accessibilityLabel={`표지 이미지: ${currentBook.title}`}
+                />
+                <View style={styles.bookInfo}>
+                  <Text
+                    style={styles.bookTitle}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    accessibilityLabel={`제목: ${currentBook.title}`}>
+                    {currentBook.title}
                   </Text>
-                  <View style={styles.currentBookProgressContainer}>
+                  <View style={styles.authorAndPublisherContainer}>
                     <Text
-                      style={styles.bookProgress}
-                      accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
-                    >
-                      진행도: {currentBook.progress ?? 0}%
+                      style={styles.bookAuthor}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      accessibilityLabel={`저자: ${currentBook.author}`}>
+                      저자: {currentBook.author}
                     </Text>
+                    <View style={styles.currentBookProgressContainer}>
+                      <Text
+                        style={styles.bookProgress}
+                        accessibilityLabel={`진행도: ${
+                          currentBook.progress ?? 0
+                        }%`}>
+                        진행도: {currentBook.progress ?? 0}%
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
             </View>
-          </View>
-        ) : null
-        <Text style={styles.bookContainerTitle}>내 서재</Text>
-      </View>
+          ) : null}
+          <Text style={styles.bookContainerTitle}>내 서재</Text>
+        </View>
       }
-      renderItem={({ item }) => (
+      renderItem={({item}) => (
         <TouchableOpacity
           style={styles.bookItem}
           onPress={() => {
-            AccessibilityInfo.announceForAccessibility(`${item.title} 상세 보기 페이지로 이동합니다.`);
-            navigation.navigate('EBookViewer', { bookId: item.id });
+            AccessibilityInfo.announceForAccessibility(
+              `${item.title} 상세 보기 페이지로 이동합니다.`,
+            );
+            navigation.navigate('BookDetail', {bookId: item.bookId});
           }}
           accessibilityLabel={`${item.title} 상세 보기`}
-          accessibilityHint="이 책의 상세 정보를 확인하려면 두 번 탭하세요."
-        >
+          accessibilityHint="이 책의 상세 정보를 확인하려면 두 번 탭하세요.">
           <Image
             source={{
-              uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}`,
+              uri: item.cover.startsWith('http')
+                ? item.cover
+                : `file://${item.cover}`,
             }}
             style={styles.bookImage}
             accessibilityLabel={`표지 이미지: ${item.title}`}
           />
           <View style={styles.bookInfo}>
-            <Text style={styles.bookTitle} numberOfLines={2} accessibilityLabel={`제목: ${item.title}`}>
+            <Text
+              style={styles.bookTitle}
+              numberOfLines={2}
+              accessibilityLabel={`제목: ${item.title}`}>
               {item.title}
             </Text>
             <View style={styles.authorAndPublisherContainer}>
-              <Text style={styles.bookAuthor}
-                    // numberOfLines={2}
-                    numberOfLines={1}
-                    accessibilityLabel={`저자: ${item.author}`}>
+              <Text
+                style={styles.bookAuthor}
+                // numberOfLines={2}
+                numberOfLines={1}
+                accessibilityLabel={`저자: ${item.author}`}>
                 저자: {item.author}
               </Text>
-              <Text style={styles.bookPublisher}
-                    numberOfLines={1}
-                    accessibilityLabel={`출판사: ${item.publisher}`}>
+              <Text
+                style={styles.bookPublisher}
+                numberOfLines={1}
+                accessibilityLabel={`출판사: ${item.publisher}`}>
                 출판사: {item.publisher}
               </Text>
             </View>
@@ -127,9 +149,9 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
 
 const styles = StyleSheet.create({
   bookContainer: {
-    marginHorizontal : width * 0.02,
+    marginHorizontal: width * 0.02,
   },
-  bookContainerTitle:{
+  bookContainerTitle: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#3943B7',
@@ -157,10 +179,10 @@ const styles = StyleSheet.create({
   flatListContent: {
     paddingBottom: height * 0.01,
   },
-  currentBookItem:{
+  currentBookItem: {
     borderRadius: width * 0.03,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: height * 0.005 },
+    shadowOffset: {width: 0, height: height * 0.005},
     shadowOpacity: 0.3,
     shadowRadius: width * 0.02,
     elevation: 5,
@@ -198,8 +220,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginBottom: height * 0.01,
   },
-  authorAndPublisherContainer: {
-  },
+  authorAndPublisherContainer: {},
   bookAuthor: {
     fontSize: width * 0.05,
     color: '#666666',
@@ -213,8 +234,8 @@ const styles = StyleSheet.create({
     // fontSize: width * 0.035,
     fontSize: width * 0.05,
     // color: '#3943B7',
-    color: "#ffffff",
-    textAlign: "center",
+    color: '#ffffff',
+    textAlign: 'center',
     // marginTop: height * 0.01,
   },
   separator: {
