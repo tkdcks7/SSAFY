@@ -90,13 +90,14 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({
           <View
             key={key}
             style={styles.reviewBarContainer}
+            accessible={true} // 이 컨테이너만 접근 가능하게 함
             accessibilityLabel={`${key}점: ${value}%`}
             accessibilityRole="text">
-            <Text style={styles.reviewText}>{key}점</Text>
-            <View style={styles.reviewBar}>
+            <Text style={styles.reviewText} importantForAccessibility="no">{key}점</Text>
+            <View style={styles.reviewBar} importantForAccessibility="no">
               <View style={[styles.reviewBarFill, {width: `${value}%`}]} />
             </View>
-            <Text style={styles.reviewPercentage}>{value}%</Text>
+            <Text style={styles.reviewPercentage} importantForAccessibility="no">{value}%</Text>
           </View>
         ))}
     </View>
