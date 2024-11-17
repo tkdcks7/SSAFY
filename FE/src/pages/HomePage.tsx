@@ -1,6 +1,6 @@
 // src/pages/HomePage.tsx
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import MainHeader from '../components/MainHeader';
 import MainFooter from '../components/MainFooter';
 import GeneralCarousel from '../components/Home/GeneralCarousel';
@@ -14,6 +14,7 @@ import { handleScrollEndAnnouncement } from '../utils/announceScrollEnd';
 const HomePage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
   const [isUserVisuallyImpaired, setIsUserVisuallyImpaired] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   useEffect(() => {
     const userIsVisuallyImpaired = false; // 실제 유저 정보에서 가져오는 로직을 구현
@@ -25,6 +26,13 @@ const HomePage: React.FC = () => {
     setIsAccessibilityMode((prev) => !prev);
   };
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentPosition = event.nativeEvent.contentOffset.y;
+    setScrollPosition(currentPosition);
+    handleScrollEndAnnouncement(event);
+  }
+
+
   return (
     <View style={styles.container}>
       <MainHeader
@@ -32,15 +40,17 @@ const HomePage: React.FC = () => {
         isAccessibilityMode={isAccessibilityMode}
         isUserVisuallyImpaired={isUserVisuallyImpaired}
         onModeToggle={handleModeToggle}
+        isScrolled={scrollPosition > 0}
       />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        onScroll={handleScrollEndAnnouncement}
+        onScroll={handleScroll} //원래는 handleScrollEndAnnouncement만 있었음
         scrollEventThrottle={16} // 스크롤 이벤트 빈도 조절
       >
         <View style={styles.innerContainer}>
           {isAccessibilityMode ? (
             <>
+
               <AccessibilityCarousel />
               <AccessibilityBookInfo />
             </>
@@ -70,6 +80,10 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
   },
+  componentWrapper: {
+    marginHorizontal: 20,
+    marginVertical: 10
+  }
 });
 
 export default HomePage;
