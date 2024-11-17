@@ -95,7 +95,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                     AccessibilityInfo.announceForAccessibility(`${currentBook.title} 도서 뷰어로 이동합니다.`);
                     navigation.navigate('EBookViewer', { bookId: currentBook.bookId });
                   }}
-                  accessibilityLabel={`현재 읽고 있는 도서 ${currentBook.title}. 표지 이미지: ${currentBook.title}. 저자: ${currentBook.author}. 출판사: ${item.publisher}.`}
+                  accessibilityLabel={`현재 읽고 있는 도서 ${currentBook.title}. 표지 이미지: ${currentBook.title}. 저자: ${currentBook.author}. 출판사: ${currentBook.publisher}.`}
                   accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
                 >
                   <Image
@@ -197,7 +197,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
             </TouchableOpacity>
           </View>
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View/>}
         contentContainerStyle={styles.flatListContent}
       />
 
