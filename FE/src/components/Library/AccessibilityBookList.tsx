@@ -35,6 +35,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
       keyExtractor={(item) => item.id.toString()}
       style={styles.bookContainer}
       ListHeaderComponent={
+      <View>
         currentBook ? (
           <View style={styles.currentBookContainer}>
             <Text
@@ -78,6 +79,8 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             </View>
           </View>
         ) : null
+        <Text style={styles.bookContainerTitle}>내 서재</Text>
+      </View>
       }
       renderItem={({ item }) => (
         <TouchableOpacity
