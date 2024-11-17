@@ -2,17 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import backIcon from '../../assets/icons/back.png';
-import accessbilityicon from '../../assets/icons/accessbility.png';
 
 const { width, height } = Dimensions.get('window');
 
 type MyPageHeaderProps = {
   title: string;
-  isUserVisuallyImpaired: boolean; // 시각 장애인 여부를 확인하는 prop
-  onModeToggle?: () => void; // 접근성 모드 토글 함수
 };
 
-const MyPageHeader: React.FC<MyPageHeaderProps> = ({ title, isUserVisuallyImpaired, onModeToggle }) => {
+const MyPageHeader: React.FC<MyPageHeaderProps> = ({ title }) => {
   const navigation = useNavigation();
 
   return (
@@ -24,11 +21,7 @@ const MyPageHeader: React.FC<MyPageHeaderProps> = ({ title, isUserVisuallyImpair
         <Text style={styles.title}>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
-        {!isUserVisuallyImpaired && onModeToggle && (
-          <TouchableOpacity onPress={onModeToggle} style={styles.accessibilityButton}>
-            <Image source={accessbilityicon} style={styles.accessibilityIcon} />
-          </TouchableOpacity>
-        )}
+        {/* 여기에 추가 버튼이나 UI 요소를 배치할 수 있음 */}
       </View>
     </View>
   );
@@ -62,14 +55,6 @@ const styles = StyleSheet.create({
   rightContainer: {
     width: width * 0.15,
     alignItems: 'flex-end',
-  },
-  accessibilityButton: {
-    padding: width * 0.02,
-  },
-  accessibilityIcon: {
-    width: width * 0.12,
-    height: width * 0.12,
-    tintColor: 'black',
   },
 });
 
