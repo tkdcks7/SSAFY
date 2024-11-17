@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
   return (
     <View style={styles.container}>
       <View style={styles.headerBox}>
-        <Text style={styles.headerText}>정렬 필터 - {selectedFilter}</Text>
+        <Text style={styles.headerText}>정렬 - {selectedFilter}</Text>
       </View>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('다운로드 순')}>
         <Image source={DownloadIcon} style={styles.icon} />
@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
       </ScrollView>
 
       <TouchableOpacity style={styles.resetButton} onPress={() => onFilterSelect('다운로드 순')}>
-        <Text style={styles.resetButtonText}>필터 초기화</Text>
+        <Text style={styles.resetButtonText}>선택 초기화</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeButtonText}>닫기</Text>
