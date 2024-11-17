@@ -105,25 +105,38 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
 };
 
 const styles = StyleSheet.create({
+  bookContainer: {
+    marginHorizontal : width * 0.02,
+  },
+  bookContainerTitle:{
+    fontSize: width * 0.07,
+    fontWeight: 'bold',
+    color: '#3943B7',
+    marginBottom: height * 0.01,
+  },
   currentBookContainer: {
     marginBottom: height * 0.02,
-    paddingHorizontal: width * 0.02,
+    // paddingHorizontal: width * 0.02,
   },
   currentBookTitle: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#3943B7',
-    marginBottom: height * 0.02,
+    // marginBottom: height * 0.02,
+    marginBottom: height * 0.01,
+  },
+  currentBookProgressContainer: {
+    backgroundColor: '#3943B7',
+    // marginRight: width * 0.04,
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.04,
+    borderRadius: 8,
+    marginTop: height * 0.01,
   },
   flatListContent: {
     paddingBottom: height * 0.01,
   },
-  bookItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: height * 0.01,
-    paddingHorizontal: width * 0.02,
-    backgroundColor: '#ffffff',
+  currentBookItem:{
     borderRadius: width * 0.03,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: height * 0.005 },
@@ -131,20 +144,40 @@ const styles = StyleSheet.create({
     shadowRadius: width * 0.02,
     elevation: 5,
   },
+  bookItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.02,
+    paddingRight: width * 0.03,
+    backgroundColor: '#ffffff',
+    // borderRadius: width * 0.03,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: height * 0.005 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: width * 0.02,
+    // elevation: 5,
+  },
   bookImage: {
     width: width * 0.25,
     height: height * 0.2,
-    marginRight: width * 0.06,
+    // marginRight: width * 0.06,
+    marginRight: width * 0.05,
     borderRadius: width * 0.02,
   },
   bookInfo: {
     flex: 1,
+    height: height * 0.18,
+    flexDirection: 'column', // 세로 정렬
+    justifyContent: 'space-between', // 위쪽과 아래쪽으로 분리
   },
   bookTitle: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: height * 0.01,
+  },
+  authorAndPublisherContainer: {
   },
   bookAuthor: {
     fontSize: width * 0.05,
@@ -156,14 +189,19 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   bookProgress: {
-    fontSize: width * 0.035,
-    color: '#3943B7',
-    marginTop: height * 0.01,
+    // fontSize: width * 0.035,
+    fontSize: width * 0.05,
+    // color: '#3943B7',
+    color: "#ffffff",
+    textAlign: "center",
+    // marginTop: height * 0.01,
   },
   separator: {
     height: 2,
-    backgroundColor: '#000000',
-    marginVertical: height * 0.02,
+    // height: 4,
+    // backgroundColor: '#000000',
+    backgroundColor: '#3943B7',
+    // marginVertical: height * 0.02,
   },
 });
 
