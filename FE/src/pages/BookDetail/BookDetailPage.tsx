@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,31 +11,27 @@ import {
   NativeScrollEvent,
   Alert,
 } from 'react-native';
-import {RouteProp, useRoute} from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import CustomHeader from '../../components/CustomHeader';
 import MainFooter from '../../components/MainFooter';
 import styles from '../../styles/BookDetail/BookDetailPageStyle';
 import Carousel from '../../components/Carousel';
 import RatingDistribution from '../../components/BookDetail/RatingDistribution';
 import ActionButtons from '../../components/BookDetail/ActionButtons';
-import {
-  fetchBookDetail,
-  toggleLikeBook,
-} from '../../services/BookDetail/BookDetail';
-import {
-  fetchSimilarBooks,
-  fetchBooksLikedByUsers,
-} from '../../services/BookDetail/RecomendedBooks';
-import {handleScrollEndAnnouncement} from '../../utils/announceScrollEnd';
+import { fetchBookDetail, toggleLikeBook } from '../../services/BookDetail/BookDetail';
+import { fetchSimilarBooks, fetchBooksLikedByUsers } from '../../services/BookDetail/RecomendedBooks';
+import { handleScrollEndAnnouncement } from '../../utils/announceScrollEnd';
 
 const BookDetailPage = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'BookDetail'>>();
-  const {bookId} = route.params;
+  const { bookId } = route.params;
+
   const [bookDetail, setBookDetail] = useState<BookDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [similarBooks, setSimilarBooks] = useState<CarouselItem[]>([]);
   const [likedBooks, setLikedBooks] = useState<CarouselItem[]>([]);
+  const [isScrolled, setIsScrolled] = useState(false); // 스크롤 상태 관리
 
   const scrollRef = useRef<ScrollView>(null);
 
@@ -51,7 +47,7 @@ const BookDetailPage = () => {
 
       const similar = await fetchSimilarBooks(bookId);
       setSimilarBooks(
-        similar.map(({bookId, cover, title, author}) => ({
+        similar.map(({ bookId, cover, title, author }) => ({
           bookId: String(bookId),
           cover,
           title,
@@ -61,7 +57,7 @@ const BookDetailPage = () => {
 
       const liked = await fetchBooksLikedByUsers(bookId);
       setLikedBooks(
-        liked.map(({bookId, cover, title, author}) => ({
+        liked.map(({ bookId, cover, title, author }) => ({
           bookId: String(bookId),
           cover,
           title,
@@ -75,7 +71,6 @@ const BookDetailPage = () => {
     }
   };
 
-  // 리뷰 페이지에서 작성/수정/삭제 후 호출될 함수
   const refreshBookDetail = async () => {
     try {
       const updatedDetail = await fetchBookDetail(bookId);
@@ -107,7 +102,7 @@ const BookDetailPage = () => {
           : '도서가 좋아요 목록에서 제거되었습니다.',
       );
     } catch (error) {
-      setBookDetail(prevDetail => {
+      setBookDetail((prevDetail) => {
         if (prevDetail) {
           return {
             ...prevDetail,
@@ -124,7 +119,9 @@ const BookDetailPage = () => {
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    handleScrollEndAnnouncement(event);
+    const currentScroll = event.nativeEvent.contentOffset.y;
+    setIsScrolled(currentScroll > 50); // 스크롤 위치에 따라 상태 업데이트
+    handleScrollEndAnnouncement(event); // 접근성 읽기
   };
 
   if (loading) {
@@ -144,7 +141,8 @@ const BookDetailPage = () => {
       <View style={styles.errorContainer}>
         <Text
           style={styles.errorText}
-          accessibilityLabel="도서 정보를 가져올 수 없습니다.">
+          accessibilityLabel="도서 정보를 가져올 수 없습니다."
+        >
           도서 정보를 가져올 수 없습니다.
         </Text>
       </View>
@@ -152,13 +150,14 @@ const BookDetailPage = () => {
   }
 
   return (
-    <View style={{flex: 1}}>
-      <CustomHeader title="도서 상세" />
+    <View style={{ flex: 1 }}>
+      <CustomHeader title="도서 상세" isScrolled={isScrolled} />
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.container}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}>
+        onScroll={handleScroll} // 스크롤 이벤트 핸들러
+        scrollEventThrottle={16}
+      >
         <Text
           style={styles.bookTitleLarge}
           allowFontScaling={false}
@@ -169,7 +168,7 @@ const BookDetailPage = () => {
         </Text>
 
         <Image
-          source={{uri: bookDetail.cover}}
+          source={{ uri: bookDetail.cover }}
           style={styles.bookImage}
           // accessibilityLabel={bookDetail.coverAlt}
           accessibilityLabel={bookDetail.coverAlt ? `책 이미지, ${bookDetail.coverAlt}` : undefined}
@@ -178,17 +177,20 @@ const BookDetailPage = () => {
         <View style={styles.bookInfoContainer}>
           <Text
             style={styles.bookAuthor}
-            accessibilityLabel={`작가: ${bookDetail.author}`}>
+            accessibilityLabel={`작가: ${bookDetail.author}`}
+          >
             {bookDetail.author}
           </Text>
           <Text
             style={styles.bookPublisher}
-            accessibilityLabel={`출판사: ${bookDetail.publisher}`}>
+            accessibilityLabel={`출판사: ${bookDetail.publisher}`}
+          >
             출판사: {bookDetail.publisher}
           </Text>
           <Text
             style={styles.bookCategory}
-            accessibilityLabel={`장르: ${bookDetail.category}`}>
+            accessibilityLabel={`장르: ${bookDetail.category}`}
+          >
             장르: {bookDetail.category}
           </Text>
         </View>
@@ -197,28 +199,29 @@ const BookDetailPage = () => {
           <Text
             style={styles.bookStory}
             numberOfLines={isExpanded ? undefined : 3}
-            accessibilityLabel={`책 줄거리: ${bookDetail.story}`}>
+            accessibilityLabel={`책 줄거리: ${bookDetail.story}`}
+          >
             {bookDetail.story}
           </Text>
           {bookDetail.story.length > 120 && !isExpanded && (
             <TouchableOpacity
               onPress={() => setIsExpanded(true)}
-              accessibilityLabel="더보기">
+              accessibilityLabel="더보기"
+            >
               <Text style={styles.moreButtonText}>{'[더보기]'}</Text>
             </TouchableOpacity>
           )}
           {isExpanded && (
             <TouchableOpacity
               onPress={() => setIsExpanded(false)}
-              accessibilityLabel="접기">
+              accessibilityLabel="접기"
+            >
               <Text style={styles.moreButtonText}>접기</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <RatingDistribution
-          reviewDistribution={bookDetail.reviewDistribution}
-        />
+        <RatingDistribution reviewDistribution={bookDetail.reviewDistribution} />
 
         <ActionButtons
           likedFlag={bookDetail.memberInfo.likedFlag}
@@ -242,7 +245,8 @@ const BookDetailPage = () => {
             <View style={styles.emptyContainer}>
               <Text
                 style={styles.emptyText}
-                accessibilityLabel="추천 도서가 없습니다. 다른 도서를 확인해보세요.">
+                accessibilityLabel="추천 도서가 없습니다. 다른 도서를 확인해보세요."
+              >
                 추천된 도서가 없습니다.
               </Text>
             </View>

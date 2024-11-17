@@ -10,18 +10,18 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Navigation hook import
 import DocumentPicker from 'react-native-document-picker';
-import CustomPicker from './CustomPicker'; // 커스텀 Picker 컴포넌트
+import CustomPicker from './CustomPicker'; // Custom Picker Component
 import { styles } from '../../styles/RegisterBook/RegisterBookModalStyle';
 import fileIcon from '../../assets/icons/file.png';
 import coverIcon from '../../assets/icons/cover.png';
-import { uploadBookFile } from '../../services/BookRegister/BookRegister'; // 파일 업로드 함수
-import { downloadFileFromUrl, saveBookToLocalDatabase } from '../../services/BookDetail/BookDetail'; // 다운로드 및 저장 함수
+import { uploadBookFile } from '../../services/BookRegister/BookRegister'; // File upload function
+import { downloadFileFromUrl, saveBookToLocalDatabase } from '../../services/BookDetail/BookDetail'; // Download & save functions
 import { v4 as uuidv4 } from 'uuid';
-import { connectToSSE } from '../../services/BookRegister/SSEConnector'; // SSE 연결 함수
+import { connectToSSE } from '../../services/BookRegister/SSEConnector'; // SSE connection function
 import categories from '../../data/categories.json';
-import RNFS from 'react-native-fs';
-import { LibraryContext } from '../../contexts/LibraryContext'; // LibraryContext 가져오기
+import { LibraryContext } from '../../contexts/LibraryContext'; // LibraryContext
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,7 +31,8 @@ type RegisterBookModalProps = {
 };
 
 const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClose }) => {
-  const { setAllBooks } = useContext(LibraryContext)!; // 전역 상태 업데이트 함수 가져오기
+  const navigation = useNavigation(); // Navigation hook
+  const { setAllBooks } = useContext(LibraryContext)!;
   const [currentStep, setCurrentStep] = useState<'selectFileType' | 'fileUpload' | 'metaDataInput' | 'loading' | null>('selectFileType');
   const [selectedFileType, setSelectedFileType] = useState<'pdf' | 'epub' | null>(null);
   const [uploadedFile, setUploadedFile] = useState<{ file: any | null; cover: any | null }>({ file: null, cover: null });
@@ -43,10 +44,10 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
   const [loadingMessage, setLoadingMessage] = useState('파일 업로드 준비 중...');
   const [isLoading, setIsLoading] = useState(false);
   const [isPickerVisible, setPickerVisible] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0); // 업로드 진행률
-  const [requestId, setRequestId] = useState<string>(uuidv4()); // 고유 채널 ID
-  const [startTime, setStartTime] = useState<number | null>(null); // 업로드 시작 시간
-  const [elapsedTime, setElapsedTime] = useState<string>('0분 0초'); // 경과 시간
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [requestId, setRequestId] = useState<string>(uuidv4());
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<string>('0분 0초');
 
   useEffect(() => {
     if (isVisible) {
@@ -58,11 +59,11 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
     setCurrentStep('selectFileType');
     setSelectedFileType(null);
     setUploadedFile({ file: null, cover: null });
-    setMetaData({ title: '', author: '', category: '001' });
+    setMetaData({ title: '', author: '', category: '' });
     setIsLoading(false);
     setLoadingMessage('');
     setUploadProgress(0);
-    setStartTime(null); // 초기화
+    setStartTime(null);
     setElapsedTime('0분 0초');
     setRequestId(uuidv4());
   };
@@ -126,9 +127,8 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
     setCurrentStep('loading');
     setLoadingMessage('SSE 연결 중...');
     setIsLoading(true);
-    setStartTime(Date.now()); // 업로드 시작 시간 기록
+    setStartTime(Date.now());
 
-    // SSE 연결
     const disconnectSSE = connectToSSE(
       requestId,
       (data) => {
@@ -150,16 +150,15 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
         requestId
       );
 
-      disconnectSSE(); // SSE 연결 종료
+      disconnectSSE();
       const { epub, metadata } = response;
 
       if (!epub) throw new Error('EPUB URL이 반환되지 않았습니다.');
 
       const downloadedFilePath = await downloadFileFromUrl(epub, `${metadata.title}.epub`);
 
-      // 동일한 메타데이터 형식으로 데이터 구성
       const bookData = {
-        id: Date.now(), // 새로운 ID
+        id: Date.now(),
         bookId: metadata.book_id,
         title: metadata.title,
         cover: metadata.cover,
@@ -169,17 +168,21 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
         createdAt: metadata.created_at,
         myTtsFlag: false,
         dtype: metadata.dtype,
-        filePath: downloadedFilePath, // 다운로드된 파일 경로
-        downloadDate: new Date().toISOString(), // 다운로드 날짜
-        currentCfi: '', // 초기 CFI
-        progressRate: 0, // 초기 진행률
+        filePath: downloadedFilePath,
+        downloadDate: new Date().toISOString(),
+        currentCfi: '',
+        progressRate: 0,
       };
 
       await saveBookToLocalDatabase(bookData);
       setAllBooks((prevBooks) => [...prevBooks, bookData]);
+
       Alert.alert('등록 완료', '도서가 성공적으로 등록되었습니다!');
+      
+      // Navigate to Library page
+      navigation.navigate('Library');
     } catch (error) {
-      disconnectSSE(); // 에러 발생 시에도 SSE 종료
+      disconnectSSE();
       console.error('등록 중 오류:', error);
       Alert.alert('오류', '등록 중 문제가 발생했습니다.');
     } finally {
@@ -188,12 +191,11 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
     }
   };
 
-
   return (
     <Modal visible={isVisible} transparent animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-        {currentStep === 'loading' && (
+          {currentStep === 'loading' && (
             <View style={styles.loadingContainer}>
               <Text style={styles.guideText}>도서 변환 과정은 시간이 소요될 수 있습니다. 잠시만 기다려주세요.</Text>
               <Text style={styles.loadingText}>{`진행률: ${uploadProgress}%`}</Text>
@@ -203,7 +205,6 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
             </View>
           )}
 
-          {/* Select File Type */}
           {currentStep === 'selectFileType' && (
             <>
               <Text style={styles.title}>파일 유형을 선택하세요</Text>
@@ -223,7 +224,6 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
             </>
           )}
 
-          {/* File Upload */}
           {currentStep === 'fileUpload' && (
             <>
               <Text style={styles.subTitle}>파일과 표지를 업로드하세요</Text>
@@ -252,7 +252,6 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
             </>
           )}
 
-          {/* Meta Data Input */}
           {currentStep === 'metaDataInput' && (
             <>
               <Text style={styles.title}>도서 정보 입력</Text>
@@ -305,6 +304,5 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
     </Modal>
   );
 };
-
 
 export default RegisterBookModal;

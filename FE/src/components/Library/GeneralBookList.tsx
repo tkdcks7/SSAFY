@@ -32,7 +32,7 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
               onPress={() => {
                 AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기 페이지로 이동합니다.`);
                 console.log(`item.id=${item.id}`);
-                navigation.navigate('EBookViewer', { bookId: item.id });
+                navigation.navigate('EBookViewer', { bookId: item.bookId });
               }}
               accessibilityLabel={`${item.title} 선택됨`}
               accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
