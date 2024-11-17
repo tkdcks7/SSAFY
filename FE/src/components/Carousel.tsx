@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, {useRef, useState} from 'react';
 import {
   View,
   FlatList,
@@ -9,23 +9,23 @@ import {
   TouchableOpacity,
   AccessibilityInfo,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../navigation/AppNavigator';
+import {StackNavigationProp} from '@react-navigation/stack';
 import LeftArrow from '../assets/icons/leftarrow.png';
 import RightArrow from '../assets/icons/rightarrow.png';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const responsiveWidth = (factor: number) => width * (factor / 100);
 const responsiveHeight = (factor: number) => height * (factor / 100);
 const responsiveFontSize = (factor: number) => width * (factor / 100);
 
 interface CarouselProps {
-  items: { bookId: string; cover: string; title: string }[];
+  items: {bookId: string; cover: string; title: string}[];
 }
 
-const Carousel: React.FC<CarouselProps> = ({ items }) => {
+const Carousel: React.FC<CarouselProps> = ({items}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,7 +47,9 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
     });
 
     // 현재 인덱스 아나운스
-    AccessibilityInfo.announceForAccessibility(`현재 위치: ${newIndex + 1} / ${items.length}`);
+    AccessibilityInfo.announceForAccessibility(
+      `현재 위치: ${newIndex + 1} / ${items.length}`,
+    );
   };
 
   return (
@@ -57,8 +59,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
         style={styles.arrowButton}
         accessibilityLabel="이전 책 보기"
         accessibilityHint={`현재 위치: ${currentIndex + 1} / ${items.length}`}
-        disabled={currentIndex === 0}
-      >
+        disabled={currentIndex === 0}>
         <Image source={LeftArrow} style={styles.arrowIcon} />
       </TouchableOpacity>
 
@@ -66,19 +67,26 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
         ref={flatListRef}
         horizontal
         data={items}
-        renderItem={({ item, index }) => (
+        renderItem={({item, index}) => (
           <TouchableOpacity
             style={styles.itemContainer}
-            onPress={() => navigation.navigate('BookDetail', { bookId: item.bookId })}
+            onPress={() =>
+              navigation.navigate('BookDetail', {bookId: item.bookId})
+            }
             accessibilityLabel={`책 제목: ${item.title}`}
             accessibilityHint="자세한 정보를 보려면 두 번 탭하세요."
             accessible={index === currentIndex} // 현재 포커스된 아이템만 접근 가능하도록 설정
           >
-            <Image source={{ uri: item.cover }} style={styles.carouselImage} />
-            <Text style={styles.carouselTitle} numberOfLines={1} ellipsizeMode='tail'>{item.title}</Text>
+            <Image source={{uri: item.cover}} style={styles.carouselImage} />
+            <Text
+              style={styles.carouselTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {item.title}
+            </Text>
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.bookId}
+        keyExtractor={item => item.bookId}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}
         nestedScrollEnabled={true}
@@ -89,8 +97,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
         style={styles.arrowButton}
         accessibilityLabel="다음 책 보기"
         accessibilityHint={`현재 위치: ${currentIndex + 1} / ${items.length}`}
-        disabled={currentIndex === items.length - 1}
-      >
+        disabled={currentIndex === items.length - 1}>
         <Image source={RightArrow} style={styles.arrowIcon} />
       </TouchableOpacity>
     </View>
@@ -102,35 +109,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: responsiveHeight(2),
+    padding: 0,
+    justifyContent: 'flex-start',
   },
   scrollViewContent: {
-    paddingHorizontal: responsiveWidth(2.5),
     alignItems: 'center',
   },
   itemContainer: {
-    width: responsiveWidth(42),
-    marginRight: responsiveWidth(3),
+    width: responsiveWidth(39),
+    marginRight: 0,
     alignItems: 'center',
+    justifyContent: 'center', // Ensures items are centered vertically
   },
   carouselImage: {
-    width: responsiveWidth(30),
-    height: responsiveHeight(20),
+    width: responsiveWidth(21),
+    height: responsiveHeight(14),
     resizeMode: 'cover',
-    marginBottom: responsiveHeight(1),
+    marginBottom: 0, // Set to 0 to reduce space between image and title
   },
   carouselTitle: {
     textAlign: 'center',
     fontSize: responsiveFontSize(4),
     fontWeight: 'bold',
+    marginTop: 0, // Ensures no extra space above the title
+    paddingTop: 0, // Ensures no extra padding above the title
   },
   arrowButton: {
-    width: responsiveWidth(10),
     height: responsiveHeight(10),
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   arrowIcon: {
-    width: responsiveWidth(8),
     height: responsiveHeight(8),
     resizeMode: 'contain',
   },

@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, TouchableOpacity, Image, Alert, AccessibilityInfo } from 'react-native';
+import React, {useState, useEffect, useContext} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  Alert,
+  AccessibilityInfo,
+} from 'react-native';
 import Btn from '../../components/Btn';
 import styles from '../../styles/BookDetail/ActionButtonsStyle';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {
   downloadBook,
   saveBookToLocalDatabase,
@@ -11,7 +17,7 @@ import {
   toggleBookCart,
 } from '../../services/BookDetail/BookDetail';
 import DownloadModal from './DownloadModal';
-import { LibraryContext } from '../../contexts/LibraryContext';
+import {LibraryContext} from '../../contexts/LibraryContext';
 
 interface ActionButtonsProps {
   likedFlag: boolean;
@@ -29,7 +35,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onLikeToggle,
 }) => {
   const navigation = useNavigation();
-  const { addBook } = useContext(LibraryContext)!; // LibraryContext에서 addBook 가져오기
+  const {addBook} = useContext(LibraryContext)!; // LibraryContext에서 addBook 가져오기
   const [isModalVisible, setModalVisible] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [cartFlag, setCartFlag] = useState(initialCartFlag); // true: 담기된 상태, false: 담기되지 않음
@@ -55,7 +61,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }
 
       const metadata = await downloadBook(bookId);
-      const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
+      const filePath = await downloadFileFromUrl(
+        metadata.url,
+        `${metadata.title}.epub`,
+      );
 
       const downloadDate = new Date().toISOString();
       const bookData = {
@@ -84,7 +93,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       setDownloading(false);
       setModalVisible(true);
 
-      AccessibilityInfo.announceForAccessibility('도서가 성공적으로 다운로드되었습니다.');
+      AccessibilityInfo.announceForAccessibility(
+        '도서가 성공적으로 다운로드되었습니다.',
+      );
     } catch (error) {
       setDownloading(false);
       Alert.alert('다운로드 실패', '파일을 다운로드할 수 없습니다.');
@@ -94,13 +105,18 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const handleToggleCart = async () => {
     try {
       await toggleBookCart(bookId, !cartFlag); // cartFlag 반전하여 요청
-      setCartFlag((prev) => !prev);
+      setCartFlag(prev => !prev);
       AccessibilityInfo.announceForAccessibility(
-        cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.'
+        cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.',
       );
-      Alert.alert('성공', cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.');
+      Alert.alert(
+        '성공',
+        cartFlag ? '도서가 목록에서 제거되었습니다.' : '도서가 담겼습니다.',
+      );
     } catch (error) {
-      AccessibilityInfo.announceForAccessibility('도서 상태 변경에 실패했습니다.');
+      AccessibilityInfo.announceForAccessibility(
+        '도서 상태 변경에 실패했습니다.',
+      );
       Alert.alert('오류', '도서 상태를 변경할 수 없습니다.');
     }
   };
@@ -113,14 +129,20 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           <Btn
             title="리뷰 보기"
             btnSize={1}
-            onPress={() => navigation.navigate('Review', { bookId })}
+            onPress={() => navigation.navigate('Review', {bookId})}
             accessibilityLabel="리뷰 보기 버튼"
           />
         </View>
         <View style={styles.iconWrapper}>
-          <TouchableOpacity onPress={onLikeToggle} accessibilityLabel="좋아요 아이콘">
+          <TouchableOpacity
+            onPress={onLikeToggle}
+            accessibilityLabel="좋아요 아이콘">
             <Image
-              source={likedFlag ? require('../../assets/icons/heart.png') : require('../../assets/icons/heart2.png')}
+              source={
+                likedFlag
+                  ? require('../../assets/icons/heart.png')
+                  : require('../../assets/icons/heart2.png')
+              }
               style={styles.iconImage}
             />
           </TouchableOpacity>
@@ -134,8 +156,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             title={cartFlag ? '담은 도서 빼기' : '도서 담기'}
             btnSize={1}
             onPress={handleToggleCart}
-            accessibilityLabel={cartFlag ? '담은 도서 빼기 버튼' : '도서 담기 버튼'}
-            accessibilityHint={cartFlag ? '도서를 담은 목록에서 제거합니다.' : '도서를 담을 수 있습니다.'}
+            accessibilityLabel={
+              cartFlag ? '담은 도서 빼기 버튼' : '도서 담기 버튼'
+            }
+            accessibilityHint={
+              cartFlag
+                ? '도서를 담은 목록에서 제거합니다.'
+                : '도서를 담을 수 있습니다.'
+            }
           />
         </View>
         <View style={styles.iconWrapper}>
@@ -149,11 +177,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 : isAlreadyDownloaded
                 ? '이미 다운로드된 도서입니다.'
                 : '파일을 다운로드합니다.'
-            }
-          >
+            }>
             <Image
               source={require('../../assets/icons/download2.png')}
-              style={[styles.iconImage, (!epubFlag || downloading || isAlreadyDownloaded) && { opacity: 0.5 }]}
+              style={[
+                styles.iconImage,
+                (!epubFlag || downloading || isAlreadyDownloaded) &&
+                  styles.disabledIcon,
+              ]}
             />
           </TouchableOpacity>
         </View>
@@ -165,7 +196,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClose={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          navigation.navigate('EbookViewer', { bookId }); // eBook 리더로 이동
+          navigation.navigate('EbookViewer', {bookId}); // eBook 리더로 이동
         }}
       />
     </>
