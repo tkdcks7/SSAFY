@@ -1,9 +1,7 @@
 import ebooklib
 from ebooklib import epub
 from datetime import datetime
-import re 
 from bs4 import BeautifulSoup
-import bs4
 
 class EpubReader:
     ## 입출력 함수
@@ -14,7 +12,7 @@ class EpubReader:
     ## 표지 처리 함수 
     def read_cover_image_from_epub(book: epub.EpubBook):
         cover_image = book.get_items_of_type(ebooklib.ITEM_COVER)
-        return list(cover_image)
+        return cover_image
     
     def read_epub_from_s3_path(path: str):
         pass 
@@ -57,6 +55,7 @@ class EpubReader:
 
     def append_alt_to_image_without_decode(book: epub.EpubBook, image_list: list):
         print(f"image_id: {image_list[0][0]}")
+        cover_alt = "Cover"
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
             content = item.get_content()
             soup = BeautifulSoup(content, 'html.parser')
@@ -72,12 +71,15 @@ class EpubReader:
                 img_tag = body.find('img', {'src': image_id})
                 if img_tag:
                     img_tag['alt'] = caption
+                    if image_id == "cover.jpg":
+                        cover_alt = caption 
+                        
             
             # 2. 변경된 HTML 콘텐츠를 다시 EPUB에 저장
             updated_content = f"<html>{head}{body}</html>"
             item.set_content(updated_content.encode('utf-8'))
 
-        return book 
+        return book, cover_alt
     # 표지 이미지의 image_id 기준으로 coverAlt 반환 
     def get_cover_alt(book: epub.EpubBook, cover_id):
         for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
