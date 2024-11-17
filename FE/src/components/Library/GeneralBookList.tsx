@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, Dimensions, TouchableOpacity, AccessibilityInfo } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 type Book = {
   id: number;
@@ -20,38 +20,41 @@ type GeneralBookListProps = {
 const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
   const navigation = useNavigation();
   return (
-    <FlatList
-      data={books}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={3}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.bookItem}
-          onPress={() => {
-            AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기 페이지로 이동합니다.`);
-            console.log(`item.id=${item.id}`);
-            navigation.navigate('EBookViewer', { bookId: item.id });
-          }}
-          accessibilityLabel={`${item.title} 선택됨`}
-          accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
-        >
-          <Image
-            source={{ uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}` }}
-            style={styles.bookImage}
-            accessibilityLabel={`표지 이미지: ${item.title}`}
-          />
-          <Text
-            style={styles.bookTitle}
-            numberOfLines={2}
-            ellipsizeMode="tail"
-            accessibilityLabel={`제목: ${item.title}`}
-          >
-            {item.title}
-          </Text>
-        </TouchableOpacity>
-      )}
-      contentContainerStyle={styles.flatListContent}
-    />
+      <View style={styles.bookContainer}>
+        <Text style={styles.bookContainerTitleText}>내 서재</Text>
+        <FlatList
+          data={books}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={3}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.bookItem}
+              onPress={() => {
+                AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기 페이지로 이동합니다.`);
+                console.log(`item.id=${item.id}`);
+                navigation.navigate('EBookViewer', { bookId: item.id });
+              }}
+              accessibilityLabel={`${item.title} 선택됨`}
+              accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
+            >
+              <Image
+                source={{ uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}` }}
+                style={styles.bookImage}
+                accessibilityLabel={`표지 이미지: ${item.title}`}
+              />
+              <Text
+                style={styles.bookTitle}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                accessibilityLabel={`제목: ${item.title}`}
+              >
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.flatListContent}
+        />
+      </View>
   );
 };
 
