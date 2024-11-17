@@ -29,7 +29,8 @@ const styles = StyleSheet.create({
     // textAlign: 'center',
     // textAlign: 'justify', // 임의로 바꿈
     marginVertical: responsiveHeight(2),
-    flexWrap: 'wrap', // 줄바꿈 설정
+    // flexWrap: 'wrap', // 줄바꿈 설정,
+    // textAlign: 'justify',
   },
   bookAuthor: {
     fontSize: responsiveFontSize(6),

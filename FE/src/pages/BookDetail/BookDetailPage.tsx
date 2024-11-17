@@ -161,9 +161,10 @@ const BookDetailPage = () => {
         scrollEventThrottle={16}>
         <Text
           style={styles.bookTitleLarge}
+          allowFontScaling={false}
           accessibilityLabel={`책 제목: ${bookDetail.title}`}
           accessibilityRole="header">
-          {bookDetail.title}
+          {(bookDetail.title || '').replace(/ /g, '\u00A0')}
         </Text>
 
         <Image
