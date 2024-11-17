@@ -109,6 +109,8 @@ class Integration:
             my_tts_flag=1,
             epub=file_name
         )
+        category = dbutil.getCategory(metadata['category'])
+        metadata['category'] = category.category_name
         metadata['book_id'] = saved_book.book_id
         metadata['created_at'] = saved_book.created_at
 
@@ -191,6 +193,8 @@ class Integration:
             my_tts_flag=1,
             epub=file_name
         )
+        category = dbutil.getCategory(metadata['category'])
+        metadata['category'] = category.category_name
         metadata['book_id'] = saved_book.book_id
         metadata['created_at'] = saved_book.created_at
 
@@ -246,6 +250,8 @@ class Integration:
                     my_tts_flag=1,
                     epub=file_name
                 )
+                category = dbutil.getCategory(metadata['category'])
+                metadata['category'] = category.category_name
                 metadata['book_id'] = saved_book.book_id
                 metadata['created_at'] = saved_book.created_at
 
