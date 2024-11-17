@@ -61,7 +61,7 @@ const Tab: React.FC<TabProps> = ({ onMenuPress, onTabClick, onSearch }) => {
           value={searchText}
           onChangeText={handleSearchChange}
           accessibilityLabel="검색어 입력창"
-          accessibilityHint="검색어를 입력해보세요"
+          accessibilityHint="검색어를 입력해주세요"
         />
         <TouchableOpacity
             onPress={onMenuPress}
