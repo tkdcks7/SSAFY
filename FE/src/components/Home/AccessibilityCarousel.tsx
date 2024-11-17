@@ -29,8 +29,11 @@ const dummyData = [
   },
 ];
 
+type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
+
 const AccessibilityCarousel: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const navigation = useNavigation<NavigationProp>();
 
   return (
     <View style={styles.carouselContainer}>
@@ -42,8 +45,8 @@ const AccessibilityCarousel: React.FC = () => {
         contentContainerStyle={styles.scrollViewContent}
       >
         {dummyData.map((item) => (
-          <View
-            key={item.id}
+          <TouchableOpacity
+            key={item.bookId}
             style={styles.slide}
             accessible={true}
             accessibilityLabel={`소개 도서 ${item.title}`}
@@ -57,7 +60,7 @@ const AccessibilityCarousel: React.FC = () => {
               // accessibilityHint="이 이미지는 도서 표지입니다."
             />
             {/* <Text style={styles.slideTitle}>{item.title}</Text> */}
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
