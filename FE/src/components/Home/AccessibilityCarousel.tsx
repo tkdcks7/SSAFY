@@ -46,15 +46,15 @@ const AccessibilityCarousel: React.FC = () => {
             key={item.id}
             style={styles.slide}
             accessible={true}
-            // accessibilityLabel={item.title}
-            accessibilityLabel={`${item.title}`}
-            accessibilityHint="이 캐러셀을 스와이프하여 다음 슬라이드를 볼 수 있습니다."
+            accessibilityLabel={`소개 도서 ${item.title}`}
+            accessibilityHint="스와이프하여 다음 슬라이드를 볼 수 있습니다. 상세 정보를 보려면 두 번 탭해주세요."
+            onPress={() => navigation.navigate('BookDetail', { bookId: item.bookId })}
           >
               <Image
               source={item.image}
               style={styles.slideImage}
-              accessibilityLabel={item.title}
-              accessibilityHint="이 이미지는 도서 표지입니다."
+              // accessibilityLabel={item.title}
+              // accessibilityHint="이 이미지는 도서 표지입니다."
             />
             {/* <Text style={styles.slideTitle}>{item.title}</Text> */}
           </View>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     alignItems: 'center',
-  }, 
+  },
   slide: {
     width: width * 0.95,
     height: '100%',
