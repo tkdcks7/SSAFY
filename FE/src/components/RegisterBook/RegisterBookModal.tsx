@@ -199,10 +199,12 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
               <Text style={styles.title}>파일 유형을 선택하세요</Text>
               <View style={styles.fileTypeContainer}>
                 <TouchableOpacity style={styles.pdfButton} onPress={() => handleFileTypeSelection('pdf')}>
-                  <Text style={styles.modalButtonText}>PDF {'\n'} 파일</Text>
+                  <Text style={styles.modalButtonText}>PDF</Text>
+                  <Text style={styles.modalButtonText}>파일</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.epubButton} onPress={() => handleFileTypeSelection('epub')}>
-                  <Text style={styles.modalButtonText}>ePub {'\n'} 파일</Text>
+                  <Text style={styles.modalButtonText}>ePub</Text>
+                  <Text style={styles.modalButtonText}>파일</Text>
                 </TouchableOpacity>
               </View>
               <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
