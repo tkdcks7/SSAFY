@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
         <Text style={styles.filterText}>다운로드 순</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('사전 순')}>
-        <Image source={DictionaryIcon} style={styles.icon} />
+        <Image source={DictionaryIcon} style={[styles.icon, styles.adjustedIcon]} />
         <Text style={styles.filterText}>사전 순</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('카테고리 순')}>
@@ -97,6 +97,11 @@ const styles = StyleSheet.create({
     width: width * 0.08,
     height: width * 0.08,
     marginRight: width * 0.04,
+  },
+  adjustedIcon: {
+    width: width * 0.1, // 작은 아이콘만 크기 약간 키움
+    height: width * 0.1,
+    marginRight: width * 0.02,
   },
   filterText: {
     color: '#ffffff',
