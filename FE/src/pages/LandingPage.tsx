@@ -15,10 +15,10 @@ type Props = {
 const LandingPage: React.FC<Props> = ({ navigation }) => {
   return (
     <PageWrapper>
-      <Text style={styles.title}>AUDISAY</Text>
+      <Text style={styles.title} accessibilityLabel={"오디쎄이"}>AUDISAY</Text>
       <View style={styles.logoRegion} />
-      <Text style={styles.explain}>모두를 위한{'\n'}e-Book 서비스</Text>
-      <Text style={styles.explain}>새로운 여정을{'\n'}시작하세요</Text>
+      <Text style={styles.explain} accessibilityLabel={"모두를 위한 e-Book 서비스"}>모두를 위한{'\n'}e-Book 서비스</Text>
+      <Text style={styles.explain} accessibilityLabel={"새로운 여정을 시작하세요"}>새로운 여정을{'\n'}시작하세요</Text>
       <Btn
       onPress={() => navigation.navigate('Login')}
       title='로그인'
