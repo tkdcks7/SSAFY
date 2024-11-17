@@ -1,11 +1,10 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import {StyleSheet, Dimensions} from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
-    padding: width * 0.01,
-    marginBottom: height * 0.02,
+    marginBottom: height * 0.03,
   },
   title: {
     fontWeight: 'bold',
@@ -34,7 +33,7 @@ const styles = StyleSheet.create({
   reviewText: {
     width: '10%',
     fontSize: width * 0.05,
-    textAlign: 'right',
+    textAlign: 'left',
     marginRight: width * 0.01, // 프로그레스바와 점수 간 여백 추가
   },
   reviewBar: {
