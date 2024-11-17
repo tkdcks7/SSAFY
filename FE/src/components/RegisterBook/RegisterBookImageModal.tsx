@@ -10,13 +10,15 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // 내비게이션 훅 임포트
 import { styles } from '../../styles/RegisterBook/RegisterBookImageModal';
-import CustomPicker from './CustomPicker'; // 카테고리 선택을 위한 커스텀 피커 임포트
-import { uploadImageBook } from '../../services/BookRegister/BookRegister'; // 이미지 업로드 함수
-import { downloadFileFromUrl, saveBookToLocalDatabase } from '../../services/BookDetail/BookDetail'; // 다운로드 및 저장 함수
-import { v4 as uuidv4 } from 'uuid'; // UUID 라이브러리
-import { LibraryContext } from '../../contexts/LibraryContext'; // LibraryContext 가져오기
-import { connectToSSE } from '../../services/BookRegister/SSEConnector'; // SSE 연결 함수
+import CustomPicker from './CustomPicker';
+import { uploadImageBook } from '../../services/BookRegister/BookRegister';
+import { downloadFileFromUrl, saveBookToLocalDatabase } from '../../services/BookDetail/BookDetail';
+import { v4 as uuidv4 } from 'uuid';
+import { LibraryContext } from '../../contexts/LibraryContext';
+import { connectToSSE } from '../../services/BookRegister/SSEConnector';
+import categories from '../../data/categories.json';
 
 type RegisterBookImageModalProps = {
   isVisible: boolean;
@@ -25,32 +27,24 @@ type RegisterBookImageModalProps = {
   selectedCoverIndex: number | null;
 };
 
-// 카테고리 선택을 위한 데이터 정의
-const customPickerData = [
-  { label: '소설', value: '001' },
-  { label: '에세이', value: '002' },
-  { label: '자기계발', value: '003' },
-  { label: '경제', value: '004' },
-  { label: '기타', value: '005' },
-];
-
 const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
   isVisible,
   onClose,
   uploadedImages,
   selectedCoverIndex,
 }) => {
-  const { setAllBooks } = useContext(LibraryContext)!; // 전역 상태 업데이트 함수
+  const navigation = useNavigation(); // 내비게이션 훅 사용
+  const { setAllBooks } = useContext(LibraryContext)!;
   const [metaData, setMetaData] = useState<{ title: string; author: string; category: string }>({
     title: '',
     author: '',
-    category: '001',
+    category: '',
   });
   const [isPickerVisible, setPickerVisible] = useState<boolean>(false);
-  const [requestId, setRequestId] = useState<string>(uuidv4()); // 고유 Request ID 생성
-  const [isLoading, setIsLoading] = useState<boolean>(false); // 로딩 상태
+  const [requestId, setRequestId] = useState<string>(uuidv4());
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string>('파일 업로드 준비 중...');
-  const [progress, setProgress] = useState<number>(0); // 진행률 상태
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
     if (isVisible) {
@@ -59,8 +53,8 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
   }, [isVisible]);
 
   const resetModal = () => {
-    setMetaData({ title: '', author: '', category: '001' });
-    setRequestId(uuidv4()); // 새로운 Request ID 생성
+    setMetaData({ title: '', author: '', category: '' });
+    setRequestId(uuidv4());
     setIsLoading(false);
     setLoadingMessage('');
     setProgress(0);
@@ -103,23 +97,18 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
         requestId
       );
 
-      console.log('Upload Response:', response);
-
       const { epub, metadata } = response;
 
       if (!epub) {
         throw new Error('EPUB URL이 반환되지 않았습니다.');
       }
 
-      // SSE 연결 종료
       disconnectSSE();
 
-      // 파일 다운로드
       const downloadedFilePath = await downloadFileFromUrl(epub, `${metadata.title}.epub`);
 
-      // 로컬 데이터베이스 저장 데이터 구성
       const bookData = {
-        id: Date.now(), // 새로운 ID
+        id: Date.now(),
         bookId: metadata.book_id,
         title: metadata.title,
         cover: metadata.cover,
@@ -135,13 +124,13 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
         progressRate: 0,
       };
 
-      // 로컬 데이터베이스에 저장
       await saveBookToLocalDatabase(bookData);
-
-      // 전역 상태 업데이트
       setAllBooks((prevBooks) => [...prevBooks, bookData]);
 
       Alert.alert('등록 완료', '도서가 성공적으로 등록되었습니다!');
+
+      // 내서재 페이지로 이동
+      navigation.navigate('Library');
     } catch (error) {
       console.error('등록 중 오류 발생:', error);
       Alert.alert('오류', '도서 등록 중 문제가 발생했습니다.');
@@ -168,10 +157,15 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
                 <View style={styles.uploadPreviewContainer}>
                   <Text style={styles.subTitle}>커버 이미지 미리보기</Text>
                   {selectedCoverIndex !== null && (
-                    <Image source={{ uri: uploadedImages[selectedCoverIndex] }} style={styles.previewImage} />
+                    <Image
+                      source={{ uri: uploadedImages[selectedCoverIndex] }}
+                      style={styles.previewImage}
+                    />
                   )}
                   {uploadedImages.length > 1 && (
-                    <Text style={styles.additionalImagesText}>+ {uploadedImages.length - 1} 개의 이미지</Text>
+                    <Text style={styles.additionalImagesText}>
+                      + {uploadedImages.length - 1} 개의 이미지
+                    </Text>
                   )}
                 </View>
 
@@ -197,9 +191,15 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
 
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>카테고리</Text>
-                  <TouchableOpacity onPress={() => setPickerVisible(true)} style={styles.pickerButton}>
+                  <TouchableOpacity
+                    onPress={() => setPickerVisible(true)}
+                    style={styles.pickerButton}
+                  >
                     <Text style={styles.pickerText}>
-                      {customPickerData.find((item) => item.value === metaData.category)?.label || '카테고리 선택'}
+                      {
+                        categories.find((item) => item.category_id === metaData.category)
+                          ?.category_name || '카테고리 선택'
+                      }
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -212,7 +212,12 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
                 />
 
                 <TouchableOpacity
-                  style={[styles.registerButton, metaData.title && metaData.author && metaData.category ? {} : styles.disabledButton]}
+                  style={[
+                    styles.registerButton,
+                    metaData.title && metaData.author && metaData.category
+                      ? {}
+                      : styles.disabledButton,
+                  ]}
                   disabled={!metaData.title || !metaData.author || !metaData.category}
                   onPress={handleMetaDataSubmit}
                 >
