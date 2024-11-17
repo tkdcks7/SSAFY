@@ -33,6 +33,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
     <FlatList
       data={books}
       keyExtractor={(item) => item.id.toString()}
+      style={styles.bookContainer}
       ListHeaderComponent={
         currentBook ? (
           <View style={styles.currentBookContainer}>
