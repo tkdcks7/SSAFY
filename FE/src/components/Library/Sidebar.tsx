@@ -25,14 +25,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
   return (
     <View style={styles.container}>
       <View style={styles.headerBox}>
-        <Text style={styles.headerText}>정렬 필터 - {selectedFilter}</Text>
+        <Text style={styles.headerText}>정렬 - {selectedFilter}</Text>
       </View>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('다운로드 순')}>
         <Image source={DownloadIcon} style={styles.icon} />
         <Text style={styles.filterText}>다운로드 순</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('사전 순')}>
-        <Image source={DictionaryIcon} style={styles.icon} />
+        <Image source={DictionaryIcon} style={[styles.icon, styles.adjustedIcon]} />
         <Text style={styles.filterText}>사전 순</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('카테고리 순')}>
@@ -49,14 +49,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
               style={styles.categoryItem}
               onPress={() => onFilterSelect(category)}
             >
-              <Text style={styles.categoryText}> ▶ {category}</Text>
+              {/*<Text style={styles.categoryText}> ▶ {category}</Text>*/}
+              <View style={styles.categoryTextContainer}>
+                <Text style={styles.bullet}>▶ </Text>
+                <Text style={styles.categoryText}>{category}</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
       <TouchableOpacity style={styles.resetButton} onPress={() => onFilterSelect('다운로드 순')}>
-        <Text style={styles.resetButtonText}>필터 초기화</Text>
+        <Text style={styles.resetButtonText}>선택 초기화</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeButtonText}>닫기</Text>
@@ -81,6 +85,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     padding: width * 0.04,
     marginBottom: height * 0.02,
+    borderRadius: width * 0.02,
   },
   headerText: {
     color: '#ffffff',
@@ -91,20 +96,28 @@ const styles = StyleSheet.create({
   filterItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: height * 0.025,
+    // marginBottom: height * 0.025,
+    marginBottom: height * 0.02,
   },
   icon: {
     width: width * 0.08,
     height: width * 0.08,
     marginRight: width * 0.04,
   },
+  adjustedIcon: {
+    width: width * 0.1, // 작은 아이콘만 크기 약간 키움
+    height: width * 0.1,
+    marginRight: width * 0.02,
+  },
   filterText: {
     color: '#ffffff',
     fontSize: width * 0.08,
     fontWeight: 'bold',
+    marginLeft: width * 0.01,
   },
   categoryScroll: {
     maxHeight: height * 0.5,
+    marginBottom: height * 0.01,
   },
   categoryContainer: {
     marginLeft: width * 0.12,
@@ -112,9 +125,18 @@ const styles = StyleSheet.create({
   categoryItem: {
     paddingVertical: height * 0.005,
   },
+  categoryTextContainer: {
+    flexDirection: 'row', // ▶와 텍스트를 가로로 배치
+    alignItems: 'flex-start', // ▶가 텍스트 상단에 정렬되도록 설정
+  },
+  bullet: {
+    fontSize: width * 0.06, // ▶ 기호 크기
+    color: '#ffffff',
+  },
   categoryText: {
     color: '#ffffff',
-    fontSize: width * 0.06,
+    fontSize: width * 0.06, // 텍스트 크기
+    flexShrink: 1, // 텍스트가 줄바꿈될 때 공간 제한
   },
   resetButton: {
     alignItems: 'center',

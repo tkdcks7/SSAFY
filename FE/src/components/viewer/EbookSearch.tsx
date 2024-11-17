@@ -1,5 +1,5 @@
 // src/components/viewer/EbookSearch.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, TextInput } from 'react-native';
 import InputBox from '../../components/InputBox';
 import {useReader} from '@epubjs-react-native/core';
@@ -39,20 +39,22 @@ const EbookSearch: React.FC<EbookSearchProps> = ({
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(searchResults.totalResults / RESULTS_PER_PAGE);
 
+  const executeSearch = useCallback(() => {
+    clearSearchResults();
+    search(searchInput, page, RESULTS_PER_PAGE);
+  }, [searchInput, page, clearSearchResults, search]);
+
   useEffect(() => {
     if (searchInput.length > 2) {
       executeSearch();
     }
-  }, [searchInput, page]);
+  }, [searchInput, page, executeSearch]);
 
   const handleSearchTextChange = (input: string) => {
     setSearchInput(input);
   };
 
-  const executeSearch = () => {
-    clearSearchResults();
-    search(searchInput, page, RESULTS_PER_PAGE); // 페이지와 한정된 결과 수로 검색
-  };
+
 
   const focusSearchInput = () => {
     if (!searchInput) {

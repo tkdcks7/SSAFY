@@ -33,7 +33,9 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
     <FlatList
       data={books}
       keyExtractor={(item) => item.id.toString()}
+      style={styles.bookContainer}
       ListHeaderComponent={
+      <View>
         currentBook ? (
           <View style={styles.currentBookContainer}>
             <Text
@@ -42,7 +44,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             >
               현재 읽고 있는 책
             </Text>
-            <View style={styles.bookItem}>
+            <View style={[styles.bookItem, styles.currentBookItem]}>
               <Image
                 source={{
                   uri: currentBook.cover.startsWith('http') ? currentBook.cover : `file://${currentBook.cover}`,
@@ -51,22 +53,34 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
                 accessibilityLabel={`표지 이미지: ${currentBook.title}`}
               />
               <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle} accessibilityLabel={`제목: ${currentBook.title}`}>
+                <Text style={styles.bookTitle}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                      accessibilityLabel={`제목: ${currentBook.title}`}>
                   {currentBook.title}
                 </Text>
-                <Text style={styles.bookAuthor} accessibilityLabel={`저자: ${currentBook.author}`}>
-                  저자: {currentBook.author}
-                </Text>
-                <Text
-                  style={styles.bookProgress}
-                  accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
-                >
-                  진행도: {currentBook.progress ?? 0}%
-                </Text>
+                <View style={styles.authorAndPublisherContainer}>
+                  <Text style={styles.bookAuthor}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        accessibilityLabel={`저자: ${currentBook.author}`}>
+                    저자: {currentBook.author}
+                  </Text>
+                  <View style={styles.currentBookProgressContainer}>
+                    <Text
+                      style={styles.bookProgress}
+                      accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
+                    >
+                      진행도: {currentBook.progress ?? 0}%
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
         ) : null
+        <Text style={styles.bookContainerTitle}>내 서재</Text>
+      </View>
       }
       renderItem={({ item }) => (
         <TouchableOpacity
@@ -89,12 +103,19 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             <Text style={styles.bookTitle} numberOfLines={2} accessibilityLabel={`제목: ${item.title}`}>
               {item.title}
             </Text>
-            <Text style={styles.bookAuthor} numberOfLines={2} accessibilityLabel={`저자: ${item.author}`}>
-              저자: {item.author}
-            </Text>
-            <Text style={styles.bookPublisher} accessibilityLabel={`출판사: ${item.publisher}`}>
-              출판사: {item.publisher}
-            </Text>
+            <View style={styles.authorAndPublisherContainer}>
+              <Text style={styles.bookAuthor}
+                    // numberOfLines={2}
+                    numberOfLines={1}
+                    accessibilityLabel={`저자: ${item.author}`}>
+                저자: {item.author}
+              </Text>
+              <Text style={styles.bookPublisher}
+                    numberOfLines={1}
+                    accessibilityLabel={`출판사: ${item.publisher}`}>
+                출판사: {item.publisher}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       )}
@@ -105,25 +126,38 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
 };
 
 const styles = StyleSheet.create({
+  bookContainer: {
+    marginHorizontal : width * 0.02,
+  },
+  bookContainerTitle:{
+    fontSize: width * 0.07,
+    fontWeight: 'bold',
+    color: '#3943B7',
+    marginBottom: height * 0.01,
+  },
   currentBookContainer: {
     marginBottom: height * 0.02,
-    paddingHorizontal: width * 0.02,
+    // paddingHorizontal: width * 0.02,
   },
   currentBookTitle: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#3943B7',
-    marginBottom: height * 0.02,
+    // marginBottom: height * 0.02,
+    marginBottom: height * 0.01,
+  },
+  currentBookProgressContainer: {
+    backgroundColor: '#3943B7',
+    // marginRight: width * 0.04,
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.04,
+    borderRadius: 8,
+    marginTop: height * 0.01,
   },
   flatListContent: {
     paddingBottom: height * 0.01,
   },
-  bookItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: height * 0.01,
-    paddingHorizontal: width * 0.02,
-    backgroundColor: '#ffffff',
+  currentBookItem:{
     borderRadius: width * 0.03,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: height * 0.005 },
@@ -131,20 +165,40 @@ const styles = StyleSheet.create({
     shadowRadius: width * 0.02,
     elevation: 5,
   },
+  bookItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.02,
+    paddingRight: width * 0.03,
+    backgroundColor: '#ffffff',
+    // borderRadius: width * 0.03,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: height * 0.005 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: width * 0.02,
+    // elevation: 5,
+  },
   bookImage: {
     width: width * 0.25,
     height: height * 0.2,
-    marginRight: width * 0.06,
+    // marginRight: width * 0.06,
+    marginRight: width * 0.05,
     borderRadius: width * 0.02,
   },
   bookInfo: {
     flex: 1,
+    height: height * 0.18,
+    flexDirection: 'column', // 세로 정렬
+    justifyContent: 'space-between', // 위쪽과 아래쪽으로 분리
   },
   bookTitle: {
     fontSize: width * 0.07,
     fontWeight: 'bold',
     color: '#000000',
     marginBottom: height * 0.01,
+  },
+  authorAndPublisherContainer: {
   },
   bookAuthor: {
     fontSize: width * 0.05,
@@ -156,14 +210,19 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   bookProgress: {
-    fontSize: width * 0.035,
-    color: '#3943B7',
-    marginTop: height * 0.01,
+    // fontSize: width * 0.035,
+    fontSize: width * 0.05,
+    // color: '#3943B7',
+    color: "#ffffff",
+    textAlign: "center",
+    // marginTop: height * 0.01,
   },
   separator: {
     height: 2,
-    backgroundColor: '#000000',
-    marginVertical: height * 0.02,
+    // height: 4,
+    // backgroundColor: '#000000',
+    backgroundColor: '#3943B7',
+    // marginVertical: height * 0.02,
   },
 });
 
