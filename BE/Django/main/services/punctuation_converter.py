@@ -58,9 +58,9 @@ class PunctuationConverter:
         # 3. 핵심 정보만 추출된 리스트를 openAI로 전송해 띄어쓰기 교정
         openai = OpenAIAnalysis()
         openai.set_async_client()
-        logging.info(f"변환 전 {[item["text"] for item in data_list]}")
+        # logging.info(f"변환 전 {[item["text"] for item in data_list]}")
         processed_sentence_list = await openai.correct_punctuation_async(data_list)
-        logging.info(f"변환 후 {[item["text"] for item in processed_sentence_list]}")
+        # logging.info(f"변환 후 {[item["text"] for item in processed_sentence_list]}")
 
         # 결과 반환 
         sequences = [item["sequence"] for item in data_list]
