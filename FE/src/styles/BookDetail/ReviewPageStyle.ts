@@ -1,6 +1,6 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import {StyleSheet, Dimensions} from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 const responsiveFontSize = (factor: number) => width * (factor / 100);
 const responsiveWidth = (factor: number) => width * (factor / 100);
 const responsiveHeight = (factor: number) => height * (factor / 100);
@@ -26,6 +26,13 @@ const styles = StyleSheet.create({
     marginBottom: responsiveHeight(2),
   },
   ratingContainer: {
+    flexDirection: 'row',
+    // justifyContent: 'space-around',
+    justifyContent: 'flex-start', // 별들을 왼쪽으로 정렬
+    alignItems: 'center',
+    marginBottom: responsiveHeight(2),
+  },
+  starContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -136,6 +143,7 @@ const styles = StyleSheet.create({
   },
   reviewContent: {
     fontSize: responsiveFontSize(6),
+    letterSpacing: -0.7,
   },
   moreButton: {
     color: '#3943B7',
@@ -164,6 +172,12 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: responsiveFontSize(6),
     fontWeight: 'bold',
+    marginBottom: responsiveHeight(1),
+  },
+  updatedAt: {
+    fontSize: responsiveFontSize(4),
+    color: '#888',
+    marginTop: 5,
     marginBottom: responsiveHeight(1),
   },
 });
