@@ -35,7 +35,8 @@ const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isU
         )}
       </View>
       <View style={styles.titleContainer}>
-        <Text style={[styles.title, isScrolled && styles.scrolledTitle]}>{title}</Text>
+        <Text accessibilityLabel={title === "AudiSay" ? "오디쎄이 메인 페이지입니다." : title}
+              style={[styles.title, isScrolled && styles.scrolledTitle]}>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
         <TouchableOpacity style={styles.bookmarkButton} onPress={() => navigation.navigate('ReadingNotes')}>
