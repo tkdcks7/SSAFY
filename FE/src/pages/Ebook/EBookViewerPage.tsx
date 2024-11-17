@@ -8,20 +8,12 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
-  Button,
 } from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '../../navigation/AppNavigator';
 import {LibraryStackParamList} from '../../navigation/LibraryNavigator';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {
-  Reader,
-  useReader,
-  Location,
-  Annotation,
-  AnnotationType,
-  Themes,
-} from '@epubjs-react-native/core';
+import {Reader, useReader, Themes, Annotation} from '@epubjs-react-native/core';
 import {useFileSystem} from '@epubjs-react-native/file-system';
 import Animated, {
   useSharedValue,
@@ -31,9 +23,7 @@ import Animated, {
 import {
   getReadNote,
   createReadNote,
-  deleteNote,
   ICreateNote,
-  INoteList,
   IReadNote,
 } from '../../services/ViewerPage/readNotes';
 import useSettingStore, {fontSizeTable} from '../../store/settingStore';
@@ -76,10 +66,17 @@ type FormContent = {
   cfisRange: string;
 };
 
+const voiceMagicTable: any = {
+  여성1: 'ko-kr-x-ism-local',
+  여성2: 'ko-kr-x-kob-local',
+  남성1: 'ko-kr-x-kod-local',
+  남성2: 'ko-kr-x-koc-local',
+};
+
 const {width, height} = Dimensions.get('window');
 
 // src에 Ebook의 주소를 넣어줘야하는데, local 파일의 경우 따로 로직 처리를 해서 주소를 넣어줘야함.
-const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
+const EBookViewerPage: React.FC<Props> = ({route}) => {
   const {bookId} = route.params;
   const [progress, setProgress] = useState<number>(0);
   const [isTTSMode, setIsTTSMode] = useState<boolean>(false);
@@ -100,8 +97,11 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   const ttsIdxRef = useRef<number>(ttsIdx);
   const isTTSPlayingRef = useRef(isTTSPlaying);
 
-  const {fontSizeSetting, isDarkMode, ttsSpeedSetting} = useSettingStore();
+  const {fontSizeSetting, isDarkMode, ttsSpeedSetting, ttsVoiceIndex} =
+    useSettingStore();
+  const navigation = useNavigation();
 
+  // epubjs-react-native/core 라이브러리 제공 메서드 사용
   const {
     changeTheme,
     getCurrentLocation,
@@ -111,8 +111,10 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
     addAnnotation,
     injectJavascript,
     goNext,
+    toc,
   } = useReader();
 
+  // 책 초기설정
   useEffect(() => {
     const getBookInfo = async () => {
       try {
@@ -128,11 +130,13 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
           return book.bookId === bookId;
         });
         if (bookData && bookData.filePath) {
-          // setIsCustomBook(true);
           setBookSrc(bookData.filePath);
           setTitle(bookData.title);
           if (bookData.currentCfi) {
             setInitialCfi(bookData.currentCfi);
+          }
+          if (bookData.dtype === 'PUBLISHED') {
+            setIsCustomBook(true);
           }
         } else {
           throw new Error('Failed to read book metadata:');
@@ -172,7 +176,6 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   const animHeight = screenDimensions.height * 0.2;
 
   // 테스트용 epub 주소
-  const saaa = `https://s3.ap-northeast-2.amazonaws.com/audisay/epub/published/valentin-hauy.epub?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20241112T070838Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=AKIA2YICALD7MZ3XV3TG%2F20241112%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Signature=6ec25ef2ea6ee821ad5b2007b86b1f9dae20975660c16328bab5063762a42864`;
 
   // 애니메이션 설정
   // 네비게이션 바의 Y 위치를 조절하는 애니메이션 값
@@ -367,15 +370,22 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
     if (isTTSPlaying === null && initialCfi) {
       setttsIdx(() => indexOfCfis(initialCfi));
     }
+    if (isTTSPlaying) {
+      handleRemoveAnnotation(
+        formArrRef.current[ttsIdxRef.current - 1].cfisRange,
+      );
+      Tts.stop();
+    }
     trackCurrentTtsIdx();
     setIsTTSPlaying(prev => !prev);
   };
 
   //
   const indexOfCfis = (cfiRange: string): number => {
-    const idx: number = formArr.findIndex(formItem => {
+    const idx: number = formArrRef.current.findIndex(formItem => {
       return formItem.cfisRange === cfiRange;
     });
+    console.log(`idx = ${idx}`);
     if (idx !== -1) {
       return idx;
     }
@@ -385,10 +395,6 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   // 문장 저장
   const handleReadNoteSave = (): void => {
     const currentidx = ttsIdx - 1 ? ttsIdx - 1 : 0;
-    // console.log(`index = ${currentidx}`);
-    // console.log(`저장된 문장=${formArr[currentidx].sentence}`);
-    // console.log(`저장된 cfi=${formArr[currentidx].cfisRange}`);
-
     const data: ICreateNote = {
       bookId: bookId,
       progressRate: progress * 100,
@@ -411,11 +417,13 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
   };
 
   const handleOnReady = (): void => {
-    // console.log(`isCustomBook=${isCustomBook}`);
     isCustomBook ? switchCustomBookMode() : getFormArr();
     changeFontSize(fontSizeTable[fontSizeSetting]);
-    console.log(`ttsSpeedSetting = ${ttsSpeedSetting}`);
+    Tts.setDefaultVoice(voiceMagicTable[ttsVoiceIndex]);
     Tts.setDefaultRate(ttsSpeedSetting / 2);
+    readNoteArr.forEach(note => {
+      addAnnotation('underline', note.sentenceId);
+    });
     if (initialCfi) {
       goToLocation(initialCfi);
     }
@@ -448,17 +456,8 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
 
   const handlegoBack = () => {
     if (formArr.length > ttsIdx) {
-      const currentCfi: string = formArr[ttsIdx - 1].cfisRange;
+      const currentCfi: string = formArr[ttsIdx].cfisRange;
       updateLibraryInfoOfBook(currentCfi);
-      console.log(
-        `currentCfi를 ${ttsIdx - 1} 번 인덱스의 값인 ${currentCfi}로 갱신!`,
-      );
-    } else {
-      console.log(
-        `currentCfi 갱신 못함. 인덱스 = ${ttsIdx - 1}, cfirange = ${
-          formArr[ttsIdx - 1].cfisRange
-        }`,
-      );
     }
     navigation.goBack();
   };
@@ -477,7 +476,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity onPress={handlegoBack}>
               <Image source={leftarrowicon} style={styles.icon} />
             </TouchableOpacity>
             <Text style={styles.navBarText}>{title ? title : '책 타이틀'}</Text>
@@ -504,6 +503,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
         bookNoteSideBarX={bookNoteSideBarX}
         toggleBookNote={toggleBookNote}
         readNoteArr={readNoteArr}
+        goToLocation={goToLocation}
       />
       {/* 설정창 */}
       <EbookSetting
@@ -526,7 +526,7 @@ const EBookViewerPage: React.FC<Props> = ({route, navigation}) => {
             handleProgressGage();
           }}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
-          initialLocation={initialCfi ? initialCfi : undefined}
+          // initialLocation={initialCfi ? initialCfi : undefined}
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
           onWebViewMessage={message => {
             console.log(message);

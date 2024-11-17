@@ -1,23 +1,29 @@
 // src/components/viewer/NumberPicker.tsx
-import React, { useRef, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Dimensions } from 'react-native';
+import React, {useRef, useEffect} from 'react';
+import {View, Text, FlatList, StyleSheet, Dimensions} from 'react-native';
 
-type NumberPickerProps = {
-  selectedValue: number;
-  arrData: number[];
-  onValueChange: (value: number) => void;
+type NumberPickerProps<T> = {
+  selectedValue: T;
+  arrData: T[];
+  onValueChange: (value: T) => void;
 };
 
-
-const NumberPicker: React.FC<NumberPickerProps> = ({ selectedValue, arrData, onValueChange }) => {
-  const flatListRef = useRef<FlatList>(null);
+const NumberPicker = <T extends number | string>({
+  selectedValue,
+  arrData,
+  onValueChange,
+}: NumberPickerProps<T>) => {
+  const flatListRef = useRef<FlatList<T>>(null);
   const ITEM_HEIGHT = 150;
 
   useEffect(() => {
     // selectedValue가 변경될 때마다 해당 위치로 스크롤
-    const index = arrData.indexOf(selectedValue);
+    const index: number = arrData.indexOf(selectedValue);
     if (flatListRef.current && index !== -1) {
-      flatListRef.current.scrollToOffset({ offset: index * ITEM_HEIGHT, animated: true });
+      flatListRef.current.scrollToOffset({
+        offset: index * ITEM_HEIGHT,
+        animated: true,
+      });
     }
   }, [selectedValue]);
 
@@ -33,10 +39,17 @@ const NumberPicker: React.FC<NumberPickerProps> = ({ selectedValue, arrData, onV
     <FlatList
       ref={flatListRef}
       data={arrData}
-      keyExtractor={(item) => item.toString()}
-      renderItem={({ item }) => (
-        <View style={[styles.item, item === selectedValue && styles.selectedItem]}>
-          <Text style={[styles.itemText, item === selectedValue && styles.itemSelectedText]}>{item}</Text>
+      keyExtractor={item => item.toString()}
+      renderItem={({item}) => (
+        <View
+          style={[styles.item, item === selectedValue && styles.selectedItem]}>
+          <Text
+            style={[
+              styles.itemText,
+              item === selectedValue && styles.itemSelectedText,
+            ]}>
+            {item}
+          </Text>
         </View>
       )}
       getItemLayout={(_, index) => ({
@@ -51,7 +64,7 @@ const NumberPicker: React.FC<NumberPickerProps> = ({ selectedValue, arrData, onV
       contentContainerStyle={{
         paddingVertical: (Dimensions.get('window').height - ITEM_HEIGHT) / 2,
       }}
-      style={{ width: '80%' }}
+      style={{width: '80%'}}
     />
   );
 };
