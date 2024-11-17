@@ -15,21 +15,21 @@ const UploadGuidePage: React.FC = () => {
   const fileUploadSteps = [
     {
       title: '파일 타입 선택',
-      description: '등록할 수 있는 파일은 PDF, ePub입니다. 적절한 파일을 선택해주세요.',
+      description: '등록 가능 파일 : PDF, ePub\n적절한 파일을 선택해주세요.',
       images: [
         require('../../assets/images/UploadGuide/fileTypeSelection.png'),
       ],
     },
     {
       title: '파일 & 표지 업로드',
-      description: '전자책 파일과(pdf, epub) 표지 이미지(jpg, jpeg)를 업로드합니다.',
+      description: '전자책 파일과(pdf, epub)\n표지 이미지(jpg, jpeg)를\n업로드합니다.',
       images: [
         require('../../assets/images/UploadGuide/fileAndCoverUpload.png'),
       ],
     },
     {
       title: '도서 정보 입력',
-      description: '도서의 제목, 저자를 입력하고  카테고리를 선택해서 등록버튼을 눌러주세요.',
+      description: '도서의 제목, 저자를 입력하고\n카테고리를 선택해서\n등록버튼을 눌러주세요.',
       images: [
         require('../../assets/images/UploadGuide/bookInfoInput1.png'),
         require('../../assets/images/UploadGuide/categorySelect.png'),
@@ -37,7 +37,7 @@ const UploadGuidePage: React.FC = () => {
     },
     {
       title: '도서 등록',
-      description: '등록버튼을 누르면 도서를 변환하고 앱에 다운로드합니다.     (짧게는 몇십초, 길게는 분단위의 시간이 필요합니다)',
+      description: '등록버튼을 누르면\n도서를 변환하고\n앱에 다운로드합니다.\n(짧게는 몇십초, 길게는 분단위의 시간이 필요합니다)',
       images: [
         require('../../assets/images/UploadGuide/bookRegistration1.png'),
         require('../../assets/images/UploadGuide/bookRegistering.png'),
@@ -49,14 +49,14 @@ const UploadGuidePage: React.FC = () => {
   const imageUploadSteps = [
     {
       title: '이미지 업로드',
-      description: '+ 버튼을 눌러 도서 페이지 이미지를 업로드합니다. JPEG, JPG 파일만 업로드해주세요.',
+      description: '+ 버튼을 눌러 도서 페이지\n이미지를 업로드합니다.\nJPEG, JPG 파일만 가능합니다.',
       images: [
         require('../../assets/images/UploadGuide/imageUpload1.png'),
       ],
     },
     {
       title: '커버 설정',
-      description: '업로드한 이미지 중 하나를 커버로 설정할 수 있습니다. 커버를 설정한 이미지에서 해제가 가능하고, 커버를 등록했다면 전자책등록버튼도 활성화됩니다',
+      description: '이미지 중 하나를 커버로 설정할 수 있습니다. 커버를 등록했다면 커버 해제 버튼과 전자책등록버튼도 활성화됩니다',
       images: [
         require('../../assets/images/UploadGuide/coverSetting1.png'),
         require('../../assets/images/UploadGuide/coverSetting2.png'),
@@ -122,21 +122,25 @@ const UploadGuidePage: React.FC = () => {
       </View>
 
       {/* 하단 순서 탭 */}
-      <ScrollView horizontal contentContainerStyle={styles.subTabContainer} showsHorizontalScrollIndicator={false}>
-        {steps.map((step, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.subTab, activeSubTab === index && styles.activeSubTab]}
-            onPress={() => {
-              setActiveSubTab(index);
-              setCurrentImageIndex(0);
-            }}
-          >
-            <Text style={[styles.subTabText, activeSubTab === index && styles.selectedSubTabText]}>{`${index + 1}. ${step.title}`}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
+      <View>
+        <ScrollView
+            horizontal
+            contentContainerStyle={styles.subTabContainer}
+            showsHorizontalScrollIndicator={false}>
+          {steps.map((step, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.subTab, activeSubTab === index && styles.activeSubTab]}
+              onPress={() => {
+                setActiveSubTab(index);
+                setCurrentImageIndex(0);
+              }}
+            >
+              <Text style={[styles.subTabText, activeSubTab === index && styles.selectedSubTabText]}>{`${index + 1}. ${step.title}`}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
       {/* 이미지 및 설명 표시 */}
       <View style={styles.contentContainer}>
         <View style={styles.imageContainer}>
