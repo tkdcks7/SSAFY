@@ -201,13 +201,13 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(8),
     textAlign: 'left',
     fontWeight: 'bold',
-    marginBottom: responsiveHeight(3),
+    marginBottom: responsiveHeight(5),
   },
   bookAuthor: {
     fontSize: responsiveFontSize(6),
     textAlign: 'left',
     fontWeight: 'bold',
-    marginBottom: responsiveHeight(3),
+    marginBottom: responsiveHeight(1),
   },
   bookPublisher: {
     fontSize: responsiveFontSize(6),
