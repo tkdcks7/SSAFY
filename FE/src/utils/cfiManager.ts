@@ -65,3 +65,27 @@ export const compareCFIStrings = (cfiOne: string, cfiTwo: string): number => {
   // CFIs are equal
   return 0;
 };
+
+export const getCurrentDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1 필요
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const timeParser = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return (
+    [
+      hours > 0 ? `${hours}시간` : '',
+      minutes > 0 ? `${minutes}분` : '',
+      `${remainingSeconds}초`,
+    ]
+      .filter(Boolean)
+      .join(' ') + ' (눌러서 타이머 종료)'
+  );
+};
