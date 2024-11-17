@@ -43,7 +43,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             >
               현재 읽고 있는 책
             </Text>
-            <View style={styles.bookItem}>
+            <View style={[styles.bookItem, styles.currentBookItem]}>
               <Image
                 source={{
                   uri: currentBook.cover.startsWith('http') ? currentBook.cover : `file://${currentBook.cover}`,
@@ -52,18 +52,28 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
                 accessibilityLabel={`표지 이미지: ${currentBook.title}`}
               />
               <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle} accessibilityLabel={`제목: ${currentBook.title}`}>
+                <Text style={styles.bookTitle}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                      accessibilityLabel={`제목: ${currentBook.title}`}>
                   {currentBook.title}
                 </Text>
-                <Text style={styles.bookAuthor} accessibilityLabel={`저자: ${currentBook.author}`}>
-                  저자: {currentBook.author}
-                </Text>
-                <Text
-                  style={styles.bookProgress}
-                  accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
-                >
-                  진행도: {currentBook.progress ?? 0}%
-                </Text>
+                <View style={styles.authorAndPublisherContainer}>
+                  <Text style={styles.bookAuthor}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        accessibilityLabel={`저자: ${currentBook.author}`}>
+                    저자: {currentBook.author}
+                  </Text>
+                  <View style={styles.currentBookProgressContainer}>
+                    <Text
+                      style={styles.bookProgress}
+                      accessibilityLabel={`진행도: ${currentBook.progress ?? 0}%`}
+                    >
+                      진행도: {currentBook.progress ?? 0}%
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
