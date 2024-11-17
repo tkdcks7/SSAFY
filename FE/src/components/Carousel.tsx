@@ -109,36 +109,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: responsiveHeight(2),
+    padding: 0,
     justifyContent: 'flex-start',
   },
   scrollViewContent: {
-    // paddingHorizontal: responsiveWidth(2.5),
     alignItems: 'center',
   },
   itemContainer: {
-    width: responsiveWidth(42),
-    marginRight: responsiveWidth(3),
+    width: responsiveWidth(39),
+    marginRight: 0,
     alignItems: 'center',
+    justifyContent: 'center', // Ensures items are centered vertically
   },
   carouselImage: {
-    width: responsiveWidth(30),
-    height: responsiveHeight(20),
+    width: responsiveWidth(21),
+    height: responsiveHeight(14),
     resizeMode: 'cover',
-    marginBottom: responsiveHeight(1),
+    marginBottom: 0, // Set to 0 to reduce space between image and title
   },
   carouselTitle: {
     textAlign: 'center',
     fontSize: responsiveFontSize(4),
     fontWeight: 'bold',
+    marginTop: 0, // Ensures no extra space above the title
+    paddingTop: 0, // Ensures no extra padding above the title
   },
   arrowButton: {
-    // width: responsiveWidth(10),
     height: responsiveHeight(10),
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
   arrowIcon: {
-    // width: responsiveWidth(8),
     height: responsiveHeight(8),
     resizeMode: 'contain',
   },
