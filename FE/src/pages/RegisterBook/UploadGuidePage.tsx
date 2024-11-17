@@ -160,6 +160,7 @@ const UploadGuidePage: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
   },
   mainTabContainer: {
@@ -217,10 +218,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   contentContainer: {
-    justifyContent: 'center',
+    flex: 1,
+    // justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: width * 0.05,
-    paddingBottom: height * 0.02,
+    // paddingBottom: height * 0.02,
   },
   imageContainer: {
     flexDirection: 'row',
@@ -239,11 +241,13 @@ const styles = StyleSheet.create({
     marginHorizontal: width * 0.01, // 화살표와 이미지 사이의 여백을 줄임
   },
   descriptionText: {
+    flex: 1,
     fontSize: width * 0.06, // 글자 크기 확대
     textAlign: 'center',
     color: '#333333', // 진한 색으로 변경
     fontWeight: 'bold',
-    marginTop: height * 0.015, // 이미지와 설명 사이의 여백 추가
+    // marginTop: height * 0.015, // 이미지와 설명 사이의 여백 추가
+    marginVertical: height * 0.015,
     paddingHorizontal: width * 0.05, // 텍스트에 좌우 여백 추가
   },
 });
