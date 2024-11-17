@@ -31,7 +31,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
       <Text
         style={styles.title}
         accessible
-        accessibilityLabel={`현재 페이지 제목: ${title}`}
+        accessibilityLabel={`${title}`}
       >
         {title}
       </Text>
