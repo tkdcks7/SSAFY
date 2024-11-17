@@ -12,7 +12,14 @@ const CurrentReadingStatus: React.FC = () => {
       <View style={styles.container}>
         <Image source={currentBook.coverImage} style={styles.bookImage} />
         <View style={styles.bookInfo}>
-          <Text style={styles.bookTitle}>{currentBook.title}</Text>
+          <View style={styles.bookTitleContainer}>
+            <Text
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                style={styles.bookTitle}>
+              {currentBook.title}
+            </Text>
+          </View>
           <View style={styles.progressContainer}>
             <Text style={styles.readingProgress}>{currentBook.progress}%</Text>
           </View>
@@ -24,18 +31,21 @@ const CurrentReadingStatus: React.FC = () => {
 
 const styles = StyleSheet.create({
   containerWrapper: {
-    margin: width * 0.03,
+    // margin: width * 0.03,
+    marginHorizontal : width * 0.03,
   },
   headerText: {
     fontSize: width * 0.06,
     fontWeight: 'bold',
     color: '#3943B7',
-    marginBottom: height * 0.01,
+    // marginBottom: height * 0.01,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: width * 0.02,
+    // padding: width * 0.02,
+    paddingVertical : width * 0.02,
+    paddingHorizontal : width * 0.03,
     backgroundColor: '#3943B7',
     marginVertical: height * 0.02,
     borderRadius: 8,
@@ -58,9 +68,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ffffff',
   },
+  bookTitleContainer: {
+    flex: 1, // 남은 공간을 차지하도록 설정
+    paddingHorizontal: width * 0.01,
+    paddingVertical: height * 0.01,
+  },
   progressContainer: {
     backgroundColor: '#ffffff',
-    marginRight: width * 0.04,
+    // marginRight: width * 0.04,
+    marginLeft: width * 0.02,
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.01,
     borderRadius: 8,
