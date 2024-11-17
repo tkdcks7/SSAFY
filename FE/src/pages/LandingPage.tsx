@@ -17,7 +17,7 @@ const LandingPage: React.FC<Props> = ({ navigation }) => {
   return (
     <PageWrapper>
       <Text style={styles.title} accessibilityLabel={"오디쎄이"}>AUDISAY</Text>
-      <Image source={Logo} style={styles.logoRegion}/>
+      <Image source={Logo} style={styles.logoRegion} accessibilityLabel={'오디쎄이 로고 이미지. 책 모양의 파란색 심볼로, 덮혀진 책이 세워진 형태'}/>
       <Text style={styles.explain} accessibilityLabel={"모두를 위한 e-Book 서비스"}>모두를 위한{'\n'}e-Book 서비스</Text>
       <Text style={styles.explain} accessibilityLabel={"새로운 여정을 시작하세요"}>새로운 여정을{'\n'}시작하세요</Text>
       <Btn
