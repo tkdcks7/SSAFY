@@ -1,5 +1,8 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
+import {View, Text, StyleSheet, ScrollView, Dimensions, Image, TouchableOpacity} from 'react-native';
+import {useNavigation} from "@react-navigation/native";
+import {StackNavigationProp} from "@react-navigation/stack";
+import {RootStackParamList} from "../../navigation/AppNavigator.tsx";
 
 const { width } = Dimensions.get('window');
 
@@ -10,17 +13,17 @@ const dummyData = [
   // { id: '2', title: '캐러셀 슬라이드 2' },
   // { id: '3', title: '캐러셀 슬라이드 3' },
   {
-    id: '8702',
+    bookId: '8702',
     title: '(정말정말) 신기한 바다생물 백과사전',
     image: require('../../assets/images/books/carousel/carousel_sea_dict.png'),
   },
   {
-    id: '9435',
+    bookId: '9435',
     title: '경제기사 궁금증 300문 300답 :어려운 경제 쉽게 읽는 법',
     image: require('../../assets/images/books/carousel/carousel_economy.png'),
   },
   {
-    id: '5782',
+    bookId: '5782',
     title: '김치 특공대',
     image: require('../../assets/images/books/carousel/carousel_kimchi.png'),
   },
