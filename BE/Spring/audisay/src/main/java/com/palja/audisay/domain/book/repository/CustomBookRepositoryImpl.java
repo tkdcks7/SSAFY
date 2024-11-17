@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomBookRepositoryImpl implements CustomBookRepository {
 	private final JPAQueryFactory jpaQueryFactory;
-	public final int ROUND_SCALE = 1;
+	public final int ROUND_SCALE = 0;
 
 	@Override
 	public Optional<PublishedBookInfoDto> findBookDetailByBookIdAndMemberId(Long memberId, Long bookId) {
