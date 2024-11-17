@@ -163,14 +163,16 @@ const BookDetailPage = () => {
           style={styles.bookTitleLarge}
           allowFontScaling={false}
           accessibilityLabel={`책 제목: ${bookDetail.title}`}
-          accessibilityRole="header">
+          // accessibilityRole="header"
+          >
           {(bookDetail.title || '').replace(/ /g, '\u00A0')}
         </Text>
 
         <Image
           source={{uri: bookDetail.cover}}
           style={styles.bookImage}
-          accessibilityLabel={bookDetail.coverAlt}
+          // accessibilityLabel={bookDetail.coverAlt}
+          accessibilityLabel={bookDetail.coverAlt ? `책 이미지, ${bookDetail.coverAlt}` : undefined}
         />
 
         <View style={styles.bookInfoContainer}>
