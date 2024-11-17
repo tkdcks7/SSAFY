@@ -156,15 +156,23 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
       if (!epub) throw new Error('EPUB URL이 반환되지 않았습니다.');
 
       const downloadedFilePath = await downloadFileFromUrl(epub, `${metadata.title}.epub`);
+
+      // 동일한 메타데이터 형식으로 데이터 구성
       const bookData = {
-        id: Date.now(),
+        id: Date.now(), // 새로운 ID
         bookId: metadata.book_id,
         title: metadata.title,
         cover: metadata.cover,
+        coverAlt: metadata.cover_alt,
         category: metadata.category,
         author: metadata.author,
-        filePath: downloadedFilePath,
         createdAt: metadata.created_at,
+        myTtsFlag: false,
+        dtype: metadata.dtype,
+        filePath: downloadedFilePath, // 다운로드된 파일 경로
+        downloadDate: new Date().toISOString(), // 다운로드 날짜
+        currentCfi: '', // 초기 CFI
+        progressRate: 0, // 초기 진행률
       };
 
       await saveBookToLocalDatabase(bookData);
@@ -172,12 +180,14 @@ const RegisterBookModal: React.FC<RegisterBookModalProps> = ({ isVisible, onClos
       Alert.alert('등록 완료', '도서가 성공적으로 등록되었습니다!');
     } catch (error) {
       disconnectSSE(); // 에러 발생 시에도 SSE 종료
+      console.error('등록 중 오류:', error);
       Alert.alert('오류', '등록 중 문제가 발생했습니다.');
     } finally {
       setIsLoading(false);
       onClose();
     }
   };
+
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
