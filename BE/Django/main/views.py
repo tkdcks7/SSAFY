@@ -77,13 +77,14 @@ class ImageCaptioningView(APIView):
         return Response(metadata)
 
 
-# 이미지 업로드시 ebook으로 변환하는 api
+# 이미지 업로드시 ebook으로 변환하는 api - queryparam : test - 1/0
 @method_decorator(csrf_exempt, name='dispatch')
 class Image2BookConverter(APIView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
     def post(self, request):
+        test_param = request.query_params.get('test', '0') != '0' 
         MEMBER_ID = request.member.member_id
         channel = request.headers.get('X-Request-ID', 'default-channel')
         # 이미지 파일 받기 (커버 이미지, 페이지 이미지)
@@ -108,7 +109,7 @@ class Image2BookConverter(APIView):
         book, metadata = Integration().image_to_ebook(metadata=metadata, files=files, file_name=filename, channel=channel)
 
         # ebook을 s3에 저장
-        epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID)
+        epub_data = S3Client().upload_epub_to_s3(book, filename, metadata, MEMBER_ID, test_param)
         
         # response 가공
         response_body = {
