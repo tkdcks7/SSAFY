@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, Alert, FlatList } from 'react-native';
+import {View, StyleSheet, Alert, FlatList, Text} from 'react-native';
 import RNFS from 'react-native-fs';
 import { useNavigation } from '@react-navigation/native';
 import MainHeader from '../../components/MainHeader';
@@ -129,11 +129,13 @@ const LibraryPage: React.FC = () => {
         ListHeaderComponent={
           <View style={styles.contentContainer}>
             <Tab onMenuPress={toggleSidebar} onTabClick={setFilter} onSearch={setSearchText} />
-            <CurrentReadingStatus />
             {isAccessibilityMode ? (
-              <AccessibilityBookList books={books} />
+              <AccessibilityBookList books={books} currentBook={books[0]}/>
             ) : (
-              <GeneralBookList books={books} />
+                <View>
+                  <CurrentReadingStatus />
+                  <GeneralBookList books={books} />
+                </View>
             )}
           </View>
         }
