@@ -31,11 +31,6 @@ const LandingPage: React.FC<Props> = ({ navigation }) => {
       title='회원가입'
       style={{ marginBottom: 20 }}
       />
-      <Btn
-      isWhite={true}
-      onPress={() => navigation.navigate('EBookViewer', { bookId: 1 })}
-      title='이북'
-      />
     </PageWrapper>
   );
 };

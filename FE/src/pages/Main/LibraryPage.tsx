@@ -11,7 +11,7 @@ import GeneralBookList from '../../components/Library/GeneralBookList';
 import CurrentReadingStatus from '../../components/Library/CurrentReadingStatus';
 import Btn from '../../components/Btn';
 import { resetLocalDatabase } from '../../utils/readLocalDatabase';
-import { getAccessibilityMode, toggleAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
+import { getAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
 import { LibraryContext } from '../../contexts/LibraryContext';
 
 const LibraryPage: React.FC = () => {
@@ -103,10 +103,6 @@ const LibraryPage: React.FC = () => {
     }, [])
   );
 
-  const handleModeToggle = async () => {
-    const newMode = await toggleAccessibilityMode();
-    setIsAccessibilityMode(newMode);
-  };
 
   const toggleSidebar = () => {
     setIsSidebarVisible((prev) => !prev);
@@ -124,7 +120,7 @@ const LibraryPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <MainHeader title="내 서재" onModeToggle={handleModeToggle} />
+      <MainHeader title="내 서재" />
       <View style={styles.buttonContainer}>
         <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
         <Btn
