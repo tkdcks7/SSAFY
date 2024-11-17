@@ -103,12 +103,19 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ books, cu
             <Text style={styles.bookTitle} numberOfLines={2} accessibilityLabel={`제목: ${item.title}`}>
               {item.title}
             </Text>
-            <Text style={styles.bookAuthor} numberOfLines={2} accessibilityLabel={`저자: ${item.author}`}>
-              저자: {item.author}
-            </Text>
-            <Text style={styles.bookPublisher} accessibilityLabel={`출판사: ${item.publisher}`}>
-              출판사: {item.publisher}
-            </Text>
+            <View style={styles.authorAndPublisherContainer}>
+              <Text style={styles.bookAuthor}
+                    // numberOfLines={2}
+                    numberOfLines={1}
+                    accessibilityLabel={`저자: ${item.author}`}>
+                저자: {item.author}
+              </Text>
+              <Text style={styles.bookPublisher}
+                    numberOfLines={1}
+                    accessibilityLabel={`출판사: ${item.publisher}`}>
+                출판사: {item.publisher}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       )}
