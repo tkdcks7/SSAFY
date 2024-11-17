@@ -63,7 +63,12 @@ const Tab: React.FC<TabProps> = ({ onMenuPress, onTabClick, onSearch }) => {
           accessibilityLabel="검색어 입력창"
           accessibilityHint="검색어를 입력해보세요"
         />
-        <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+        <TouchableOpacity
+            onPress={onMenuPress}
+            style={styles.menuButton}
+            accessibilityLabel="정렬 메뉴 열기"
+            accessibilityHint="정렬 기준과 카테고리 목록을 확인할 수 있습니다."
+        >
           <Image source={MenuIcon} style={styles.menuIcon} />
         </TouchableOpacity>
       </View>
