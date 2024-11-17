@@ -1,6 +1,13 @@
 // src/components/viewer/NumberPicker.tsx
-import React, {useRef, useEffect} from 'react';
-import {View, Text, FlatList, StyleSheet, Dimensions} from 'react-native';
+import React, {useRef, useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 
 type NumberPickerProps<T> = {
   selectedValue: T;
@@ -15,24 +22,46 @@ const NumberPicker = <T extends number | string>({
 }: NumberPickerProps<T>) => {
   const flatListRef = useRef<FlatList<T>>(null);
   const ITEM_HEIGHT = 150;
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   useEffect(() => {
-    // selectedValue가 변경될 때마다 해당 위치로 스크롤
-    const index: number = arrData.indexOf(selectedValue);
+    if (!isUserScrolling) {
+      // selectedValue가 변경될 때마다 해당 위치로 스크롤
+      const index: number = arrData.indexOf(selectedValue);
+      if (flatListRef.current && index !== -1) {
+        flatListRef.current.scrollToOffset({
+          offset: index * ITEM_HEIGHT,
+          animated: true,
+        });
+      }
+    }
+  }, [selectedValue, isUserScrolling]);
+
+  const handleScroll = (event: any) => {
+    if (!isUserScrolling) {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      const index = Math.round(offsetY / ITEM_HEIGHT);
+      if (
+        index >= 0 &&
+        index < arrData.length &&
+        arrData[index] !== selectedValue
+      ) {
+        onValueChange(arrData[index]);
+      }
+    }
+  };
+
+  const handlePress = (item: T) => {
+    setIsUserScrolling(true); // 터치 시 스크롤 무시
+    onValueChange(item);
+    const index: number = arrData.indexOf(item);
     if (flatListRef.current && index !== -1) {
       flatListRef.current.scrollToOffset({
         offset: index * ITEM_HEIGHT,
         animated: true,
       });
     }
-  }, [selectedValue]);
-
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    if (index >= 0 && index < arrData.length) {
-      onValueChange(arrData[index]);
-    }
+    setTimeout(() => setIsUserScrolling(false), 300); // 약간의 지연 후 스크롤 이벤트 다시 활성화
   };
 
   return (
@@ -41,7 +70,8 @@ const NumberPicker = <T extends number | string>({
       data={arrData}
       keyExtractor={item => item.toString()}
       renderItem={({item}) => (
-        <View
+        <TouchableOpacity
+          onPress={() => handlePress(item)}
           style={[styles.item, item === selectedValue && styles.selectedItem]}>
           <Text
             style={[
@@ -50,7 +80,7 @@ const NumberPicker = <T extends number | string>({
             ]}>
             {item}
           </Text>
-        </View>
+        </TouchableOpacity>
       )}
       getItemLayout={(_, index) => ({
         length: ITEM_HEIGHT,
