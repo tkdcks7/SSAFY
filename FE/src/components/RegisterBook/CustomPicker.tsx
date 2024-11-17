@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     width: '100%',
-    height: height * 0.05,
+    // height: height * 0.05,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
@@ -215,13 +215,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#3943B7',
     paddingVertical: height * 0.015,
-    width: '60%',
+    // width: '60%',
+    width: '80%',
     borderRadius: 8,
     alignItems: 'center',
   },
   backButtonText: {
     color: '#3943B7',
-    fontSize: width * 0.05,
+    fontSize: width * 0.06,
   },
   completeButton: {
     marginTop: height * 0.02,
