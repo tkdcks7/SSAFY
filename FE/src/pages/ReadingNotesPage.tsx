@@ -91,7 +91,9 @@ const ReadingNotesPage: React.FC = () => {
             <View style={styles.noteFooter}>
               <View style={styles.noteDetails}>
                 <Text style={styles.progress}>{`진행률: ${note.progressRate}%`}</Text>
-                <Text style={styles.date}>{note.createdAt}</Text>
+                <Text style={styles.date}
+                accessibilityLabel={`생성일 : ${note.createdAt}`}>
+                  {note.createdAt}</Text>
               </View>
               {/* 삭제 버튼 */}
               <TouchableOpacity
