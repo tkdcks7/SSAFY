@@ -59,13 +59,24 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
 };
 
 const styles = StyleSheet.create({
+  bookContainer: {
+    marginHorizontal : width * 0.03,
+  },
+  bookContainerTitleText: {
+    fontSize: width * 0.06,
+    fontWeight: 'bold',
+    color: '#3943B7',
+    marginBottom: height * 0.02,
+    // textAlign: "center",
+  },
   flatListContent: {
     paddingHorizontal: width * 0.02,
   },
   bookItem: {
-    flexBasis: '30%',
+    // flexBasis: '30%',
+    flex: 1,
     marginBottom: width * 0.04,
-    marginHorizontal: width * 0.02,
+    // marginHorizontal: width * 0.02,
     alignItems: 'center',
   },
   bookImage: {
