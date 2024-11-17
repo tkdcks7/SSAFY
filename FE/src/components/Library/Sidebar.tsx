@@ -35,13 +35,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
         <Image source={DictionaryIcon} style={[styles.icon, styles.adjustedIcon]} />
         <Text style={styles.filterText}>사전 순</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.filterItem} onPress={() => onFilterSelect('카테고리 순')}>
+      <TouchableOpacity
+          style={styles.filterItem}
+          onPress={() => onFilterSelect('카테고리 순')}>
         <Image source={CategoryIcon} style={styles.icon} />
         <Text style={styles.filterText}>카테고리 순</Text>
       </TouchableOpacity>
 
       {/* 스크롤 가능한 카테고리 리스트 */}
-      <ScrollView style={styles.categoryScroll}>
+      <ScrollView style={styles.categoryScroll}
+      accessibilityLabel="카테고리 목록 위아래로 스크롤하여 더 많은 항목을 확인하세요."
+      >
         <View style={styles.categoryContainer}>
           {categories.map((category) => (
             <TouchableOpacity
