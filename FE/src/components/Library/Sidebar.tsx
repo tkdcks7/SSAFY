@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     padding: width * 0.04,
     marginBottom: height * 0.02,
+    borderRadius: width * 0.02,
   },
   headerText: {
     color: '#ffffff',
@@ -95,7 +96,8 @@ const styles = StyleSheet.create({
   filterItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: height * 0.025,
+    // marginBottom: height * 0.025,
+    marginBottom: height * 0.02,
   },
   icon: {
     width: width * 0.08,
@@ -111,9 +113,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: width * 0.08,
     fontWeight: 'bold',
+    marginLeft: width * 0.01,
   },
   categoryScroll: {
     maxHeight: height * 0.5,
+    marginBottom: height * 0.01,
   },
   categoryContainer: {
     marginLeft: width * 0.12,
@@ -121,9 +125,18 @@ const styles = StyleSheet.create({
   categoryItem: {
     paddingVertical: height * 0.005,
   },
+  categoryTextContainer: {
+    flexDirection: 'row', // ▶와 텍스트를 가로로 배치
+    alignItems: 'flex-start', // ▶가 텍스트 상단에 정렬되도록 설정
+  },
+  bullet: {
+    fontSize: width * 0.06, // ▶ 기호 크기
+    color: '#ffffff',
+  },
   categoryText: {
     color: '#ffffff',
-    fontSize: width * 0.06,
+    fontSize: width * 0.06, // 텍스트 크기
+    flexShrink: 1, // 텍스트가 줄바꿈될 때 공간 제한
   },
   resetButton: {
     alignItems: 'center',
