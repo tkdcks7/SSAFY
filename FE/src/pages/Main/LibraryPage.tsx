@@ -110,6 +110,9 @@ const LibraryPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <View
+          importantForAccessibility={isSidebarVisible ? "no-hide-descendants" : "auto"}
+      >
       <MainHeader
         title="내 서재"
         isAccessibilityMode={isAccessibilityMode}
@@ -141,6 +144,7 @@ const LibraryPage: React.FC = () => {
         }
         extraData={books}
       />
+      </View>
       {isSidebarVisible && (
         <Sidebar
           onClose={toggleSidebar}
