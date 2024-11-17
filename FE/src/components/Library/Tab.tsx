@@ -49,7 +49,9 @@ const Tab: React.FC<TabProps> = ({ onMenuPress, onTabClick, onSearch }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={() => {}} style={styles.searchButton}>
+        <TouchableOpacity onPress={() => {}} style={styles.searchButton}
+          accessibilityLabel="검색하기"
+          accessibilityHint="두 번 클릭하면 검색이 됩니다.">
           <Image source={SearchIcon} style={styles.searchIcon} />
         </TouchableOpacity>
         <TextInput
@@ -58,6 +60,8 @@ const Tab: React.FC<TabProps> = ({ onMenuPress, onTabClick, onSearch }) => {
           placeholderTextColor="#888"
           value={searchText}
           onChangeText={handleSearchChange}
+          accessibilityLabel="검색어 입력창"
+          accessibilityHint="검색어를 입력해보세요"
         />
         <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
           <Image source={MenuIcon} style={styles.menuIcon} />
