@@ -42,5 +42,9 @@ class MysqlUtil:
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
+    
+    def getCategory(self, category_id) -> Category:
+        return Category.objects.get(category_id=category_id)
+
 
 

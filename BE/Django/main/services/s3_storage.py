@@ -61,9 +61,24 @@ class S3Client:
             logging.error(e)
             return None
     
-    def upload_epub_to_s3(self, book: epub, filename: str, metadata: object, member_id: int):
+    def upload_epub_to_s3(self, book: epub, filename: str, metadata: object, member_id: int, test=False):
+        """"""
         buffer = io.BytesIO()
         try:
+            if test:
+                test_s3_key = 'epub/registered/1/narnia.epub'
+                test_download_url = self.generate_download_url(s3_key=test_s3_key)
+                return {
+                    "epub": test_download_url,
+                    "dtype": "REGISTERED",
+                    "metadata": {
+                        "title": metadata.get('title', '(제목 미정)'),
+                        "author": metadata.get('author', '(작자 미상)'),
+                        "created_at": metadata.get('created_at', datetime.now().isoformat()),
+                        "cover": metadata.get('cover') 
+                    }
+                }
+            
             epub.write_epub(buffer, book) # 버퍼에 epub 저장
             buffer.seek(0)
             s3_key = f'epub/registered/{member_id}/{filename}' # S3 내 저장 경로
@@ -77,13 +92,13 @@ class S3Client:
                     "title": metadata.get('title', '(제목 미정)'),
                     "author": metadata.get('author', '(작자 미상)'),
                     "created_at": metadata.get('created_at', datetime.now().isoformat()),
-                    "cover": metadata.get('cover') #s3 링크로 바꿔야 함..?
+                    "cover": metadata.get('cover')
                 }
             }
         except Exception as e:
             print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
             return None
-        
+            
     def save_numpy_to_s3(self, array: np.ndarray, s3_key: str) -> str:
         """이미지를 jpg로 저장하고 url 반환"""
         client = boto3.client(  # 정확한 타입 힌트 추가
