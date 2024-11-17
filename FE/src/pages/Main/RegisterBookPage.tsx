@@ -90,7 +90,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: width * 0.03,
-    paddingTop: height * 0.05,
+    // paddingTop: height * 0.05,
+    paddingTop: height * 0.02,
   },
   warningText: {
     fontSize: width * 0.05,
@@ -131,14 +132,17 @@ const styles = StyleSheet.create({
     marginTop: height * 0.02,
   },
   guideIcon: {
-    width: width * 0.12,
-    height: width * 0.12,
+    // width: width * 0.12,
+    // height: width * 0.12,
+    width: width * 0.1,
+    height: width * 0.1,
     marginRight: width * 0.03,
   },
   guideText: {
     color: '#3943B7',
     fontSize: width * 0.08,
     fontWeight: 'bold',
+    transform: [{ translateY: -(width * 0.01) }],
   },
 });
 
