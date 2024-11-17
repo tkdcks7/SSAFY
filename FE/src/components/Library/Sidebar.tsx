@@ -55,7 +55,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, onFilterSelect, selectedFilt
             >
               {/*<Text style={styles.categoryText}> ▶ {category}</Text>*/}
               <View style={styles.categoryTextContainer}>
-                <Text style={styles.bullet}>▶ </Text>
+                <Text style={styles.bullet}
+                    accessibilityLabel={null}
+                    accessible={false}
+                    importantForAccessibility="no"
+                >▶ </Text>
                 <Text style={styles.categoryText}>{category}</Text>
               </View>
             </TouchableOpacity>
