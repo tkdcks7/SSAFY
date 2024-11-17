@@ -1,5 +1,4 @@
-// src/pages/HomePage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import MainHeader from '../components/MainHeader';
 import MainFooter from '../components/MainFooter';
@@ -10,47 +9,44 @@ import RecommendedBooks from '../components/Home/RecommendedBooks';
 import MonthlyPopularBooks from '../components/Home/MonthlyPopularBooks';
 import AgeGenderPopularBooks from '../components/Home/AgeGenderPopularBooks';
 import { handleScrollEndAnnouncement } from '../utils/announceScrollEnd';
+import { getAccessibilityMode } from '../utils/accessibilityMode';
+import { useFocusEffect } from '@react-navigation/native'; // 페이지 포커스 감지
 
 const HomePage: React.FC = () => {
-  const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
-  const [isUserVisuallyImpaired, setIsUserVisuallyImpaired] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(false);
+  const [scrollPosition, setScrollPosition] = useState<number>(0); // 스크롤 위치 상태 추가
 
-  useEffect(() => {
-    const userIsVisuallyImpaired = false; // 실제 유저 정보에서 가져오는 로직을 구현
-    setIsUserVisuallyImpaired(userIsVisuallyImpaired);
-    setIsAccessibilityMode(userIsVisuallyImpaired); // 시각장애인이라면 접근성 모드를 기본으로 설정
-  }, []);
-
-  const handleModeToggle = () => {
-    setIsAccessibilityMode((prev) => !prev);
-  };
+  // 페이지 포커스 시 접근성 모드 상태 업데이트
+  useFocusEffect(
+    useCallback(() => {
+      const fetchAccessibilityMode = async () => {
+        const mode = await getAccessibilityMode();
+        setIsAccessibilityMode(mode);
+      };
+      fetchAccessibilityMode();
+    }, [])
+  );
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentPosition = event.nativeEvent.contentOffset.y;
-    setScrollPosition(currentPosition);
-    handleScrollEndAnnouncement(event);
-  }
-
+    setScrollPosition(currentPosition); // 스크롤 위치 업데이트
+    handleScrollEndAnnouncement(event); // 기존 스크롤 끝 처리 함수 호출
+  };
 
   return (
     <View style={styles.container}>
       <MainHeader
         title="AudiSay"
-        isAccessibilityMode={isAccessibilityMode}
-        isUserVisuallyImpaired={isUserVisuallyImpaired}
-        onModeToggle={handleModeToggle}
-        isScrolled={scrollPosition > 0}
+        isScrolled={scrollPosition > 0} // 스크롤 위치에 따라 스타일 변경
       />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        onScroll={handleScroll} //원래는 handleScrollEndAnnouncement만 있었음
-        scrollEventThrottle={16} // 스크롤 이벤트 빈도 조절
+        onScroll={handleScroll} // 스크롤 이벤트 핸들러 연결
+        scrollEventThrottle={16}
       >
         <View style={styles.innerContainer}>
           {isAccessibilityMode ? (
             <>
-
               <AccessibilityCarousel />
               <AccessibilityBookInfo />
             </>
@@ -80,10 +76,6 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
   },
-  componentWrapper: {
-    marginHorizontal: 20,
-    marginVertical: 10
-  }
 });
 
 export default HomePage;

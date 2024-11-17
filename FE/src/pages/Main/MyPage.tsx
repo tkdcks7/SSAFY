@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, Alert } from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
@@ -8,6 +8,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { getUserReadingStats } from '../../services/Mypage/UserInfo'; // API 함수 임포트
+import { getAccessibilityMode, toggleAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,6 +20,15 @@ const MyPage: React.FC = () => {
   // 유저 데이터 상태 관리
   const [userStats, setUserStats] = useState<{ nickname: string; cartBookCount: number; likedBookCount: number } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(true); // 접근성 모드 상태 관리
+
+  useEffect(() => {
+    const fetchAccessibilityMode = async () => {
+      const mode = await getAccessibilityMode(); // 로컬에서 접근성 모드 상태 가져오기
+      setIsAccessibilityMode(mode);
+    };
+    fetchAccessibilityMode();
+  }, []);
 
   const fetchUserStats = async () => {
     try {
@@ -39,9 +49,14 @@ const MyPage: React.FC = () => {
     }, [])
   );
 
+  const handleToggleAccessibility = async () => {
+    const newMode = await toggleAccessibilityMode(); // 접근성 모드 토글
+    setIsAccessibilityMode(newMode); // 새로운 상태 설정
+  };
+
   return (
     <View style={styles.container}>
-      <MainHeader title="마이페이지" isAccessibilityMode={false} isUserVisuallyImpaired={true} />
+      <MainHeader title="마이페이지" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.innerContainer}>
           {/* 로딩 중일 때 메시지 표시 */}
@@ -50,8 +65,12 @@ const MyPage: React.FC = () => {
           ) : userStats ? (
             <View style={styles.userInfoSection}>
               <Text style={styles.greetingText}>
-                <Text style={styles.nicknameText}>{userStats.nickname}</Text> 님, 안녕하세요.
+                <Text style={styles.nicknameText}>{userStats.nickname}</Text> 님, 안녕하세요.{' '}
+                <Text style={styles.accessibilityStatus}>
+                  - 현재 접근성 상태: {isAccessibilityMode ? 'On' : 'Off'}
+                </Text>
               </Text>
+
               <View style={styles.bookInfoBox}>
                 <Text style={styles.bookInfoText}>담은 도서: {userStats.cartBookCount}권</Text>
                 <Text style={styles.bookInfoText}>좋아요한 도서: {userStats.likedBookCount}권</Text>
@@ -67,7 +86,11 @@ const MyPage: React.FC = () => {
             <Btn title="나의 리뷰" onPress={() => navigation.navigate('MyReview')} style={styles.buttonSpacing} />
             <Btn title="담은 도서" onPress={() => navigation.navigate('MyBooks')} style={styles.buttonSpacing} />
             <Btn title="좋아요한 도서" onPress={() => navigation.navigate('MyLikedBooks')} style={styles.buttonSpacing} />
-            <Btn title="접근성 모드 On/Off" onPress={() => {}} style={styles.buttonSpacing} />
+            <Btn
+              title={`접근성 모드 ${isAccessibilityMode ? 'Off' : 'On'}`}
+              onPress={handleToggleAccessibility}
+              style={styles.buttonSpacing}
+            />
           </View>
         </View>
       </ScrollView>
@@ -99,6 +122,10 @@ const styles = StyleSheet.create({
   nicknameText: {
     color: '#3943B7',
     fontSize: width * 0.1,
+    fontWeight: 'bold',
+  },
+  accessibilityStatus: {
+    fontSize: width * 0.06,
     fontWeight: 'bold',
   },
   bookInfoBox: {

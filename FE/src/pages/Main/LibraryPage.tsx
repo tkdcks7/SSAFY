@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
-import {View, StyleSheet, Alert, FlatList, Text} from 'react-native';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { View, StyleSheet, Alert, FlatList } from 'react-native';
 import RNFS from 'react-native-fs';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // useFocusEffect 추가
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import Tab from '../../components/Library/Tab';
@@ -11,8 +11,8 @@ import GeneralBookList from '../../components/Library/GeneralBookList';
 import CurrentReadingStatus from '../../components/Library/CurrentReadingStatus';
 import Btn from '../../components/Btn';
 import { resetLocalDatabase } from '../../utils/readLocalDatabase';
+import { getAccessibilityMode, toggleAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
 import { LibraryContext } from '../../contexts/LibraryContext';
-
 
 const LibraryPage: React.FC = () => {
   const navigation = useNavigation();
@@ -38,7 +38,6 @@ const LibraryPage: React.FC = () => {
         }));
         setAllBooks(parsedBooks);
 
-        // Update categories
         const uniqueCategories = Array.from(new Set(parsedBooks.map((book) => book.category)));
         setCategories(uniqueCategories);
       } else {
@@ -94,6 +93,21 @@ const LibraryPage: React.FC = () => {
     setBooks(filteredBooks);
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchAccessibilityMode = async () => {
+        const mode = await getAccessibilityMode();
+        setIsAccessibilityMode(mode);
+      };
+      fetchAccessibilityMode();
+    }, [])
+  );
+
+  const handleModeToggle = async () => {
+    const newMode = await toggleAccessibilityMode();
+    setIsAccessibilityMode(newMode);
+  };
+
   const toggleSidebar = () => {
     setIsSidebarVisible((prev) => !prev);
   };
@@ -110,11 +124,7 @@ const LibraryPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <MainHeader
-        title="내 서재"
-        isAccessibilityMode={isAccessibilityMode}
-        onModeToggle={() => setIsAccessibilityMode((prev) => !prev)}
-      />
+      <MainHeader title="내 서재" onModeToggle={handleModeToggle} />
       <View style={styles.buttonContainer}>
         <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
         <Btn
