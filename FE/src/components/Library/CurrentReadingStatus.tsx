@@ -12,7 +12,14 @@ const CurrentReadingStatus: React.FC = () => {
       <View style={styles.container}>
         <Image source={currentBook.coverImage} style={styles.bookImage} />
         <View style={styles.bookInfo}>
-          <Text style={styles.bookTitle}>{currentBook.title}</Text>
+          <View style={styles.bookTitleContainer}>
+            <Text
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                style={styles.bookTitle}>
+              {currentBook.title}
+            </Text>
+          </View>
           <View style={styles.progressContainer}>
             <Text style={styles.readingProgress}>{currentBook.progress}%</Text>
           </View>
@@ -24,18 +31,18 @@ const CurrentReadingStatus: React.FC = () => {
 
 const styles = StyleSheet.create({
   containerWrapper: {
-    margin: width * 0.03,
+    marginHorizontal: width * 0.03,
   },
   headerText: {
     fontSize: width * 0.06,
     fontWeight: 'bold',
     color: '#3943B7',
-    marginBottom: height * 0.01,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: width * 0.02,
+    paddingVertical: width * 0.02,
+    paddingHorizontal: width * 0.03,
     backgroundColor: '#3943B7',
     marginVertical: height * 0.02,
     borderRadius: 8,
@@ -52,6 +59,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap', // 줄바꿈 허용
+  },
+  bookTitleContainer: {
+    flex: 1,
+    paddingHorizontal: width * 0.01,
+    paddingVertical: height * 0.01,
   },
   bookTitle: {
     fontSize: width * 0.05,
@@ -60,16 +73,21 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     backgroundColor: '#ffffff',
-    marginRight: width * 0.04,
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.01,
     borderRadius: 8,
+    maxWidth: width * 0.2, // 버튼 최대 크기 제한
+    alignSelf: 'flex-start', // 컨테이너 내에서 정렬
+    flexShrink: 1, // 공간 부족 시 크기 축소
   },
   readingProgress: {
-    fontSize: width * 0.05,
+    fontSize: width * 0.045,
     fontWeight: 'bold',
     color: '#3943B7',
+    textAlign: 'center',
   },
 });
+
+
 
 export default CurrentReadingStatus;

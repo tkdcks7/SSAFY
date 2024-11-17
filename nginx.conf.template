@@ -4,12 +4,6 @@ events {
 
 http  {
 
-    # 대용량 파일 전송 설정 / 타임아웃 설정
-    client_max_body_size 6M;
-    proxy_read_timeout 300;
-    proxy_connect_timeout 300;
-    proxy_send_timeout 300;
-
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
@@ -70,6 +64,12 @@ http  {
 
         # Django 외부 연결
         location /${CONTEXT_PATH}/registration/ {
+            # 대용량 파일 전송 설정 / 타임아웃 설정
+            client_max_body_size 2G;
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+            proxy_send_timeout 300;
+
             proxy_pass http://${DOCKER_TAG_DJANGO}:${DJANGO_PORT};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;

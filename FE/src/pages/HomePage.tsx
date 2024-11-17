@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import MainHeader from '../components/MainHeader';
 import MainFooter from '../components/MainFooter';
 import GeneralCarousel from '../components/Home/GeneralCarousel';
@@ -9,13 +9,14 @@ import RecommendedBooks from '../components/Home/RecommendedBooks';
 import MonthlyPopularBooks from '../components/Home/MonthlyPopularBooks';
 import AgeGenderPopularBooks from '../components/Home/AgeGenderPopularBooks';
 import { handleScrollEndAnnouncement } from '../utils/announceScrollEnd';
-import { getAccessibilityMode, toggleAccessibilityMode } from '../utils/accessibilityMode';
+import { getAccessibilityMode } from '../utils/accessibilityMode';
 import { useFocusEffect } from '@react-navigation/native'; // 페이지 포커스 감지
 
 const HomePage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(false);
+  const [scrollPosition, setScrollPosition] = useState<number>(0); // 스크롤 위치 상태 추가
 
-  // 접근성 상태 초기 설정 및 포커스 시 업데이트
+  // 페이지 포커스 시 접근성 모드 상태 업데이트
   useFocusEffect(
     useCallback(() => {
       const fetchAccessibilityMode = async () => {
@@ -26,19 +27,22 @@ const HomePage: React.FC = () => {
     }, [])
   );
 
-  // 접근성 모드 토글 핸들러
-  const handleModeToggle = async () => {
-    const newMode = await toggleAccessibilityMode(); // 접근성 모드 상태 변경
-    setIsAccessibilityMode(newMode);
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentPosition = event.nativeEvent.contentOffset.y;
+    setScrollPosition(currentPosition); // 스크롤 위치 업데이트
+    handleScrollEndAnnouncement(event); // 기존 스크롤 끝 처리 함수 호출
   };
 
   return (
     <View style={styles.container}>
-      <MainHeader title="AudiSay" onModeToggle={handleModeToggle} />
+      <MainHeader
+        title="AudiSay"
+        isScrolled={scrollPosition > 0} // 스크롤 위치에 따라 스타일 변경
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        onScroll={handleScrollEndAnnouncement}
-        scrollEventThrottle={16} // 스크롤 이벤트 빈도 조절
+        onScroll={handleScroll} // 스크롤 이벤트 핸들러 연결
+        scrollEventThrottle={16}
       >
         <View style={styles.innerContainer}>
           {isAccessibilityMode ? (

@@ -139,11 +139,13 @@ const LibraryPage: React.FC = () => {
         ListHeaderComponent={
           <View style={styles.contentContainer}>
             <Tab onMenuPress={toggleSidebar} onTabClick={setFilter} onSearch={setSearchText} />
-            <CurrentReadingStatus />
             {isAccessibilityMode ? (
-              <AccessibilityBookList books={books} />
+              <AccessibilityBookList books={books} currentBook={books[0]}/>
             ) : (
-              <GeneralBookList books={books} />
+                <View>
+                  <CurrentReadingStatus />
+                  <GeneralBookList books={books} />
+                </View>
             )}
           </View>
         }

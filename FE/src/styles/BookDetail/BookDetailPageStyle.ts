@@ -1,6 +1,6 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import {StyleSheet, Dimensions} from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const responsiveFontSize = (factor: number) => width * (factor / 100);
 const responsiveWidth = (factor: number) => width * (factor / 100);
@@ -8,7 +8,7 @@ const responsiveHeight = (factor: number) => height * (factor / 100);
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: responsiveWidth(3),
+    paddingHorizontal: responsiveWidth(6),
     backgroundColor: '#FFFFFF',
     flexGrow: 1,
     paddingBottom: 100, // ScrollView 하단 여백 추가
@@ -26,25 +26,27 @@ const styles = StyleSheet.create({
   bookTitleLarge: {
     fontSize: responsiveFontSize(9),
     fontWeight: 'bold',
-    textAlign: 'center',
+    // textAlign: 'center',
+    // textAlign: 'justify', // 임의로 바꿈
     marginVertical: responsiveHeight(2),
+    flexWrap: 'wrap', // 줄바꿈 설정
   },
   bookAuthor: {
     fontSize: responsiveFontSize(6),
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: responsiveHeight(0.5),
   },
   bookPublisher: {
     fontSize: responsiveFontSize(6),
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: responsiveHeight(0.5),
   },
   bookCategory: {
     fontSize: responsiveFontSize(6),
-    textAlign: 'center',
+    textAlign: 'left',
   },
   bookStoryContainer: {
-    paddingHorizontal: responsiveWidth(4),
+    // paddingHorizontal: responsiveWidth(4),
     marginBottom: responsiveHeight(2),
   },
   bookStory: {
@@ -60,13 +62,14 @@ const styles = StyleSheet.create({
   },
   reviewContainer: {
     marginVertical: responsiveHeight(2),
-    paddingHorizontal: responsiveWidth(3),
+    // paddingHorizontal: responsiveWidth(6),
   },
   sectionTitleLarge: {
     fontSize: responsiveFontSize(6.5),
-    marginBottom: responsiveFontSize(2),
+    marginBottom: responsiveFontSize(4),
+    marginTop: responsiveFontSize(6),
     color: '#3943B7',
-    marginLeft: responsiveWidth(3),
+    // marginLeft: responsiveWidth(3),
     fontWeight: 'bold',
   },
   buttonContainerWithMargin: {
@@ -74,7 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: responsiveHeight(1),
-    paddingHorizontal: responsiveWidth(5),
+    // paddingHorizontal: responsiveWidth(5),
   },
   buttonWrapper: {
     flex: 6,
@@ -114,7 +117,11 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(6.5),
     color: '#666',
     textAlign: 'center',
-    paddingHorizontal: responsiveWidth(4),
+    // paddingHorizontal: responsiveWidth(4),
+  },
+  carouselContainer: {
+    // paddingHorizontal: responsiveWidth(6), // 왼쪽과 오른쪽 여백을 맞추기 위해 추가
+    marginBottom: responsiveHeight(2),
   },
 });
 

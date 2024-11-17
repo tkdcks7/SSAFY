@@ -79,8 +79,9 @@ class ImageCaptioner:
         try:
             for im in image_list:
                 task_list.append(ImageCaptioner.process_single_image(im.file_name, im.get_content(), azure_image_analysis.analyze_image_async))
+            
             for cm in cover_image:
-                task_list.append(ImageCaptioner.process_single_image(cm.file_name, cm.get_content(), azure_image_analysis.analyze_image_async))
+                task_list.append(ImageCaptioner.process_single_image(cm.get_name(), cm.get_content(), azure_image_analysis.analyze_image_async))
 
             # 모든 작업 실행
             processed_images = await asyncio.gather(*task_list)
@@ -92,12 +93,13 @@ class ImageCaptioner:
         open_ai_analyzer.set_async_client()
         openai_result = await open_ai_analyzer.analyze_openai_image_async(processed_images)
 
-
         # 4. 추가된 캡션을 이미지에 추가 
-        processed_book = EpubReader.append_alt_to_image_without_decode(book, openai_result)
+        processed_book, cover_alt = EpubReader.append_alt_to_image_without_decode(book, openai_result)
 
         # 5. coverAlt 불러오기 
-        metadata['cover_alt'] = EpubReader.get_cover_alt(processed_book, "cover.jpg")
+        ### ebooklib에서 get_content 시 cover alt를 초기화 
+        # metadata['cover_alt'] = EpubReader.get_cover_alt(processed_book, "cover.jpg")
+        metadata['cover_alt'] = cover_alt
 
         # 6. 바뀐 책을 반환 
         return processed_book, metadata 

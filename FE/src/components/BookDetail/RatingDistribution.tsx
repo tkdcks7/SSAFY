@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, AccessibilityInfo } from 'react-native';
-import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import {View, Text, AccessibilityInfo} from 'react-native';
+import Svg, {Path, Defs, LinearGradient, Stop} from 'react-native-svg';
 import styles from '../../styles/BookDetail/RatingDistributionStyle';
 
 interface ReviewDistribution {
@@ -13,7 +13,9 @@ interface RatingDistributionProps {
   reviewDistribution: ReviewDistribution;
 }
 
-const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribution }) => {
+const RatingDistribution: React.FC<RatingDistributionProps> = ({
+  reviewDistribution,
+}) => {
   const renderStars = (average: number, totalCount: number) => {
     const filledStars = Math.floor(average);
     const partialStar = average - filledStars;
@@ -21,25 +23,39 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
     return (
       <View
         style={styles.starsContainer}
-        accessibilityLabel={`평균 평점: ${average.toFixed(1)}점 (${totalCount}개 리뷰)`}
-        accessibilityRole="text"
-      >
-        {Array.from({ length: 5 }, (_, i) => (
+        accessible={true}
+        accessibilityLabel={`평균 ${average.toFixed(
+          1,
+        )}점, ${totalCount}개 리뷰입니다`}
+        accessibilityRole="text">
+        {Array.from({length: 5}, (_, i) => (
           <Svg
             key={i}
             width={30}
             height={30}
             viewBox="0 0 24 24"
-            accessibilityLabel={i < filledStars ? "별 가득 참" : i === filledStars ? "부분적으로 참" : "별 비어 있음"}
+            // accessibilityLabel={i < filledStars? '별 가득 참' : i === filledStars ? '부분적으로 참' : '별 비어 있음' }
           >
             <Defs>
               <LinearGradient id={`grad${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <Stop
-                  offset={i < filledStars ? "100%" : i === filledStars ? `${partialStar * 100}%` : "0%"}
+                  offset={
+                    i < filledStars
+                      ? '100%'
+                      : i === filledStars
+                      ? `${partialStar * 100}%`
+                      : '0%'
+                  }
                   stopColor="#3943B7"
                 />
                 <Stop
-                  offset={i < filledStars ? "100%" : i === filledStars ? `${partialStar * 100}%` : "0%"}
+                  offset={
+                    i < filledStars
+                      ? '100%'
+                      : i === filledStars
+                      ? `${partialStar * 100}%`
+                      : '0%'
+                  }
                   stopColor="#DDDDDD"
                 />
               </LinearGradient>
@@ -51,7 +67,8 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
           </Svg>
         ))}
         <Text style={styles.averageScore}>
-          {average.toFixed(1)} <Text style={styles.totalCount}>({totalCount}개 리뷰)</Text>
+          {average.toFixed(1)}{' '}
+          <Text style={styles.totalCount}>({totalCount})</Text>
         </Text>
       </View>
     );
@@ -62,8 +79,7 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
       <Text
         style={styles.title}
         accessibilityLabel="평점 분포"
-        accessibilityRole="header"
-      >
+        accessibilityRole="header">
         평점 분포
       </Text>
       {renderStars(reviewDistribution.average, reviewDistribution.totalCount)}
@@ -75,11 +91,10 @@ const RatingDistribution: React.FC<RatingDistributionProps> = ({ reviewDistribut
             key={key}
             style={styles.reviewBarContainer}
             accessibilityLabel={`${key}점: ${value}%`}
-            accessibilityRole="text"
-          >
+            accessibilityRole="text">
             <Text style={styles.reviewText}>{key}점</Text>
             <View style={styles.reviewBar}>
-              <View style={[styles.reviewBarFill, { width: `${value}%` }]} />
+              <View style={[styles.reviewBarFill, {width: `${value}%`}]} />
             </View>
             <Text style={styles.reviewPercentage}>{value}%</Text>
           </View>
