@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     alignItems: 'center',
-  },
+  }, 
   slide: {
     width: width * 0.95,
     height: '100%',
