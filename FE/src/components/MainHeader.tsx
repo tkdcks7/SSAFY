@@ -39,7 +39,11 @@ const MainHeader: React.FC<MainHeaderProps> = ({ title, isAccessibilityMode, isU
               style={[styles.title, isScrolled && styles.scrolledTitle]}>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
-        <TouchableOpacity style={styles.bookmarkButton} onPress={() => navigation.navigate('ReadingNotes')}>
+        <TouchableOpacity
+            accessibilityLabel="독서 노트 버튼입니다."
+            accessibilityHint="저장한 문장을 확인할 수 있습니다."
+            style={styles.bookmarkButton}
+            onPress={() => navigation.navigate('ReadingNotes')}>
           <Image source={notesicon} style={[styles.icon, isScrolled && styles.scrolledIcon]} />
         </TouchableOpacity>
       </View>
