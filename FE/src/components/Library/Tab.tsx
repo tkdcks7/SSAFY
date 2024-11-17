@@ -1,6 +1,6 @@
 // src/components/Library/Tab.tsx
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, Text, Image, Dimensions } from 'react-native';
+import React, {useState} from 'react';
+import {Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import MenuIcon from '../../assets/icons/menu.png';
 import SearchIcon from '../../assets/icons/search.png';
 
@@ -49,8 +49,8 @@ const Tab: React.FC<TabProps> = ({ onMenuPress, onTabClick, onSearch }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={() => {}}>
-          <Image source={SearchIcon} style={styles.icon} />
+        <TouchableOpacity onPress={() => {}} style={styles.searchButton}>
+          <Image source={SearchIcon} style={styles.searchIcon} />
         </TouchableOpacity>
         <TextInput
           placeholder="제목, 저자, 출판사 검색"
@@ -105,7 +105,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginTop: height * 0.01,
+    // marginTop: height * 0.01,
+    marginVertical: height * 0.01,
   },
   searchInput: {
     flex: 1.2,
@@ -113,13 +114,18 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     padding: height * 0.015,
-    marginHorizontal: width * 0.03,
+    // marginHorizontal: width * 0.03,
+    marginLeft : width * 0.02,
     fontSize: width * 0.045,
   },
   menuButton: {
-    marginLeft: width * 0.01,
+    // marginLeft: width * 0.01,
+    transform: [{ translateY: -5 }],
   },
-  icon: {
+  searchButton: {
+    marginHorizontal : width * 0.01,
+  },
+  searchIcon: {
     width: width * 0.1,
     height: width * 0.1,
   },
