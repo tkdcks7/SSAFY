@@ -17,8 +17,8 @@ const styles = StyleSheet.create({
     flex: 6,
     marginBottom: responsiveHeight(4),
     height: responsiveHeight(6),
-    justifyContent: 'center', // 세로 가운데 정렬
-    alignItems: 'center',     // 가로 가운데 정렬
+    // justifyContent: 'center', // 세로 가운데 정렬
+    // alignItems: 'center',     // 가로 가운데 정렬
   },
   disabledButton: {
     backgroundColor: '#D3D3D3', // 비활성화된 버튼 색상

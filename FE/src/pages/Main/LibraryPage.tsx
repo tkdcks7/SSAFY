@@ -146,8 +146,15 @@ const LibraryPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <MainHeader title="내 서재" />
-      {/* <View style={styles.buttonContainer}>
+      <View
+          importantForAccessibility={isSidebarVisible ? "no-hide-descendants" : "auto"}
+      >
+      <MainHeader
+        title="내 서재"
+        isAccessibilityMode={isAccessibilityMode}
+        onModeToggle={() => setIsAccessibilityMode((prev) => !prev)}
+      />
+      <View style={styles.buttonContainer}>
         <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
         <Btn
           title="로컬 DB 보기"
@@ -180,6 +187,7 @@ const LibraryPage: React.FC = () => {
         }
         extraData={books}
       />
+      </View>
       {isSidebarVisible && (
         <Sidebar
           onClose={toggleSidebar}

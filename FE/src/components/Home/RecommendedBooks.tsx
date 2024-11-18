@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
   bookList: {
     // paddingHorizontal: responsiveWidth(2),
     alignItems: 'center',
+    marginBottom: responsiveHeight(2),
   },
   bookItem: {
     width: responsiveWidth(28),
