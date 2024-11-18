@@ -30,7 +30,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ title, isScrolled = false }
       <Text
         style={[styles.title, isScrolled && styles.scrolledTitle]} // 스크롤 상태에 따라 제목 스타일 변경
         accessible
-        accessibilityLabel={`현재 페이지 제목: ${title}`}
+        accessibilityLabel={`${title}`}
       >
         {title}
       </Text>

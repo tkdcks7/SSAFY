@@ -92,11 +92,11 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                 <TouchableOpacity
                   style={[styles.bookItem, styles.currentBookItem]}
                   onPress={() => {
-                    AccessibilityInfo.announceForAccessibility(`${currentBook.title} 상세보기로 이동합니다.`);
+                    AccessibilityInfo.announceForAccessibility(`${currentBook.title} 도서 뷰어로 이동합니다.`);
                     navigation.navigate('EBookViewer', { bookId: currentBook.bookId });
                   }}
-                  accessibilityLabel={`${currentBook.title} 선택됨`}
-                  accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
+                  accessibilityLabel={`현재 읽고 있는 도서 ${currentBook.title}. 표지 이미지: ${currentBook.title}. 저자: ${currentBook.author}. 출판사: ${currentBook.publisher}.`}
+                  accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
                 >
                   <Image
                     source={{
@@ -116,7 +116,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                     >
                       {currentBook.title}
                     </Text>
-                    <View style={styles.authorAndPublisherContainer}>
+                    <View>
                       <Text
                         style={styles.bookAuthor}
                         numberOfLines={1}
@@ -138,7 +138,9 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                 </TouchableOpacity>
               </View>
             ) : null}
-            <Text style={styles.bookContainerTitle}>내 서재</Text>
+            <Text style={styles.bookContainerTitle}
+            accessibilityLabel="내 서재 도서 목록"
+            >내 서재</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -146,11 +148,11 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
             <TouchableOpacity
               style={styles.bookItem}
               onPress={() => {
-                AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기로 이동합니다.`);
+                AccessibilityInfo.announceForAccessibility(`${item.title} 뷰어로 이동합니다.`);
                 navigation.navigate('EBookViewer', { bookId: item.bookId });
               }}
-              accessibilityLabel={`${item.title} 선택됨`}
-              accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
+              accessibilityLabel={`${item.title} 도서 선택됨`}
+              accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
             >
               <Image
                 source={{
@@ -167,33 +169,35 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                 >
                   {item.title}
                 </Text>
-                <Text
-                  style={styles.bookAuthor}
-                  numberOfLines={1}
-                  accessibilityLabel={`저자: ${item.author}`}
-                >
-                  저자: {item.author}
-                </Text>
-                <Text
-                  style={styles.bookPublisher}
-                  numberOfLines={1}
-                  accessibilityLabel={`출판사: ${item.publisher}`}
-                >
-                  출판사: {item.publisher}
-                </Text>
+                <View>
+                  <Text
+                    style={styles.bookAuthor}
+                    numberOfLines={1}
+                    accessibilityLabel={`저자: ${item.author}`}
+                  >
+                    저자: {item.author}
+                  </Text>
+                  <Text
+                    style={styles.bookPublisher}
+                    numberOfLines={1}
+                    accessibilityLabel={`출판사: ${item.publisher}`}
+                  >
+                    출판사: {item.publisher}
+                  </Text>
+                </View>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.deleteButton, styles.deleteButtonTopRight]}
               onPress={() => handleDelete(item)}
-              accessibilityLabel="책 삭제 버튼"
+              accessibilityLabel="도서 삭제 버튼"
               accessibilityHint="항목을 삭제하려면 두 번 탭하세요."
             >
               <Text style={styles.deleteButtonText}>삭제</Text>
             </TouchableOpacity>
           </View>
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View/>}
         contentContainerStyle={styles.flatListContent}
       />
 

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  Modal,
+  Modal, AccessibilityInfo,
 } from 'react-native';
 import { getReadingNotes, deleteReadingNote } from '../services/ReadingNotes'; // 삭제 함수 추가
 import CustomHeader from '../components/CustomHeader';
@@ -55,6 +55,7 @@ const ReadingNotesPage: React.FC = () => {
       try {
         await deleteReadingNote(selectedNoteId); // 서버에 삭제 요청
         setNotes((prevNotes) => prevNotes.filter((note) => note.noteId !== selectedNoteId)); // UI에서 삭제
+        AccessibilityInfo.announceForAccessibility('선택한 독서 노트가 삭제되었습니다.');
         Alert.alert('삭제 완료', '독서 노트가 삭제되었습니다.');
       } catch (err: any) {
         Alert.alert('오류', err.message); // 오류 메시지 표시
@@ -90,7 +91,9 @@ const ReadingNotesPage: React.FC = () => {
             <View style={styles.noteFooter}>
               <View style={styles.noteDetails}>
                 <Text style={styles.progress}>{`진행률: ${note.progressRate}%`}</Text>
-                <Text style={styles.date}>{note.createdAt}</Text>
+                <Text style={styles.date}
+                accessibilityLabel={`생성일 : ${note.createdAt}`}>
+                  {note.createdAt}</Text>
               </View>
               {/* 삭제 버튼 */}
               <TouchableOpacity
