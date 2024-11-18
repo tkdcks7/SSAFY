@@ -5,7 +5,9 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
+  Dimensions,
+  AccessibilityInfo,
+  Alert,
 } from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from '../navigation/AppNavigator';
@@ -24,6 +26,8 @@ type SignupPageNavigationProp = StackNavigationProp<
 type Props = {
   navigation: SignupPageNavigationProp;
 };
+
+const {width, height} = Dimensions.get('window');
 
 const SignupPage: React.FC<Props> = ({navigation}) => {
   const [isDisabled, setIsDisabled] = useState<boolean | null>(null);
@@ -45,8 +49,6 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
   const [isPasswordEntered, setIsPasswordEntered] = useState<boolean>(false);
   const [isNameEntered, setIsNameEntered] = useState<boolean>(false);
 
-  const isDisabledRef = useRef(null);
-  const isManRef = useRef(null);
   const birthRef = useRef<TextInput>(null);
   const nicknameRef = useRef<TextInput>(null);
   const passwordConfirmRef = useRef<TextInput>(null);
@@ -66,10 +68,14 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
     if (nameRegex.test(name)) {
       setIsNameEntered(true);
       emailRef.current?.focus();
-      setEnteredCnt(enteredCnt + 1);
+      setEnteredCnt(prev => prev + 1);
     } else {
       setName('');
-      Tts.speak(
+      Alert.alert(
+        '오류',
+        '이름은 두 자 이상 열다섯 자 이하의 한글 및 영문만 입력할 수 있습니다.',
+      );
+      AccessibilityInfo.announceForAccessibility(
         '이름은 두 자 이상 열다섯 자 이하의 한글 및 영문만 입력할 수 있습니다.',
       );
       nameRef.current?.focus();
@@ -86,7 +92,10 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
       setTimeout(() => {
         emailRef.current?.focus();
       }, 100);
-      Tts.speak('이메일 형식이 올바르지 않습니다.');
+      Alert.alert('오류', '이메일 형식이 올바르지 않습니다.');
+      AccessibilityInfo.announceForAccessibility(
+        '이메일 형식이 올바르지 않습니다.',
+      );
     }
   };
 
@@ -96,12 +105,18 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
       .then(() => {
         setIsEmailChecked(true);
         nicknameRef.current?.focus();
-        setEnteredCnt(enteredCnt + 1);
+        setEnteredCnt(prev => prev + 1);
       })
       .catch(() => {
         setIsEmailChecked(false);
         setEmail('');
-        Tts.speak('이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.');
+        Alert.alert(
+          '오류',
+          '이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.',
+        );
+        AccessibilityInfo.announceForAccessibility(
+          '이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.',
+        );
         setTimeout(() => {
           emailRef.current?.focus();
         }, 100);
@@ -113,11 +128,14 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
     if (nicknameRegex) {
       setIsNicknameEntered(true);
       passwordRef.current?.focus();
-      setEnteredCnt(enteredCnt + 1);
-      // View로 포커스 이동? 생각해봐야함.
+      setEnteredCnt(prev => prev + 1);
     } else {
       setNickname('');
-      Tts.speak(
+      Alert.alert(
+        '오류',
+        '닉네임은 두 자 이상 열다섯 자 이하의 한글, 영문, 숫자만 가능합니다.',
+      );
+      AccessibilityInfo.announceForAccessibility(
         '닉네임은 두 자 이상 열다섯 자 이하의 한글, 영문, 숫자만 가능합니다.',
       );
       setTimeout(() => {
@@ -131,10 +149,14 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
     if (passwordRegex.test(password)) {
       setIsPasswordEntered(true);
       passwordConfirmRef.current?.focus();
-      setEnteredCnt(enteredCnt + 1);
+      setEnteredCnt(prev => prev + 1);
     } else {
       setPassword('');
-      Tts.speak(
+      Alert.alert(
+        '오류',
+        '비밀번호는 여덟 자 이상 서른 자 이하 영문, 숫자, 느낌표, 샵, 골뱅이, 달러, 붙임표, 밑줄문자만 가능합니다.',
+      );
+      AccessibilityInfo.announceForAccessibility(
         '비밀번호는 여덟 자 이상 서른 자 이하 영문, 숫자, 느낌표, 샵, 골뱅이, 달러, 붙임표, 밑줄문자만 가능합니다.',
       );
       setPasswordConfirm('');
@@ -148,9 +170,12 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
     if (password === passwordConfirm) {
       setIsPasswordConfirmEntered(true);
       birthRef.current?.focus();
-      setEnteredCnt(enteredCnt + 1);
+      setEnteredCnt(prev => prev + 1);
     } else {
-      Tts.speak('비밀번호와 일치하지 않습니다.');
+      Alert.alert('오류', '비밀번호와 일치하지 않습니다. 다시 입력해주세요.');
+      AccessibilityInfo.announceForAccessibility(
+        '비밀번호와 일치하지 않습니다. 다시 입력해주세요.',
+      );
       setTimeout(() => {
         passwordConfirmRef.current?.focus();
       }, 100);
@@ -159,12 +184,15 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
 
   const isValidbirth = (): void => {
     const birthdateRegex = /^(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/;
-    if (birthdateRegex) {
+    if (birthdateRegex.test(birth)) {
       setIsbirthEntered(true);
-      setEnteredCnt(enteredCnt + 1);
-      // 뭔가의 포커스 이동?
+      setEnteredCnt(prev => prev + 1);
     } else {
-      Tts.speak(
+      Alert.alert(
+        '오류',
+        '생년월일은 연도 네 자리, 월 두 자리, 일 두 자리의 숫자만 입력해야 합니다.',
+      );
+      AccessibilityInfo.announceForAccessibility(
         '생년월일은 연도 네 자리, 월 두 자리, 일 두 자리의 숫자만 입력해야 합니다.',
       );
       setbirth('');
@@ -213,12 +241,18 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
       .post('/members', data)
       .then(response => {
         if (response.status === 200) {
-          console.log('회원가입 성공:', response.data);
+          AccessibilityInfo.announceForAccessibility(
+            '회원 가입에 성공했습니다. 홈으로 이동합니다.',
+          );
           handleLogin();
         }
       })
       .catch(error => {
         console.error('회원가입 실패:', error);
+        Alert.alert('오류', '회원 가입 요청에 실패했습니다.');
+        AccessibilityInfo.announceForAccessibility(
+          '회원 가입 요청에 실패했습니다.',
+        );
       });
   };
 
@@ -248,6 +282,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               flexDirection: 'row',
               justifyContent: 'space-between',
               marginTop: 20,
+              marginBottom: 20,
             },
             isGenderSelected ? styles.visibleStyle : styles.invisibleStyle,
           ]}>
@@ -259,7 +294,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsDisabled(true);
               setIsDisabledSelected(true);
             }}
-            style={{marginBottom: 20}}
+            style={{marginBottom: 20, width: '45%', height: '100%'}}
           />
           <Btn
             isWhite={isDisabled === null ? true : isDisabled}
@@ -269,7 +304,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsDisabled(false);
               setIsDisabledSelected(true);
             }}
-            style={{marginBottom: 20}}
+            style={{marginBottom: 20, width: '45%', height: '100%'}}
           />
         </View>
 
@@ -286,7 +321,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsMan(true);
               setIsGenderSelected(true);
             }}
-            style={{marginBottom: 20}}
+            style={{marginBottom: 20, width: '45%', height: '100%'}}
           />
           <Btn
             isWhite={isMan === null ? true : isMan}
@@ -296,14 +331,14 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsMan(false);
               setIsGenderSelected(true);
             }}
-            style={{marginBottom: 20}}
+            style={{marginBottom: 20, width: '45%', height: '100%'}}
           />
         </View>
 
         <InputBox
           value={birth}
           onChangeText={setbirth}
-          placeholder="생년월일 숫자 여덟자리"
+          placeholder="생년월일"
           ref={birthRef}
           onSubmitEditing={isValidbirth}
           style={
@@ -312,6 +347,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               : styles.invisibleStyle
           }
         />
+        {isPasswordConfirmEntered ? (
+          <Text style={styles.noticeText}>
+            ※ 생년월일은 기호 없이 숫자 여덟 자리만 입력해야 합니다.
+          </Text>
+        ) : null}
 
         <InputBox
           value={passwordConfirm}
@@ -339,6 +379,12 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
             isNicknameEntered ? styles.visibleStyle : styles.invisibleStyle
           }
         />
+        {isNicknameEntered ? (
+          <Text style={styles.noticeText}>
+            ※ 비밀번호는 8자리 이상으로 영어 대소문자, 숫자, 특수문자를 포함해야
+            합니다.
+          </Text>
+        ) : null}
 
         <InputBox
           value={nickname}
@@ -348,6 +394,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           ref={nicknameRef}
           style={isEmailChecked ? styles.visibleStyle : styles.invisibleStyle}
         />
+        {isEmailChecked ? (
+          <Text style={styles.noticeText}>
+            ※ 닉네임은 2자 이상 20자 이하의 한글, 알파벳, 숫자만 가능합니다.
+          </Text>
+        ) : null}
 
         <InputBox
           value={email}
@@ -365,6 +416,10 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           ref={nameRef}
           onEndEditing={isValidName}
         />
+        <Text style={styles.noticeText}>
+          ※ 비밀번호는 8자리 이상으로 영어 대소문자, 숫자, 특수문자를 포함해야
+          합니다.
+        </Text>
 
         <Btn
           isWhite={true}
@@ -395,6 +450,19 @@ const styles = StyleSheet.create({
     opacity: 0,
     height: 0,
     width: 0,
+  },
+  innerContainer: {
+    flex: 1,
+    padding: width * 0.1,
+    justifyContent: 'flex-start',
+    marginTop: height * 0,
+  },
+  noticeText: {
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: height * 0.02,
+    textAlign: 'center',
   },
 });
 
