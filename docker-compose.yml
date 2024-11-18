@@ -1,0 +1,278 @@
+version: "3.9"
+
+services:
+
+  # 서버 컨테이너
+  nginx:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG_NGINX}-latest
+    container_name: ${DOCKER_TAG_NGINX}
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - TZ=Asia/Seoul
+      - SERVER_NAME=${SERVER_NAME}
+      - CONTEXT_PATH=${CONTEXT_PATH}
+      - BACKEND_PORT=${BACKEND_PORT}
+      - DJANGO_PORT=${DJANGO_PORT}
+      - DOCKER_TAG_SPRING=${DOCKER_TAG_SPRING}
+      - DOCKER_TAG_DJANGO=${DOCKER_TAG_DJANGO}
+    volumes:
+      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+      - /home/ubuntu/data/certbot/www:/var/www/certbot
+    networks:
+      - backend-network
+    depends_on:
+      - springboot
+      - django
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - /home/ubuntu/data/certbot/conf:/etc/letsencrypt
+      - /home/ubuntu/data/certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot; sleep 60d & wait $!; done;'"
+
+  springboot:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG_SPRING}-latest
+    container_name: ${DOCKER_TAG_SPRING}
+    environment:
+      - TZ=Asia/Seoul
+      - BACKEND_PORT=${BACKEND_PORT}
+      - CONTEXT_PATH=${CONTEXT_PATH}
+      - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
+      - DB_TYPE=${DB_TYPE}
+      - SERVER_NAME=${SERVER_NAME}
+      - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
+      - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
+      - MYSQL_OPTIONS=${MYSQL_OPTIONS}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DRIVER_CLASS_NAME=${MYSQL_DRIVER_CLASS_NAME}
+      - DB_DIALECT=${DB_DIALECT}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_S3_COVER_PREFIX_URL=${AWS_S3_COVER_PREFIX_URL}
+      - CURRENT_SERVER_URL=${CURRENT_SERVER_URL}
+      - PROD_SERVER_URL=${PROD_SERVER_URL}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
+      - MONGO_DB_URI=${MONGO_DB_URI}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_HOST_PORT=${ELASTIC_HOST_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ELASTIC_MIN_SCORE=${ELASTIC_MIN_SCORE}
+    expose:
+      - ${BACKEND_PORT}
+    networks:
+      - backend-network
+    depends_on:
+      - mysql
+      - redis
+      - mongodb
+      - kafka
+
+  django:
+    image: ${DOCKER_IMAGE}:${DOCKER_TAG_DJANGO}-latest
+    container_name: ${DOCKER_TAG_DJANGO}
+    environment:
+      - TZ=Asia/Seoul
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
+      - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
+      - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
+      - NAVER_OCR_INVOKE_URL=${NAVER_OCR_INVOKE_URL}
+      - NAVER_OCR_SECRET_KEY=${NAVER_OCR_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AZURE_VISION_ENDPOINT=${AZURE_VISION_ENDPOINT}
+      - AZURE_VISION_KEY=${AZURE_VISION_KEY}
+      - AZURE_VISION_REGION=${AZURE_VISION_REGION}
+      - OPENAI_AUTH=${OPENAI_AUTH}
+      - FASTAPI_URL=${FASTAPI_URL}
+      - MONGO_DB_URI=${MONGO_DB_URI}
+      - DAPHNE_WORKERS=4
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SERVER_NAME=${SERVER_NAME}
+      - REDIS_BINDING_PORT=${REDIS_BINDING_PORT}
+    expose:
+      - ${DJANGO_PORT}
+    networks:
+      - backend-network
+    depends_on:
+      - mysql
+      - kafka
+
+
+  # db 컨테이너
+  mysql:
+    image: mysql:8.0.32
+    container_name: mysql-con
+    environment:
+      - TZ=Asia/Seoul
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql-vol:/var/lib/mysql
+    ports:
+      - "${MYSQL_BINDING_PORT}:3306"
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - redis-vol:/data
+      - ${REDIS_DEFAULT_CONFIG_FILE}:/usr/local/etc/redis/redis.conf
+    ports:
+      - "${REDIS_BINDING_PORT}:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - backend-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-con
+    volumes:
+      - mongo-vol:/data/db
+    environment:
+      - TZ=Asia/Seoul
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_BINDING_PORT}:27017"
+    networks:
+      - backend-network
+
+  # 기타 컨테이너
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "${ZOOKEEPER_BINDING_PORT}:2181"
+    networks:
+      - backend-network
+    environment:
+      - TZ=Asia/Seoul
+    mem_limit: 1g # 보안 설정
+    memswap_limit: 1g # 보안 설정
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "${KAFKA_BINDING_PORT}:9092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9092 # kafka가 실제로 바인딩할 주소
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${SERVER_IP}:9092 # 외부에서 접근할 때 사용할 주소
+      - KAFKA_ADVERTISED_HOST_NAME=${SERVER_IP}
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 # 단일 브로커 설정
+      - TZ=Asia/Seoul
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka-vol:/kafka
+    networks:
+      - backend-network
+    depends_on:
+      - zookeeper
+    mem_limit: 2g
+    memswap_limit: 2g
+
+  # Elastic search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: elasticsearch
+    ports:
+      - "${ELASTIC_BINDING_PORT}:9200"
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    networks:
+      - backend-network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-vol:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.3
+    container_name: kibana
+    ports:
+      - "${KIBANA_BINDING_PORT}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_TOKEN}
+    networks:
+      - backend-network
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.3
+    container_name: logstash
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - MYSQL_ROOT_USERNAME=${MYSQL_ROOT_USERNAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - DB_TYPE=${DB_TYPE}
+      - MYSQL_DRIVER_CLASS_NAME=${MYSQL_DRIVER_CLASS_NAME}
+      - MYSQL_BINDING_HOST=${MYSQL_BINDING_HOST}
+      - MYSQL_SERVER_PORT=${MYSQL_SERVER_PORT}
+      - MYSQL_SCHEMA_NAME=${MYSQL_SCHEMA_NAME}
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+      - LOGSTASH_OPTS="--xpack.monitoring.enabled=false"
+    ports:
+      - "${LOGSTASH_BINDING_PORT}:9600"
+    networks:
+      - backend-network
+    depends_on:
+      - elasticsearch
+    command: >
+      sh -c "curl -L -o /usr/share/logstash/logstash-core/lib/jars/mysql-connector-java.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && /usr/local/bin/docker-entrypoint"
+    volumes:
+      - /home/ubuntu/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # logstash pipeline
+      - /home/ubuntu/logstash/.logstash_jdbc_last_run:/usr/share/logstash/.logstash_jdbc_last_run
+
+
+# 전역 설정
+volumes:
+  mysql-vol:
+    external: true
+  redis-vol:
+    external: true
+  mongo-vol:
+    external: true
+  kafka-vol:
+    external: true
+  es-vol:
+    external: true
+
+networks:
+  backend-network:
+    name: backend-network
+    driver: bridge
