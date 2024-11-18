@@ -99,6 +99,24 @@ class S3Client:
             print(f'EPUB 파일 생성 중 에러 발생: {str(e)}')
             return None
             
+    def convert_to_rgb_jpeg(self, pil_image):
+        """
+        RGBA 이미지를 RGB JPEG 형식으로 변환
+        """
+        if pil_image.mode == 'RGBA':
+            background = Image.new('RGB', pil_image.size, (255, 255, 255))
+            background.paste(pil_image, mask=pil_image.split()[3])
+            return background
+        return pil_image
+    
+    def detect_format(self, array: np.ndarray) -> str:
+        """
+        numpy array 이미지 형식 감지
+        """
+        if len(array.shape) == 3 and array.shape[2] == 4:
+            return 'PNG'
+        return 'JPEG'
+            
     def save_numpy_to_s3(self, array: np.ndarray, s3_key: str) -> str:
         """이미지를 jpg로 저장하고 url 반환"""
         client = boto3.client(  # 정확한 타입 힌트 추가
@@ -108,13 +126,27 @@ class S3Client:
             region_name=AWS_REGION
         )
 
+        # 이미지 형식 감지
+        image_format = self.detect_format(array)
         pil_cover = Image.fromarray(array)
         buffer = io.BytesIO()
-        pil_cover.save(buffer, format='JPEG')
+
+        if image_format == 'PNG':
+            pil_cover.save(buffer, format='PNG')
+            content_type = 'image/png'
+            if not s3_key.lower().endswith('.png'):
+                s3_key = s3_key.rsplit('.', 1)[0] + '.png'
+        else:
+            pil_cover = self.convert_to_rgb_jpeg(pil_cover)
+            pil_cover.save(buffer, format='JPEG')
+            content_type = 'image/jpeg'
+            if not s3_key.lower().endswith(('.jpg', '.jpeg')):
+                s3_key = s3_key.rsplit('.', 1)[0] + '.jpg'
+
         buffer.seek(0)
 
         extra_args = {
-            'ContentType': 'image/jpeg',
+            'ContentType': content_type,
             'ContentDisposition': 'inline'
         }
 
