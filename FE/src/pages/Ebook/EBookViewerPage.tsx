@@ -843,7 +843,7 @@ const getFormArrForCustomBook = () => {
   const currentView = rendition.manager.current();
   const currentSection = currentView.section;
   const elements = contents.document.querySelectorAll(
-    "img, p, h1, h2, h3, title, span"
+    "img, p, h1, h2, h3, span"
   );
   window.ReactNativeWebView.postMessage(JSON.stringify({ elementslen: elements.length }));
   // 요소별 로직 처리
@@ -853,7 +853,7 @@ const getFormArrForCustomBook = () => {
       const sentence = element.alt;
       const tempObj = createCfiObject(currentSection, sentence, element, true);
       if (tempObj) formArr.push(tempObj);
-    } else if (["title", "h1", "h2", "h3", "span"].includes(tagName)) {
+    } else if (["h1", "h2", "h3", "span"].includes(tagName)) {
       const sentence = element.textContent;
       const tempObj = createCfiObject(currentSection, sentence, element, false);
       if (tempObj) formArr.push(tempObj);
@@ -1008,8 +1008,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: '100%',
-    // justifyContent: 'center',
-    // alignItems: 'center',
     zIndex: 11,
   },
   sidebarText: {
