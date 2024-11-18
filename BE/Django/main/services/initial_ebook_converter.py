@@ -143,8 +143,12 @@ class InitialEbookConverter:
                         content = ""
                     
                     # 새로운 챕터 만들기
-                    title = section.get('content', {}).get('texts', ["챕터 미정"])
-                    title = title[0] if title else "챕터 미정"
+                    title_text_list = section.get('content', {}).get('texts', ["챕터 미정"])
+                    if not title_text_list:
+                        title_text_list = ["챕터 미정"]
+                    title = ''
+                    for text in title_text_list:
+                        title += text
                     chapter_number += 1
                     file_name = f'chapter_{chapter_number}.xhtml'
                     chapter = epub.EpubHtml(title=title, file_name=file_name, lang='ko')
