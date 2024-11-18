@@ -29,7 +29,7 @@ const LandingPage: React.FC<Props> = ({ navigation }) => {
       isWhite={true}
       onPress={() => navigation.navigate('Signup')}
       title='회원가입'
-      style={{ marginBottom: 20 }}
+      style={{ marginBottom: 100 }}
       />
     </PageWrapper>
   );

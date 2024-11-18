@@ -36,6 +36,27 @@ class InitialEbookConverter:
                 else:
                     image = Image.open(image_content)
 
+                # PNG나 알파 채널이 있는 이미지 처리
+                if image.mode in ('RGBA', 'LA', 'P') or image.format == 'PNG':
+                    # 배경색 흰색 설정
+                    background = Image.new('RGB', image.size, (255, 255, 255))
+
+                    if image.mode == 'P':
+                        # PNG 팔레트 모드인 경우 RGBA로 변환
+                        image = image.convert('RGBA')
+                    
+                    if 'A' in image.mode: # 알파 채널이 있는 경우
+                        # 알파 채널을 사용하여 배경과 합성
+                        background.paste(image, mask=image.split()[-1])
+                    else:
+                        # 알파 채널이 없는 경우 직접 합성
+                        background.paste(image)
+                    image = background
+
+                # RGBA나 다른 모드의 이미지를 RGB로 변환
+                if image.mode != 'RGB':
+                    image = image.convert('RGB')
+
                 # 메모리 버퍼에 JPEG로 저장
                 image_bytes = io.BytesIO() # 메모리 내에서 바이너리 데이터 저장할 준비 (메모리 버퍼 준비)
                 image.save(image_bytes, format='JPEG') # 메모리 버퍼에 JPEG 바이너리 데이터 저장

@@ -92,6 +92,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.03,
     // paddingTop: height * 0.05,
     paddingTop: height * 0.02,
+    marginBottom: height * 0.02,
+    paddingBottom: height * 0.15,
   },
   warningText: {
     fontSize: width * 0.05,

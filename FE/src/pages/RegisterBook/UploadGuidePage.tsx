@@ -22,7 +22,7 @@ const UploadGuidePage: React.FC = () => {
     },
     {
       title: '파일 & 표지 업로드',
-      description: '전자책 파일과(pdf, epub)\n표지 이미지(jpg, jpeg)를\n업로드합니다.',
+      description: '전자책 파일과(pdf, epub)표지 이미지(jpg, jpeg)를 업로드합니다. 표지는 가급적 순수 이미지만 올려주세요.',
       images: [
         require('../../assets/images/UploadGuide/fileAndCoverUpload.png'),
       ],
@@ -56,7 +56,7 @@ const UploadGuidePage: React.FC = () => {
     },
     {
       title: '커버 설정',
-      description: '이미지 중 하나를 커버로 설정할 수 있습니다. 커버를 등록했다면 커버 해제 버튼과 전자책등록버튼도 활성화됩니다',
+      description: '이미지 중 하나를 커버로 설정할 수 있습니다. 커버를 등록했다면 커버 해제와 전자책 등록이 가능합니다. 커버는 순수 이미지만 부탁드립니다.',
       images: [
         require('../../assets/images/UploadGuide/coverSetting1.png'),
         require('../../assets/images/UploadGuide/coverSetting2.png'),
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     flex: 1,
-    fontSize: width * 0.06, // 글자 크기 확대
+    fontSize: width * 0.055, // 글자 크기 확대
     textAlign: 'center',
     color: '#333333', // 진한 색으로 변경
     fontWeight: 'bold',
