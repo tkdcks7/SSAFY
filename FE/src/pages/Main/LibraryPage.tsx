@@ -147,50 +147,53 @@ const LibraryPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <View
-          importantForAccessibility={isSidebarVisible ? "no-hide-descendants" : "auto"}
-      >
-      <MainHeader
-        title="내 서재"
-      />
-      {/* <View style={styles.buttonContainer}>
-        <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
-        <Btn
-          title="로컬 DB 보기"
-          btnSize={1}
-          onPress={() => navigation.navigate('DatabaseViewer')}
-        />
-      </View> */}
-      <FlatList
-        data={books}
-        keyExtractor={item => item.id.toString()}
-        ListHeaderComponent={
-          <View style={styles.contentContainer}>
-            <Tab
-              onMenuPress={toggleSidebar}
-              onTabClick={setFilter}
-              onSearch={setSearchText}
-            />
-            {isAccessibilityMode ? (
-              <AccessibilityBookList
-                books={books}
-                currentBook={getCurrentBookData()}
+        importantForAccessibility={
+          isSidebarVisible ? 'no-hide-descendants' : 'auto'
+        }>
+        <MainHeader title="내 서재" />
+        <View style={styles.buttonContainer}>
+          <Btn
+            title="로컬 DB 초기화"
+            btnSize={1}
+            onPress={handleDatabaseReset}
+          />
+          <Btn
+            title="로컬 DB 보기"
+            btnSize={1}
+            onPress={() => navigation.navigate('DatabaseViewer')}
+          />
+        </View>
+        <FlatList
+          data={books}
+          keyExtractor={item => item.id.toString()}
+          ListHeaderComponent={
+            <View style={styles.contentContainer}>
+              <Tab
+                onMenuPress={toggleSidebar}
+                onTabClick={setFilter}
+                onSearch={setSearchText}
               />
-            ) : (
-              <View>
-                {getCurrentBookData() ? (
-                  <CurrentReadingStatus book={getCurrentBookData()} />
-                ) : (
-                  <Text style={styles.noCurrentBookText}>
-                    현재 읽고 있는 도서가 없습니다
-                  </Text>
-                )}
-                <GeneralBookList books={books} />
-              </View>
-            )}
-          </View>
-        }
-        extraData={books}
-      />
+              {isAccessibilityMode ? (
+                <AccessibilityBookList
+                  books={books}
+                  currentBook={getCurrentBookData()}
+                />
+              ) : (
+                <View>
+                  {getCurrentBookData() ? (
+                    <CurrentReadingStatus book={getCurrentBookData()} />
+                  ) : (
+                    <Text style={styles.noCurrentBookText}>
+                      현재 읽고 있는 도서가 없습니다
+                    </Text>
+                  )}
+                  <GeneralBookList books={books} />
+                </View>
+              )}
+            </View>
+          }
+          extraData={books}
+        />
       </View>
       {isSidebarVisible && (
         <Sidebar

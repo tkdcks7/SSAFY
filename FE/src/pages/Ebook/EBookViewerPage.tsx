@@ -19,6 +19,7 @@ import {
   Themes,
   Annotation,
   Location,
+  ReaderProps,
 } from '@epubjs-react-native/core';
 import {useFileSystem} from '@epubjs-react-native/file-system';
 import Animated, {
@@ -100,10 +101,10 @@ const Component: React.FC<Props> = ({route}) => {
   const {bookId} = route.params;
   const [progress, setProgress] = useState<number>(0);
   const [isTTSMode, setIsTTSMode] = useState<boolean>(false);
-  const [isTTSPlaying, setIsTTSPlaying] = useState<boolean | null>(null);
-  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isTTSPlaying, setIsTTSPlaying] = useState<boolean>(false);
+  const [isSearchingOn, setIsSearchingOn] = useState<boolean>(false);
   const [formArr, setFormArr] = useState<FormContent[]>([]);
-  const [ttsIdx, setttsIdx] = useState<number>(0);
+  const [ttsIdx, setttsIdx] = useState<number>(-1);
   const [initialCfi, setInitialCfi] = useState<string | undefined>(undefined);
   const [readNoteArr, setReadNoteArr] = useState<IReadNote[]>([]);
   const [title, setTitle] = useState<string>('');
@@ -142,6 +143,9 @@ const Component: React.FC<Props> = ({route}) => {
     injectJavascript,
     goNext,
     toc,
+    searchResults,
+    isSearching,
+    search,
   } = useReader();
 
   // 책 초기설정
@@ -169,6 +173,9 @@ const Component: React.FC<Props> = ({route}) => {
           if (bookData.myTtsFlag) {
             setIsCustomBook(true);
           }
+          if (bookData.progressRate) {
+            setProgress(Number((bookData.progressRate / 100).toFixed(2)));
+          }
         } else {
           throw new Error('Failed to read book metadata:');
         }
@@ -184,8 +191,6 @@ const Component: React.FC<Props> = ({route}) => {
       }
     });
     BackHandler.addEventListener('hardwareBackPress', handlegoBack);
-    return () =>
-      BackHandler.removeEventListener('hardwareBackPress', handlegoBack);
   }, []);
 
   // 타이머 관련 인터벌
@@ -264,7 +269,7 @@ const Component: React.FC<Props> = ({route}) => {
   // 검색창에서 결과 선택
   const handleLocationSelect = cfi => {
     goToLocation(cfi); // 선택된 위치로 이동
-    setIsSearching(false); // EbookSearch 닫기
+    setIsSearchingOn(false); // EbookSearch 닫기
   };
 
   // 네비게이션 바 표시/숨기기 핸들러
@@ -439,7 +444,6 @@ const Component: React.FC<Props> = ({route}) => {
   // TTS 종료 이벤트 관리
   useEffect(() => {
     ttsIdxRef.current = ttsIdx;
-
     if (ttsIdx === 0 && isSectionMoving) {
       setTtsReset();
     }
@@ -480,8 +484,8 @@ const Component: React.FC<Props> = ({route}) => {
           setttsIdx(prev => prev - 1);
           trackCurrentTtsIdx();
         }
-        playTextSequentially();
       }
+      playTextSequentially();
     }
   }, [isTTSPlaying]);
 
@@ -575,7 +579,6 @@ const Component: React.FC<Props> = ({route}) => {
     if (initialCfi) {
       goToLocation(initialCfi);
     }
-    setTocArr(toc);
     updateLastAccessedBookId(bookId);
   };
 
@@ -605,9 +608,16 @@ const Component: React.FC<Props> = ({route}) => {
 
   // 뒤로갈 떄 작동. library.json의 cfi 갱신. true를 반환해 BackHandler 작동 시 기본 동작을 막음.
   const handlegoBack = (): boolean => {
-    if (formArr.length > ttsIdx) {
-      const currentCfi: string = formArr[ttsIdx].cfisRange;
-      updateLibraryInfoOfBook(currentCfi);
+    if (
+      ttsIdxRef?.current &&
+      formArr.length > 0 &&
+      formArr.length > ttsIdxRef.current
+    ) {
+      const currentCfi: string | undefined =
+        formArr[ttsIdxRef.current]?.cfisRange;
+      if (currentCfi) {
+        updateLibraryInfoOfBook(currentCfi);
+      }
     }
     navigation.goBack();
     return true;
@@ -674,25 +684,30 @@ const Component: React.FC<Props> = ({route}) => {
             </TouchableOpacity>
             <Text style={styles.navBarText}>{title ? title : '책 타이틀'}</Text>
             {/* 검색 및 검색 결과 */}
-            <TouchableOpacity onPress={() => setIsSearching(true)}>
+            <TouchableOpacity onPress={() => setIsSearchingOn(true)}>
               <Image source={searchicon} style={styles.icon} />
             </TouchableOpacity>
           </>
         )}
       </Animated.View>
       {/*{ isSearching ? <EbookSearch /> : null}*/}
-      {isSearching ? (
+      {isSearchingOn ? (
         <EbookSearch
-          onClose={() => setIsSearching(false)}
+          onClose={() => setIsSearchingOn(false)}
           onLocationSelect={handleLocationSelect} // 위치 선택 핸들러 전달
           searchInput={searchInput}
           setSearchInput={setSearchInput}
+          searchResults={searchResults}
+          isSearching={isSearching}
+          search={search}
+          clearSearchResults={clearSearchResults}
         />
       ) : null}
       {/* 사이드바 */}
       <EbookIndex
         indexSidebarX={indexSidebarX}
         toggleIndex={toggleIndex}
+        title={title}
         tocArr={tocArr}
         tocDisPlay={tocDisPlay}
       />
@@ -700,6 +715,7 @@ const Component: React.FC<Props> = ({route}) => {
       <EbookBookNote
         bookNoteSideBarX={bookNoteSideBarX}
         toggleBookNote={toggleBookNote}
+        title={title}
         readNoteArr={readNoteArr}
         handleReadNotePress={handleReadNotePress}
       />
@@ -721,13 +737,17 @@ const Component: React.FC<Props> = ({route}) => {
           src={bookSrc}
           fileSystem={useFileSystem}
           flow="paginated"
-          onSwipeRight={() => setHasUsedInitialCfi(true)}
+          onSwipeRight={() => {
+            setHasUsedInitialCfi(true);
+          }}
           onSwipeLeft={() => setHasUsedInitialCfi(true)}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
+          onLocationsReady={() => {
+            setTocArr(toc);
+          }}
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
           enableSwipe={isSwipable}
           onWebViewMessage={message => {
-            console.log(message);
             if (message?.formArr) {
               if (formArr) {
                 setFormArr(() => [...message.formArr]);
@@ -845,7 +865,6 @@ const getFormArrForCustomBook = () => {
   const elements = contents.document.querySelectorAll(
     "img, p, h1, h2, h3, span"
   );
-  window.ReactNativeWebView.postMessage(JSON.stringify({ elementslen: elements.length }));
   // 요소별 로직 처리
   for (const element of elements) {
     const tagName = element.tagName.toLowerCase();

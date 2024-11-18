@@ -1,9 +1,17 @@
 // src/components/viewer/EbookSearch.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, TextInput } from 'react-native';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ScrollView,
+  TextInput,
+} from 'react-native';
 import InputBox from '../../components/InputBox';
-import {useReader} from '@epubjs-react-native/core';
-
+import {SearchResult, SearchOptions} from '@epubjs-react-native/core';
 
 // 아이콘
 import leftarrowicon from '../../assets/icons/leftarrow.png';
@@ -13,18 +21,26 @@ import EbookSearchResult from './EbookSearchResult';
 
 const {width, height} = Dimensions.get('window');
 
+type SearchResults = {
+  results: SearchResult[];
+  totalResults: number;
+};
+
 type EbookSearchProps = {
   onClose: () => void;
   onLocationSelect: (cfi: string) => void;
   searchInput: string;
   setSearchInput: (input: string) => void;
+  searchResults: SearchResults;
+  isSearching: boolean;
+  search: (
+    term: string,
+    page?: number,
+    limit?: number,
+    options?: SearchOptions,
+  ) => void;
+  clearSearchResults: () => void;
 };
-
-// const exampleSearchResult: SearchResultType[] = [
-//   { sentence:'예시문장 1', progress: 0.15 },
-//   { sentence:'예시문장 2', progress: 0.25 },
-//   { sentence:'예시문장 3', progress: 0.37 },
-// ]
 
 const RESULTS_PER_PAGE = 20;
 
@@ -33,9 +49,12 @@ const EbookSearch: React.FC<EbookSearchProps> = ({
   onLocationSelect,
   searchInput,
   setSearchInput,
+  searchResults,
+  isSearching,
+  search,
+  clearSearchResults,
 }) => {
   const searchInputRef = useRef<TextInput>(null);
-  const {search, searchResults, clearSearchResults, isSearching} = useReader();
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(searchResults.totalResults / RESULTS_PER_PAGE);
 
@@ -53,8 +72,6 @@ const EbookSearch: React.FC<EbookSearchProps> = ({
   const handleSearchTextChange = (input: string) => {
     setSearchInput(input);
   };
-
-
 
   const focusSearchInput = () => {
     if (!searchInput) {

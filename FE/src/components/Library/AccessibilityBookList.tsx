@@ -22,7 +22,7 @@ type Book = {
   author: string;
   publisher: string;
   cover: string;
-  progress?: number; // 진행도
+  progressRate?: number; // 진행도
   bookId: number;
 };
 
@@ -115,6 +115,11 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                       accessibilityLabel={`제목: ${currentBook.title}`}>
                       {currentBook.title}
                     </Text>
+                    <View style={styles.container}>
+                      <Text style={styles.containerText}>{`진행률: ${
+                        currentBook.progressRate * 100
+                      }%`}</Text>
+                    </View>
                     <Text
                       style={styles.bookAuthor}
                       numberOfLines={1}
@@ -122,13 +127,13 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                       accessibilityLabel={`저자: ${currentBook.author}`}>
                       저자: {currentBook.author}
                     </Text>
-                    {typeof currentBook.progress === 'number' && (
+                    {/* {
                       <Text
                         style={styles.bookProgress}
-                        accessibilityLabel={`진행도: ${currentBook.progress}%`}>
-                        진행도: {currentBook.progress}%
+                        accessibilityLabel={`진행도: ${currentBook.progressRate}%`}>
+                        진행도: {currentBook.progressRate}%
                       </Text>
-                    )}
+                    } */}
                   </View>
                 </TouchableOpacity>
               </View>
@@ -142,64 +147,59 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
         }
         renderItem={({item}) => (
           <View style={styles.bookItemContainer}>
-  <TouchableOpacity
-    style={styles.bookItem}
-    onPress={() => {
-      AccessibilityInfo.announceForAccessibility(
-        `${item.title} 도서 뷰어로 이동합니다.`,
-      );
-      navigation.navigate('EBookViewer', { bookId: item.bookId });
-    }}
-    accessibilityLabel={`${item.title} 도서 표지. 저자: ${item.author}.`}
-    accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
-  >
-    <Image
-      source={{
-        uri: item.cover.startsWith('http')
-          ? item.cover
-          : `file://${item.cover}`,
-      }}
-      style={styles.bookImage}
-      accessibilityLabel={`표지 이미지: ${item.title}`}
-    />
-    <View style={styles.textContainer}>
-      <View style={styles.titleRow}>
-        <Text
-          style={styles.bookTitle}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-          accessibilityLabel={`제목: ${item.title}`}
-        >
-          {item.title}
-        </Text>
-        <TouchableOpacity
-          onPress={() => handleDelete(item)}
-          accessibilityLabel={`${item.title} 도서 삭제 버튼`}
-          accessibilityHint="항목을 삭제하려면 두 번 탭하세요."
-          style={styles.deleteButton}
-        >
-          <Text style={styles.deleteButtonText}>삭제</Text>
-        </TouchableOpacity>
-            </View>
-            <Text
-              style={styles.bookAuthor}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              accessibilityLabel={`저자: ${item.author}`}
-            >
-              저자: {item.author}
-            </Text>
-            <Text
-              style={styles.publisher}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              accessibilityLabel={`출판사: ${item.publisher}`}
-            >
-              출판사: {item.publisher}
-            </Text>
+            <TouchableOpacity
+              style={styles.bookItem}
+              onPress={() => {
+                AccessibilityInfo.announceForAccessibility(
+                  `${item.title} 도서 뷰어로 이동합니다.`,
+                );
+                navigation.navigate('EBookViewer', {bookId: item.bookId});
+              }}
+              accessibilityLabel={`${item.title} 도서 표지. 저자: ${item.author}.`}
+              accessibilityHint="뷰어로 이동하려면 두 번 탭하세요.">
+              <Image
+                source={{
+                  uri: item.cover.startsWith('http')
+                    ? item.cover
+                    : `file://${item.cover}`,
+                }}
+                style={styles.bookImage}
+                accessibilityLabel={`표지 이미지: ${item.title}`}
+              />
+              <View style={styles.textContainer}>
+                <View style={styles.titleRow}>
+                  <Text
+                    style={styles.bookTitle}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    accessibilityLabel={`제목: ${item.title}`}>
+                    {item.title}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleDelete(item)}
+                    accessibilityLabel={`${item.title} 도서 삭제 버튼`}
+                    accessibilityHint="항목을 삭제하려면 두 번 탭하세요."
+                    style={styles.deleteButton}>
+                    <Text style={styles.deleteButtonText}>삭제</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text
+                  style={styles.bookAuthor}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                  accessibilityLabel={`저자: ${item.author}`}>
+                  저자: {item.author}
+                </Text>
+                <Text
+                  style={styles.publisher}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                  accessibilityLabel={`출판사: ${item.publisher}`}>
+                  출판사: {item.publisher}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </View>
         )}
         contentContainerStyle={styles.flatListContent}
       />
@@ -208,9 +208,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
       <Modal transparent={true} visible={showDeleteModal} animationType="slide">
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>
-              이 도서를 책장에서 제거할까요?
-            </Text>
+            <Text style={styles.modalText}>이 도서를 책장에서 제거할까요?</Text>
             <TouchableOpacity
               style={styles.submitButton}
               onPress={confirmDelete}
@@ -308,7 +306,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     marginRight: width * 0.02,
-    marginBottom: height * 0.04,
+    // marginBottom: height * 0.04,
   },
   deleteButton: {
     backgroundColor: '#FF6347',
@@ -384,6 +382,23 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#000',
     fontSize: width * 0.045,
+  },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: width * 0.02,
+    paddingHorizontal: width * 0.03,
+    backgroundColor: '#3943B7',
+    marginVertical: height * 0.01,
+    borderRadius: 8,
+    elevation: 5,
+    height: height * 0.12,
+    width: width * 0.6,
+  },
+  containerText: {
+    fontSize: width * 0.08,
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

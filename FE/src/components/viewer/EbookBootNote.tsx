@@ -18,6 +18,7 @@ import {IReadNote} from '../../services/ViewerPage/readNotes';
 type SidebarProps = {
   bookNoteSideBarX: SharedValue<number>;
   toggleBookNote: () => void;
+  title: string;
   readNoteArr: IReadNote[];
   handleReadNotePress: (cfi: string) => void;
 };
@@ -27,6 +28,7 @@ const {width, height} = Dimensions.get('window');
 const EbookBookNote: React.FC<SidebarProps> = ({
   bookNoteSideBarX,
   toggleBookNote,
+  title,
   readNoteArr,
   handleReadNotePress,
 }) => {
@@ -45,7 +47,7 @@ const EbookBookNote: React.FC<SidebarProps> = ({
       </View>
       <ScrollView style={{flex: 1, marginTop: height * 0.1}}>
         <View style={styles.titleBox}>
-          <Text style={styles.bookTitle}>책 제목</Text>
+          <Text style={styles.bookTitle}>{title}</Text>
         </View>
         {readNoteArr.map((item, index) => {
           return (

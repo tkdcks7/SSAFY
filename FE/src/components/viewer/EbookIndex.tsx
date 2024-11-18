@@ -25,18 +25,17 @@ type TocContent = {
 type SidebarProps = {
   indexSidebarX: SharedValue<number>;
   toggleIndex: () => void; // onPress는 반환값이 없는 함수 타입
+  title: string;
   tocArr: TocContent[];
   tocDisPlay: (tocHref: string) => void;
 };
-
-// 목차 데이터 받아오기
-const titleData: string[] = ['제목1', '제목2', '제목3', '제목4', '제목5'];
 
 const {width, height} = Dimensions.get('window');
 
 const EbookIndex: React.FC<SidebarProps> = ({
   indexSidebarX,
   toggleIndex,
+  title,
   tocArr,
   tocDisPlay,
 }) => {
@@ -62,7 +61,7 @@ const EbookIndex: React.FC<SidebarProps> = ({
       </View>
       <ScrollView style={{flex: 1, marginTop: height * 0.1}}>
         <View style={styles.titleBox}>
-          <Text style={styles.bookTitle}>책 제목</Text>
+          <Text style={styles.bookTitle}>{title}</Text>
         </View>
         {tocArr.map((item, index) => (
           <IndexChapter
