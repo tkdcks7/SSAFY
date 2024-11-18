@@ -47,10 +47,10 @@ const AccessibilityBookIntro: React.FC = () => {
     setError(null);
 
     try {
-      const { func, name } = recommendationFunctions[index];
+      const { func } = recommendationFunctions[index];
       const data = await func(); // API 함수 호출
       setBooks(data.bookList); // 도서 목록 업데이트
-      setCriterion(name); // 추천 기준 업데이트
+      setCriterion(data.criterion); // API에서 받은 추천 기준 업데이트
       setLastIndex(index); // 마지막 기준 인덱스 저장
     } catch (err: any) {
       setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
@@ -85,7 +85,7 @@ const AccessibilityBookIntro: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{criterion}</Text>
+      <Text style={styles.criterionText}>{criterion}</Text> {/* API 응답에서 받은 criterion 표시 */}
       <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollViewContent}>
         {books.slice(0, 1).map((book) => ( // 하나의 도서만 표시
           <TouchableOpacity
@@ -155,13 +155,13 @@ const AccessibilityBookIntro: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    // padding: responsiveWidth(5),
-    paddingTop: responsiveWidth(7)
+    paddingTop: responsiveWidth(7),
   },
-  title: {
+  criterionText: { // 추천 기준 텍스트 스타일
     fontSize: responsiveFontSize(7),
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: responsiveHeight(2),
   },
   scrollViewContent: {
     alignItems: 'center',
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   bookTopSection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: responsiveHeight(2), //3
+    marginBottom: responsiveHeight(2),
   },
   bookImage: {
     width: responsiveWidth(35),
@@ -219,13 +219,12 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(5),
     textAlign: 'left',
     marginHorizontal: responsiveWidth(2),
-    marginBottom: responsiveHeight(1)
+    marginBottom: responsiveHeight(1),
   },
   moreButton: {
     alignSelf: 'center',
     marginBottom: responsiveHeight(9),
     width: '95%',
-    // marginHorizontal: responsiveWidth(4),
   },
   moreButtonText: {
     fontSize: responsiveFontSize(11),

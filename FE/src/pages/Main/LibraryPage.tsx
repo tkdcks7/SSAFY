@@ -151,17 +151,15 @@ const LibraryPage: React.FC = () => {
       >
       <MainHeader
         title="내 서재"
-        isAccessibilityMode={isAccessibilityMode}
-        onModeToggle={() => setIsAccessibilityMode((prev) => !prev)}
       />
-      <View style={styles.buttonContainer}>
+      {/* <View style={styles.buttonContainer}>
         <Btn title="로컬 DB 초기화" btnSize={1} onPress={handleDatabaseReset} />
         <Btn
           title="로컬 DB 보기"
           btnSize={1}
           onPress={() => navigation.navigate('DatabaseViewer')}
         />
-      </View>
+      </View> */}
       <FlatList
         data={books}
         keyExtractor={item => item.id.toString()}
