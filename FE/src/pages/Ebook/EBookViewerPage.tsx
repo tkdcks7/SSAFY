@@ -483,6 +483,8 @@ const Component: React.FC<Props> = ({route}) => {
         if (ttsIdx > 0) {
           setttsIdx(prev => prev - 1);
           trackCurrentTtsIdx();
+        } else if (ttsIdx < 0) {
+          trackCurrentTtsIdx();
         }
       }
       playTextSequentially();
@@ -682,7 +684,9 @@ const Component: React.FC<Props> = ({route}) => {
             <TouchableOpacity onPress={handlegoBack}>
               <Image source={leftarrowicon} style={styles.icon} />
             </TouchableOpacity>
-            <Text style={styles.navBarText}>{title ? title : '책 타이틀'}</Text>
+            <Text style={styles.navBarText} numberOfLines={1}>
+              {title ? title : '책 타이틀'}
+            </Text>
             {/* 검색 및 검색 결과 */}
             <TouchableOpacity onPress={() => setIsSearchingOn(true)}>
               <Image source={searchicon} style={styles.icon} />
@@ -739,8 +743,12 @@ const Component: React.FC<Props> = ({route}) => {
           flow="paginated"
           onSwipeRight={() => {
             setHasUsedInitialCfi(true);
+            console.log('swiperight됨');
           }}
-          onSwipeLeft={() => setHasUsedInitialCfi(true)}
+          onSwipeLeft={() => {
+            setHasUsedInitialCfi(true);
+            console.log('swipeleft됨');
+          }}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
           onLocationsReady={() => {
             setTocArr(toc);
@@ -748,6 +756,7 @@ const Component: React.FC<Props> = ({route}) => {
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
           enableSwipe={isSwipable}
           onWebViewMessage={message => {
+            console.log(message);
             if (message?.formArr) {
               if (formArr) {
                 setFormArr(() => [...message.formArr]);
@@ -973,6 +982,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: width * 0.06, // 상대적인 글꼴 크기 0.1 > 0.04로 수정
     fontWeight: 'bold',
+    maxWidth: '75%',
   },
   button: {
     marginTop: height * 0.2, // 상대적인 마진

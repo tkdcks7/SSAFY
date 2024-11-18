@@ -1,24 +1,34 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, Alert } from 'react-native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {View, StyleSheet, ScrollView, Text, Alert} from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import Btn from '../../components/Btn';
-import { Dimensions } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { getUserReadingStats } from '../../services/Mypage/UserInfo'; // API 함수 임포트
-import { getAccessibilityMode, toggleAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
+import {Dimensions} from 'react-native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation/AppNavigator';
+import {getUserReadingStats} from '../../services/Mypage/UserInfo'; // API 함수 임포트
+import {
+  getAccessibilityMode,
+  toggleAccessibilityMode,
+} from '../../utils/accessibilityMode'; // 접근성 모드 함수
+import useUserStore from '../../store/userStore';
+import apiAuth from '../../utils/apiAuth';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 type MyPageNavigationProp = StackNavigationProp<RootStackParamList, 'MyPage'>;
 
 const MyPage: React.FC = () => {
+  const {logout} = useUserStore();
   const navigation = useNavigation<MyPageNavigationProp>();
 
   // 유저 데이터 상태 관리
-  const [userStats, setUserStats] = useState<{ nickname: string; cartBookCount: number; likedBookCount: number } | null>(null);
+  const [userStats, setUserStats] = useState<{
+    nickname: string;
+    cartBookCount: number;
+    likedBookCount: number;
+  } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(true); // 접근성 모드 상태 관리
 
@@ -35,7 +45,10 @@ const MyPage: React.FC = () => {
       const data = await getUserReadingStats();
       setUserStats(data);
     } catch (error: any) {
-      Alert.alert('에러', error.message || '데이터를 불러오는 중 문제가 발생했습니다.');
+      Alert.alert(
+        '에러',
+        error.message || '데이터를 불러오는 중 문제가 발생했습니다.',
+      );
     } finally {
       setLoading(false);
     }
@@ -46,12 +59,23 @@ const MyPage: React.FC = () => {
     useCallback(() => {
       setLoading(true); // 로딩 상태 초기화
       fetchUserStats();
-    }, [])
+    }, []),
   );
 
   const handleToggleAccessibility = async () => {
     const newMode = await toggleAccessibilityMode(); // 접근성 모드 토글
     setIsAccessibilityMode(newMode); // 새로운 상태 설정
+  };
+
+  const handleLogOut = () => {
+    apiAuth.post('/auth/logout');
+    logout();
+    setTimeout(() => {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Landing'}],
+      });
+    }, 300);
   };
 
   return (
@@ -65,15 +89,20 @@ const MyPage: React.FC = () => {
           ) : userStats ? (
             <View style={styles.userInfoSection}>
               <Text style={styles.greetingText}>
-                <Text style={styles.nicknameText}>{userStats.nickname}</Text> 님, 안녕하세요.{' '}
+                <Text style={styles.nicknameText}>{userStats.nickname}</Text>{' '}
+                님, 안녕하세요.{' '}
                 <Text style={styles.accessibilityStatus}>
                   - 현재 접근성 상태: {isAccessibilityMode ? 'On' : 'Off'}
                 </Text>
               </Text>
 
               <View style={styles.bookInfoBox}>
-                <Text style={styles.bookInfoText}>담은 도서: {userStats.cartBookCount}권</Text>
-                <Text style={styles.bookInfoText}>좋아요한 도서: {userStats.likedBookCount}권</Text>
+                <Text style={styles.bookInfoText}>
+                  담은 도서: {userStats.cartBookCount}권
+                </Text>
+                <Text style={styles.bookInfoText}>
+                  좋아요한 도서: {userStats.likedBookCount}권
+                </Text>
               </View>
             </View>
           ) : (
@@ -82,13 +111,34 @@ const MyPage: React.FC = () => {
 
           {/* 버튼 섹션 */}
           <View style={styles.buttonSection}>
-            <Btn title="내 정보 수정" onPress={() => navigation.navigate('UserInfo')} style={styles.buttonSpacing} />
-            <Btn title="나의 리뷰" onPress={() => navigation.navigate('MyReview')} style={styles.buttonSpacing} />
-            <Btn title="담은 도서" onPress={() => navigation.navigate('MyBooks')} style={styles.buttonSpacing} />
-            <Btn title="좋아요한 도서" onPress={() => navigation.navigate('MyLikedBooks')} style={styles.buttonSpacing} />
+            <Btn
+              title="내 정보 수정"
+              onPress={() => navigation.navigate('UserInfo')}
+              style={styles.buttonSpacing}
+            />
+            <Btn
+              title="나의 리뷰"
+              onPress={() => navigation.navigate('MyReview')}
+              style={styles.buttonSpacing}
+            />
+            <Btn
+              title="담은 도서"
+              onPress={() => navigation.navigate('MyBooks')}
+              style={styles.buttonSpacing}
+            />
+            <Btn
+              title="좋아요한 도서"
+              onPress={() => navigation.navigate('MyLikedBooks')}
+              style={styles.buttonSpacing}
+            />
             <Btn
               title={`접근성 모드 ${isAccessibilityMode ? 'Off' : 'On'}`}
               onPress={handleToggleAccessibility}
+              style={styles.buttonSpacing}
+            />
+            <Btn
+              title="로그아웃"
+              onPress={handleLogOut}
               style={styles.buttonSpacing}
             />
           </View>
