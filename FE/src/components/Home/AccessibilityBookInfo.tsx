@@ -29,7 +29,6 @@ const AccessibilityBookIntro: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastIndex, setLastIndex] = useState<number>(-1); // 마지막 기준 인덱스 저장
 
-  // 추천 함수 목록
   const recommendationFunctions = [
     { func: getPopularBooks, name: '인기 도서' },
     { func: getDemographicsPopularBooks, name: '성별, 나이별 인기 도서' },
@@ -49,8 +48,8 @@ const AccessibilityBookIntro: React.FC = () => {
     try {
       const { func } = recommendationFunctions[index];
       const data = await func(); // API 함수 호출
-      setBooks(data.bookList); // 도서 목록 업데이트
-      setCriterion(data.criterion); // API에서 받은 추천 기준 업데이트
+      setBooks(data.bookList || []); // 도서 목록 업데이트
+      setCriterion(data.criterion || ''); // 추천 기준 업데이트
       setLastIndex(index); // 마지막 기준 인덱스 저장
     } catch (err: any) {
       setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
@@ -61,12 +60,10 @@ const AccessibilityBookIntro: React.FC = () => {
   };
 
   const handleMoreRecommendations = () => {
-    // 마지막 기준 인덱스를 제외한 나머지 인덱스 목록 생성
     const availableIndexes = recommendationFunctions
       .map((_, index) => index)
       .filter((index) => index !== lastIndex);
 
-    // 랜덤으로 새로운 기준 선택
     const randomIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
     fetchRecommendation(randomIndex);
   };
@@ -85,9 +82,16 @@ const AccessibilityBookIntro: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.criterionText}>{criterion}</Text> {/* API 응답에서 받은 criterion 표시 */}
-      <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollViewContent}>
-        {books.slice(0, 1).map((book) => ( // 하나의 도서만 표시
+      {criterion ? (
+        <Text style={styles.criterionText}>{criterion}</Text>
+      ) : null}
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+      >
+        {books.slice(0, 1).map((book) => (
           <TouchableOpacity
             key={book.bookId}
             style={styles.bookContainer}
@@ -98,45 +102,53 @@ const AccessibilityBookIntro: React.FC = () => {
           >
             <View style={styles.bookTopSection}>
               <Image
-                source={{ uri: book.cover }} // API에서 받은 도서 표지 이미지
+                source={{ uri: book.cover }}
                 style={styles.bookImage}
                 accessibilityLabel={`${book.title} 표지`}
               />
               <View style={styles.bookInfo}>
-                <Text
-                  style={styles.bookTitle}
-                  accessibilityLabel={`책 제목 ${book.title}`}
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {book.title}
-                </Text>
-                <Text
-                  style={styles.bookAuthor}
-                  accessibilityLabel={`작가 이름 ${book.author}`}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {book.author}
-                </Text>
-                <Text
-                  style={styles.bookPublisher}
-                  accessibilityLabel={`출판사 ${book.publisher}`}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {book.publisher}
-                </Text>
+                {book.title ? (
+                  <Text
+                    style={styles.bookTitle}
+                    accessibilityLabel={`책 제목 ${book.title}`}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {book.title}
+                  </Text>
+                ) : null}
+                {book.author ? (
+                  <Text
+                    style={styles.bookAuthor}
+                    accessibilityLabel={`작가 이름 ${book.author}`}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {book.author}
+                  </Text>
+                ) : null}
+                {book.publisher ? (
+                  <Text
+                    style={styles.bookPublisher}
+                    accessibilityLabel={`출판사 ${book.publisher}`}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {book.publisher}
+                  </Text>
+                ) : null}
               </View>
             </View>
-            <Text
-              style={styles.bookDescription}
-              accessibilityLabel={`책 소개 ${book.story}`}
-              numberOfLines={3}
-              ellipsizeMode="tail"
-            >
-              {book.story}
-            </Text>
+            {book.story ? (
+              <Text
+                style={styles.bookDescription}
+                accessibilityLabel={`책 소개 ${book.story}`}
+                numberOfLines={3}
+                ellipsizeMode="tail"
+              >
+                {book.story}
+              </Text>
+            ) : null}
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -157,7 +169,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: responsiveWidth(7),
   },
-  criterionText: { // 추천 기준 텍스트 스타일
+  criterionText: {
     fontSize: responsiveFontSize(7),
     fontWeight: 'bold',
     textAlign: 'center',
