@@ -25,6 +25,8 @@ import UploadGuidePage from '../pages/RegisterBook/UploadGuidePage';
 
 import ViewDatabase from '../pages/DatabaseViewer'; // ViewDatabase 컴포넌트 추가
 
+import useUserStore from '../store/userStore';
+
 export type RootStackParamList = {
   Landing: undefined;
   Login: undefined;
@@ -59,33 +61,45 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
+  const isLoggedIn = useUserStore(state => state.isLoggedIn);
+
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Landing"
-        screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Landing" component={LandingPage} />
-        <Stack.Screen name="Login" component={LoginPage} />
-        <Stack.Screen name="Signup" component={SignupPage} />
-        <Stack.Screen name="Home" component={HomePage} />
-        <Stack.Screen name="ReadingNotes" component={ReadingNotesPage} />
-        <Stack.Screen name="Library" component={LibraryPage} />
-        <Stack.Screen name="Search" component={SearchPage} />
-        <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
-        <Stack.Screen name="ImageUpload" component={ImageUploadPage} />
-        <Stack.Screen name="UploadGuide" component={UploadGuidePage} />
-        <Stack.Screen name="MyPage" component={MyPage} />
-        <Stack.Screen name="UserInfo" component={UserInfoPage} />
-        <Stack.Screen name="PasswordEdit" component={PasswordEditPage} />
-        <Stack.Screen name="GeneralInfoEdit" component={GeneralInfoEditPage} />
-        <Stack.Screen name="MyReview" component={MyReviewPage} />
-        <Stack.Screen name="MyReviewEdit" component={MyReviewEditPage} />
-        <Stack.Screen name="MyBooks" component={MyBooksPage} />
-        <Stack.Screen name="MyLikedBooks" component={MyLikedBooksPage} />
-        <Stack.Screen name="EBookViewer" component={EBookViewerPage} />
-        <Stack.Screen name="BookDetail" component={BookDetailPage} />
-        <Stack.Screen name="Review" component={ReviewPage} />
-        <Stack.Screen name="DatabaseViewer" component={ViewDatabase} />
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        {isLoggedIn ? (
+          // 로그인된 사용자용 네비게이션 스택
+          <>
+            <Stack.Screen name="Home" component={HomePage} />
+            <Stack.Screen name="ReadingNotes" component={ReadingNotesPage} />
+            <Stack.Screen name="Library" component={LibraryPage} />
+            <Stack.Screen name="Search" component={SearchPage} />
+            <Stack.Screen name="RegisterBook" component={RegisterBookPage} />
+            <Stack.Screen name="ImageUpload" component={ImageUploadPage} />
+            <Stack.Screen name="UploadGuide" component={UploadGuidePage} />
+            <Stack.Screen name="MyPage" component={MyPage} />
+            <Stack.Screen name="UserInfo" component={UserInfoPage} />
+            <Stack.Screen name="PasswordEdit" component={PasswordEditPage} />
+            <Stack.Screen
+              name="GeneralInfoEdit"
+              component={GeneralInfoEditPage}
+            />
+            <Stack.Screen name="MyReview" component={MyReviewPage} />
+            <Stack.Screen name="MyReviewEdit" component={MyReviewEditPage} />
+            <Stack.Screen name="MyBooks" component={MyBooksPage} />
+            <Stack.Screen name="MyLikedBooks" component={MyLikedBooksPage} />
+            <Stack.Screen name="EBookViewer" component={EBookViewerPage} />
+            <Stack.Screen name="BookDetail" component={BookDetailPage} />
+            <Stack.Screen name="Review" component={ReviewPage} />
+            <Stack.Screen name="DatabaseViewer" component={ViewDatabase} />
+          </>
+        ) : (
+          // 비로그인 사용자용 네비게이션 스택
+          <>
+            <Stack.Screen name="Landing" component={LandingPage} />
+            <Stack.Screen name="Login" component={LoginPage} />
+            <Stack.Screen name="Signup" component={SignupPage} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
