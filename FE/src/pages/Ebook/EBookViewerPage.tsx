@@ -13,7 +13,13 @@ import {RouteProp, useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '../../navigation/AppNavigator';
 import {LibraryStackParamList} from '../../navigation/LibraryNavigator';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {Reader, useReader, Themes, Annotation} from '@epubjs-react-native/core';
+import {
+  Reader,
+  useReader,
+  Themes,
+  Annotation,
+  Location,
+} from '@epubjs-react-native/core';
 import {useFileSystem} from '@epubjs-react-native/file-system';
 import Animated, {
   useSharedValue,
@@ -125,7 +131,7 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
 
   useEffect(() => {
     updateLastAccessedBookId(bookId);
-  }, [bookId, updateLastAccessedBookId]);
+  }, [bookId]);
 
   // epubjs-react-native/core 라이브러리 제공 메서드 사용
   const {
@@ -367,14 +373,33 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
 
   const trackCurrentTtsIdx = (): void => {
     const startCfi: string | undefined = getCurrentLocation()?.start.cfi;
-    if (!startCfi) {
+    const endCfi: string | undefined = getCurrentLocation()?.end.cfi;
+    if (!startCfi && !endCfi) {
       console.log('현재 위치의 cfi가 존재하지 않습니다.');
       return;
+    }
+    if (formArr.length > ttsIdx && formArr[ttsIdx]?.cfisRange) {
+      const validationNumUp = compareCFIStrings(
+        startCfi,
+        formArr[ttsIdx].cfisRange,
+      );
+      const validationNumDown = compareCFIStrings(
+        formArr[ttsIdx].cfisRange,
+        endCfi,
+      );
+      console.log(
+        `validationNum1=${validationNumUp}, currttsidx=${ttsIdx}, validationNumDown=${validationNumDown}`,
+      );
+      if (validationNumUp < 1 && validationNumDown < 1) {
+        console.log('val 새로 설정 안함');
+        return;
+      }
     }
     const idx: number = formArr.findIndex(formItem => {
       const vall: number = compareCFIStrings(formItem.cfisRange, startCfi);
       return vall > -1;
     });
+    console.log(`val 새로 설정. idx = ${idx}`);
     if (idx !== -1) {
       setttsIdx(idx);
     }
@@ -543,15 +568,8 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
     });
   };
 
-  // 책 진행률 변경 핸들러
-  const handleProgressGage = (): void => {
-    const gage: number | undefined = getCurrentLocation()?.end.percentage;
-    if (gage) {
-      setProgress(gage);
-    }
-  };
-
   const handleOnReady = (): void => {
+    console.log('onready 시작!');
     isCustomBook ? switchCustomBookMode() : getFormArr();
     changeFontSize(fontSizeTable[fontSizeSetting]);
     Tts.setDefaultVoice(voiceMagicTable[ttsVoiceIndex]);
@@ -628,6 +646,20 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
     }, 1000);
   };
 
+  // TTSModoe 종료
+  const handleTTSModeClose = (): void => {
+    Tts.stop();
+    if (isTimerOn) {
+      setIsTimerOn(false);
+    }
+    if (isTTSPlaying) {
+      setIsTTSPlaying(false);
+    }
+    if (isTTSMode) {
+      setIsTTSMode(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       {/* 네비게이션 바 */}
@@ -635,7 +667,7 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
         {isTTSMode ? (
           <TouchableOpacity
             onPress={() => {
-              isTimerOn ? handleTimerOff() : setIsTTSMode(false);
+              isTimerOn ? handleTimerOff() : handleTTSModeClose();
             }}
             style={styles.ttsEndBox}>
             <Text style={[styles.navBarText, {color: 'black'}]}>
@@ -696,9 +728,9 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
           src={bookSrc}
           fileSystem={useFileSystem}
           flow="paginated"
-          onLocationChange={() => {
-            handleProgressGage();
-          }}
+          // onLocationChange={() => {
+          //   handleProgressGage();
+          // }}
           onSwipeRight={() => setHasUsedInitialCfi(true)}
           onSwipeLeft={() => setHasUsedInitialCfi(true)}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
@@ -711,11 +743,14 @@ const EBookViewerPage: React.FC<Props> = ({route}) => {
                 setFormArr([...message.formArr]);
                 console.log('formArr 저장됨');
               }
-            } else if (message?.gonextpage) {
-              console.log('페이지 이동');
-              goNext();
             } else if (message?.updateIdx) {
               setttsIdx(message.updateIdx);
+            } else if (message?.gonextpage) {
+              goNext();
+            }
+            if (message?.reloc) {
+              console.log('프로그레스 추적');
+              setProgress(message.reloc);
             }
           }}
           injectedJavascript={`
@@ -774,6 +809,8 @@ const getFormArr = async () => {
 };
 
 rendition.on("relocated", (location) => {
+const locPercentage =  book.locations.percentageFromCfi(location.start.cfi)
+window.ReactNativeWebView.postMessage(JSON.stringify({ reloc: locPercentage }));
   window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트", pvi: nowIndex, ci: location.start.index }));
   if (location.start.index !== nowIndex) {
     nowIndex = location.start.index;
