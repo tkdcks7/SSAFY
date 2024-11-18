@@ -44,14 +44,14 @@ const FontSizeSettingModal: React.FC<Props> = ({
         <Btn
           title="완료"
           btnSize={0}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={handleFontSizeChange}
         />
         <Btn
           isWhite={true}
           title="취소"
           btnSize={0}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={closeModal}
         />
       </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { LibraryContext } from '../../contexts/LibraryContext';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../../navigation/AppNavigator';
+import {LibraryContext} from '../../contexts/LibraryContext';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 type Book = {
   id: number;
@@ -34,15 +35,15 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
   books,
   currentBook,
 }) => {
-  const { removeBook } = useContext(LibraryContext)!;
+  const {removeBook} = useContext(LibraryContext)!;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     if (currentBook) {
       AccessibilityInfo.announceForAccessibility(
-        `현재 읽고 있는 책은 ${currentBook.title}입니다.`
+        `현재 읽고 있는 책은 ${currentBook.title}입니다.`,
       );
     }
   }, [currentBook]);
@@ -51,7 +52,10 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
     console.log('handleDelete called for book:', book);
     setSelectedBook(book);
     setShowDeleteModal(true);
-    console.log('showDeleteModal after setShowDeleteModal(true):', showDeleteModal);
+    console.log(
+      'showDeleteModal after setShowDeleteModal(true):',
+      showDeleteModal,
+    );
   };
 
   const confirmDelete = () => {
@@ -61,14 +65,16 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
         .then(() => {
           console.log('Book removed successfully:', selectedBook);
           AccessibilityInfo.announceForAccessibility(
-            `${selectedBook.title}이(가) 책장에서 삭제되었습니다.`
+            `${selectedBook.title}이(가) 책장에서 삭제되었습니다.`,
           );
           setShowDeleteModal(false);
           setSelectedBook(null);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Error removing book:', error);
-          AccessibilityInfo.announceForAccessibility('삭제에 실패했습니다. 다시 시도해주세요.');
+          AccessibilityInfo.announceForAccessibility(
+            '삭제에 실패했습니다. 다시 시도해주세요.',
+          );
         });
     }
   };
@@ -77,7 +83,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
     <>
       <FlatList
         data={books}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         style={styles.bookContainer}
         ListHeaderComponent={
           <View>
@@ -85,8 +91,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
               <View style={styles.currentBookContainer}>
                 <Text
                   style={styles.currentBookTitle}
-                  accessibilityLabel={`현재 읽고 있는 책: ${currentBook.title}`}
-                >
+                  accessibilityLabel={`현재 읽고 있는 책: ${currentBook.title}`}>
                   현재 읽고 있는 책
                 </Text>
                 <TouchableOpacity
@@ -112,8 +117,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                       style={styles.bookTitle}
                       numberOfLines={2}
                       ellipsizeMode="tail"
-                      accessibilityLabel={`제목: ${currentBook.title}`}
-                    >
+                      accessibilityLabel={`제목: ${currentBook.title}`}>
                       {currentBook.title}
                     </Text>
                     <View>
@@ -121,16 +125,14 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                         style={styles.bookAuthor}
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        accessibilityLabel={`저자: ${currentBook.author}`}
-                      >
+                        accessibilityLabel={`저자: ${currentBook.author}`}>
                         저자: {currentBook.author}
                       </Text>
                       <Text
                         style={styles.bookPublisher}
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        accessibilityLabel={`출판사: ${currentBook.publisher}`}
-                      >
+                        accessibilityLabel={`출판사: ${currentBook.publisher}`}>
                         출판사: {currentBook.publisher}
                       </Text>
                     </View>
@@ -143,7 +145,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
             >내 서재</Text>
           </View>
         }
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <View style={styles.bookItemContainer}>
             <TouchableOpacity
               style={styles.bookItem}
@@ -156,7 +158,9 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
             >
               <Image
                 source={{
-                  uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}`,
+                  uri: item.cover.startsWith('http')
+                    ? item.cover
+                    : `file://${item.cover}`,
                 }}
                 style={styles.bookImage}
                 accessibilityLabel={`표지 이미지: ${item.title}`}
@@ -165,8 +169,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                 <Text
                   style={styles.bookTitle}
                   numberOfLines={2}
-                  accessibilityLabel={`제목: ${item.title}`}
-                >
+                  accessibilityLabel={`제목: ${item.title}`}>
                   {item.title}
                 </Text>
                 <View>
@@ -202,7 +205,7 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
       />
 
       {/* 삭제 모델 */}
-      {console.log('Modal visible state:', showDeleteModal)}
+      {/* {console.log('Modal visible state:', showDeleteModal)} */}
       <Modal transparent={true} visible={showDeleteModal} animationType="slide">
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
@@ -211,16 +214,14 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
               style={styles.submitButton}
               onPress={confirmDelete}
               accessibilityRole="button"
-              accessibilityLabel="도서 삭제 확인"
-            >
+              accessibilityLabel="도서 삭제 확인">
               <Text style={styles.submitButtonText}>확인</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowDeleteModal(false)}
               accessibilityRole="button"
-              accessibilityLabel="도서 삭제 취소"
-            >
+              accessibilityLabel="도서 삭제 취소">
               <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           </View>
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   currentBookItem: {
     borderRadius: width * 0.03,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: height * 0.005 },
+    shadowOffset: {width: 0, height: height * 0.005},
     shadowOpacity: 0.3,
     shadowRadius: width * 0.02,
     elevation: 5,
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: width * 0.03,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: height * 0.005 },
+    shadowOffset: {width: 0, height: height * 0.005},
     shadowOpacity: 0.3,
     shadowRadius: width * 0.02,
     elevation: 5,

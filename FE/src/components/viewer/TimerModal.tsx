@@ -65,14 +65,14 @@ const TimerModal: React.FC<Props> = ({
         <Btn
           title="완료"
           btnSize={1}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={handlePressTimeSetting}
         />
         <Btn
           isWhite={true}
           title="취소"
           btnSize={1}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={closeModal}
         />
       </View>
