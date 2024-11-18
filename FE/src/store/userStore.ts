@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import {persist, createJSONStorage} from 'zustand/middleware';
 
 // 상태 인터페이스 정의
 interface UserState {
@@ -12,8 +12,15 @@ interface UserState {
   isDisabled: boolean;
   isMale: boolean;
   cookie: string; // 쿠키 상태 추가
-  updateUser: (data: Partial<Omit<UserState, 'email' | 'updateUser' | 'login' | 'logout'>>) => void;
-  login: (data: Omit<UserState, 'isLoggedIn' | 'updateUser' | 'login' | 'logout' | 'cookie'>) => void;
+  updateUser: (
+    data: Partial<Omit<UserState, 'email' | 'updateUser' | 'login' | 'logout'>>,
+  ) => void;
+  login: (
+    data: Omit<
+      UserState,
+      'isLoggedIn' | 'updateUser' | 'login' | 'logout' | 'cookie'
+    >,
+  ) => void;
   logout: () => void;
   setCookie: (cookie: string) => void;
   clearCookie: () => void;
@@ -22,7 +29,7 @@ interface UserState {
 // Zustand 스토어 생성
 const useUserStore = create<UserState>()(
   persist(
-    (set) => ({
+    set => ({
       isLoggedIn: false,
       email: '',
       name: '',
@@ -33,14 +40,14 @@ const useUserStore = create<UserState>()(
       cookie: '', // 쿠키 초기값
 
       // 단일 업데이트 함수
-      updateUser: (data) =>
-        set((state) => ({
+      updateUser: data =>
+        set(state => ({
           ...state,
           ...data,
         })),
 
       // 로그인 함수 - isLoggedIn을 true로 설정하고 나머지 값을 입력받아 설정
-      login: ({ email, name, nickname, birthdate, isDisabled, isMale }) =>
+      login: ({email, name, nickname, birthdate, isDisabled, isMale}) =>
         set({
           isLoggedIn: true,
           email,
@@ -65,7 +72,7 @@ const useUserStore = create<UserState>()(
         }),
 
       // 쿠키 설정 함수 - 쿠키를 설정하거나 업데이트
-      setCookie: (cookie) =>
+      setCookie: cookie =>
         set({
           cookie,
         }),
@@ -79,8 +86,8 @@ const useUserStore = create<UserState>()(
     {
       name: 'user-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 
 export default useUserStore;

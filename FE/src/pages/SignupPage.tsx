@@ -15,7 +15,6 @@ import Btn from '../components/Btn';
 import InputBox from '../components/InputBox';
 import PageWrapper from '../components/PageWrapper';
 import apiAnonymous from '../utils/apiAnonymous';
-import Tts from 'react-native-tts';
 import useUserStore from '../store/userStore';
 
 type SignupPageNavigationProp = StackNavigationProp<
@@ -57,7 +56,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
   const nameRef = useRef<TextInput>(null);
 
   const [enteredCnt, setEnteredCnt] = useState<number>(0);
-  const {setCookie} = useUserStore();
+  const {setCookie, login} = useUserStore();
 
   useEffect(() => {
     nameRef.current?.focus();
@@ -213,7 +212,21 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
         const setCookieHeader = response.headers['set-cookie'];
         if (setCookieHeader) {
           setCookie(setCookieHeader[0]);
-          navigation.navigate('Home');
+          const tempData = {
+            name: 'temp',
+            email,
+            nickname: 'temp',
+            birthdate: '1995-11-22',
+            isDisabled: true,
+            isMaile: true,
+          };
+          login({tempData});
+          setTimeout(() => {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Home'}],
+            });
+          }, 300);
         }
       })
       .catch(error => {

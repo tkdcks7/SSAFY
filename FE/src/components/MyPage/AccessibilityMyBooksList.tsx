@@ -1,8 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, AccessibilityInfo, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/AppNavigator';
+import React, {useState, useEffect, useContext} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  AccessibilityInfo,
+  Alert,
+} from 'react-native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation/AppNavigator';
 import {
   downloadBook,
   saveBookToLocalDatabase,
@@ -10,7 +17,7 @@ import {
   isBookAlreadyDownloaded,
 } from '../../services/BookDetail/BookDetail';
 import DownloadModal from '../../components/BookDetail/DownloadModal';
-import { LibraryContext } from '../../contexts/LibraryContext'; // 전역 상태 관리
+import {LibraryContext} from '../../contexts/LibraryContext'; // 전역 상태 관리
 
 interface Book {
   bookId: number;
@@ -25,26 +32,35 @@ interface Book {
 interface AccessibilityMyBooksListProps {
   books: Book[];
   searchQuery: string;
+  navigation: MyBooksNavigationProp;
 }
 
-type BookDetailNavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
+type MyBooksNavigationProp = StackNavigationProp<RootStackParamList, 'MyBooks'>;
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
-const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ books, searchQuery }) => {
-  const { addBook } = useContext(LibraryContext)!; // 전역 상태 관리 함수
-  const [downloadedBooks, setDownloadedBooks] = useState<{ [key: number]: boolean }>({});
+const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({
+  books,
+  searchQuery,
+  navigation,
+}) => {
+  const {addBook} = useContext(LibraryContext)!; // 전역 상태 관리 함수
+  const [downloadedBooks, setDownloadedBooks] = useState<{
+    [key: number]: boolean;
+  }>({});
   const [showOnlyNotDownloaded, setShowOnlyNotDownloaded] = useState(false);
-  const [downloading, setDownloading] = useState<{ [key: number]: boolean }>({});
+  const [downloading, setDownloading] = useState<{[key: number]: boolean}>({});
   const [isModalVisible, setModalVisible] = useState(false);
   const [currentBookId, setCurrentBookId] = useState<number | null>(null);
-  const navigation = useNavigation<BookDetailNavigationProp>();
 
   useEffect(() => {
     const checkDownloadedStatus = async () => {
-      const status: { [key: number]: boolean } = {};
+      const status: {[key: number]: boolean} = {};
       for (const book of books) {
-        const isDownloaded = await isBookAlreadyDownloaded(book.bookId, book.title);
+        const isDownloaded = await isBookAlreadyDownloaded(
+          book.bookId,
+          book.title,
+        );
         status[book.bookId] = isDownloaded;
       }
       setDownloadedBooks(status);
@@ -53,7 +69,7 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
     checkDownloadedStatus();
   }, [books]);
 
-  const filteredBooks = books.filter((book) => {
+  const filteredBooks = books.filter(book => {
     if (showOnlyNotDownloaded) {
       return book.epubFlag && !downloadedBooks[book.bookId];
     }
@@ -67,10 +83,13 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
     try {
       if (downloading[book.bookId]) return;
 
-      setDownloading((prev) => ({ ...prev, [book.bookId]: true }));
+      setDownloading(prev => ({...prev, [book.bookId]: true}));
 
       const metadata = await downloadBook(book.bookId);
-      const filePath = await downloadFileFromUrl(metadata.url, `${metadata.title}.epub`);
+      const filePath = await downloadFileFromUrl(
+        metadata.url,
+        `${metadata.title}.epub`,
+      );
 
       const bookData = {
         id: Date.now(), // 고유 ID 생성
@@ -92,14 +111,16 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
 
       await saveBookToLocalDatabase(bookData);
       addBook(bookData); // 전역 상태에 도서 추가
-      setDownloadedBooks((prev) => ({ ...prev, [book.bookId]: true }));
-      setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
+      setDownloadedBooks(prev => ({...prev, [book.bookId]: true}));
+      setDownloading(prev => ({...prev, [book.bookId]: false}));
       setCurrentBookId(book.bookId);
       setModalVisible(true);
 
-      AccessibilityInfo.announceForAccessibility(`${book.title} 다운로드가 완료되었습니다.`);
+      AccessibilityInfo.announceForAccessibility(
+        `${book.title} 다운로드가 완료되었습니다.`,
+      );
     } catch (error) {
-      setDownloading((prev) => ({ ...prev, [book.bookId]: false }));
+      setDownloading(prev => ({...prev, [book.bookId]: false}));
       Alert.alert('다운로드 실패', '도서를 다운로드할 수 없습니다.');
     }
   };
@@ -108,38 +129,40 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.filterButton}
-        onPress={() => setShowOnlyNotDownloaded((prev) => !prev)}
-        accessibilityLabel={showOnlyNotDownloaded ? '모든 도서 보기' : '다운로드되지 않은 도서만 보기'}
-      >
+        onPress={() => setShowOnlyNotDownloaded(prev => !prev)}
+        accessibilityLabel={
+          showOnlyNotDownloaded
+            ? '모든 도서 보기'
+            : '다운로드되지 않은 도서만 보기'
+        }>
         <Text style={styles.filterButtonText}>
-          {showOnlyNotDownloaded ? '모든 도서 보기' : '다운로드되지 않은 도서만 보기'}
+          {showOnlyNotDownloaded
+            ? '모든 도서 보기'
+            : '다운로드되지 않은 도서만 보기'}
         </Text>
       </TouchableOpacity>
-      {filteredBooks.map((book) => (
+      {filteredBooks.map(book => (
         <View key={book.bookId} style={styles.card}>
           <View style={styles.leftSection}>
             <Text
               style={styles.title}
               accessibilityLabel={`제목: ${book.title}`}
               numberOfLines={2}
-              ellipsizeMode="tail"
-            >
+              ellipsizeMode="tail">
               {book.title}
             </Text>
             <Text
               style={styles.author}
               accessibilityLabel={`저자: ${book.author}`}
               numberOfLines={1}
-              ellipsizeMode="tail"
-            >
+              ellipsizeMode="tail">
               {book.author}
             </Text>
           </View>
           {!book.epubFlag ? (
             <View
               style={styles.unavailableSection}
-              accessibilityLabel={`${book.title} 다운로드 불가`}
-            >
+              accessibilityLabel={`${book.title} 다운로드 불가`}>
               <Text style={styles.unavailableText}>다운불가</Text>
             </View>
           ) : !downloadedBooks[book.bookId] ? (
@@ -152,26 +175,25 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
                 downloading[book.bookId]
                   ? '다운로드 중입니다.'
                   : '이 도서를 다운로드합니다.'
-              }
-            >
+              }>
               <Text style={styles.downloadText}>다운로드</Text>
             </TouchableOpacity>
           ) : (
             <View
               style={styles.middleSectionDownloaded}
-              accessibilityLabel={`${book.title} 다운로드 완료`}
-            >
+              accessibilityLabel={`${book.title} 다운로드 완료`}>
               <Text style={styles.downloadedText}>다운완료</Text>
             </View>
           )}
           <TouchableOpacity
             style={styles.rightSection}
             onPress={() => {
-              AccessibilityInfo.announceForAccessibility(`${book.title} 상세보기 페이지로 이동합니다.`);
-              navigation.navigate('BookDetail', { bookId: book.bookId });
+              AccessibilityInfo.announceForAccessibility(
+                `${book.title} 상세보기 페이지로 이동합니다.`,
+              );
+              navigation.navigate('BookDetail', {bookId: book.bookId});
             }}
-            accessibilityLabel={`${book.title} 상세보기 버튼`}
-          >
+            accessibilityLabel={`${book.title} 상세보기 버튼`}>
             <Text style={styles.detailText}>상세보기</Text>
           </TouchableOpacity>
         </View>
@@ -181,7 +203,9 @@ const AccessibilityMyBooksList: React.FC<AccessibilityMyBooksListProps> = ({ boo
         onClose={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          navigation.navigate('EBookReader', { bookId: currentBookId });
+          if (currentBookId) {
+            navigation.navigate('EBookViewer', {bookId: currentBookId});
+          }
         }}
       />
     </View>

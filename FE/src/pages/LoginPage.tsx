@@ -17,6 +17,7 @@ import Btn from '../components/Btn';
 import InputBox from '../components/InputBox';
 import apiAnonymous from '../utils/apiAnonymous';
 import useUserStore from '../store/userStore';
+import {useNavigation} from '@react-navigation/native';
 
 type LoginPageNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -26,14 +27,15 @@ type Props = {
   navigation: LoginPageNavigationProp;
 };
 
-const LoginPage: React.FC<Props> = ({navigation}) => {
+const LoginPage: React.FC<Props> = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
-  const {setCookie} = useUserStore();
+  const {setCookie, login} = useUserStore();
+  const navigation = useNavigation<LoginPageNavigationProp>();
 
   // 진입 시 포커스 자동 설정
   useEffect(() => {
@@ -74,11 +76,24 @@ const LoginPage: React.FC<Props> = ({navigation}) => {
     apiAnonymous
       .post('/auth/login', data, {withCredentials: true})
       .then(response => {
-        // clearCookie();
         const setCookieHeader = response.headers['set-cookie'];
         if (setCookieHeader) {
           setCookie(setCookieHeader[0]);
-          navigation.navigate('Home');
+          const tempData = {
+            name: 'temp',
+            email,
+            nickname: 'temp',
+            birthdate: '1995-11-22',
+            isDisabled: true,
+            isMaile: true,
+          };
+          login({tempData});
+          setTimeout(() => {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Home'}],
+            });
+          }, 300);
         }
       })
       .catch(error => {
