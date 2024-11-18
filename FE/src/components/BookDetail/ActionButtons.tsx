@@ -18,6 +18,8 @@ import {
 } from '../../services/BookDetail/BookDetail';
 import DownloadModal from './DownloadModal';
 import {LibraryContext} from '../../contexts/LibraryContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation/AppNavigator';
 
 interface ActionButtonsProps {
   likedFlag: boolean;
@@ -26,6 +28,8 @@ interface ActionButtonsProps {
   bookId: number;
   onLikeToggle: () => void;
 }
+
+// type NavigationProp = StackNavigationProp<RootStackParamList, 'Library'>;
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   likedFlag,
@@ -196,7 +200,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClose={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          navigation.navigate('EbookViewer', {bookId}); // eBook 리더로 이동
+          navigation.navigate('EBookViewer', {bookId}); // eBook 리더로 이동
         }}
       />
     </>
