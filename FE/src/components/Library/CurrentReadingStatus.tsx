@@ -1,28 +1,34 @@
-// src/components/Library/CurrentReadingStatus.tsx
 import React from 'react';
-import {View, Text, StyleSheet, Image, Dimensions} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native'; // Navigation 추가
 
 const {width, height} = Dimensions.get('window');
-
-// type Book = {
-//   id: number;
-//   title: string;
-//   author: string;
-//   cover: string;
-//   publisher: string;
-//   progress?: number;
-// };
 
 type Props = {
   book: any;
 };
 
 const CurrentReadingStatus: React.FC<Props> = ({book}) => {
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    if (book) {
+      navigation.navigate('EBookViewer', { bookId: book.bookId }); // 'ViewerPage'로 이동
+    }
+  };
+
   return (
     <View style={styles.containerWrapper}>
       <Text style={styles.headerText}>현재 읽고 있는 책</Text>
       {book ? (
-        <View style={styles.container}>
+        <TouchableOpacity onPress={handlePress} style={styles.container}>
           <Image
             source={{
               uri: book.cover.startsWith('http')
@@ -44,9 +50,11 @@ const CurrentReadingStatus: React.FC<Props> = ({book}) => {
               <Text style={styles.readingProgress}>{book.progressRate}%</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       ) : (
-        <View style={styles.container}></View>
+        <View style={styles.container}>
+          <Text style={styles.noBookText}>현재 읽고 있는 책이 없습니다.</Text>
+        </View>
       )}
     </View>
   );
@@ -82,7 +90,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    flexWrap: 'wrap', // 줄바꿈 허용
+    flexWrap: 'wrap',
   },
   bookTitleContainer: {
     flex: 1,
@@ -97,16 +105,21 @@ const styles = StyleSheet.create({
   progressContainer: {
     backgroundColor: '#ffffff',
     paddingHorizontal: width * 0.04,
-    paddingVertical: height * 0.01,
+    paddingVertical: height * 0.025,
     borderRadius: 8,
-    maxWidth: width * 0.2, // 버튼 최대 크기 제한
-    alignSelf: 'flex-start', // 컨테이너 내에서 정렬
-    flexShrink: 1, // 공간 부족 시 크기 축소
+    maxWidth: width * 0.2,
+    alignSelf: 'flex-start',
+    flexShrink: 1,
   },
   readingProgress: {
     fontSize: width * 0.045,
     fontWeight: 'bold',
     color: '#3943B7',
+    textAlign: 'center',
+  },
+  noBookText: {
+    fontSize: width * 0.045,
+    color: '#ffffff',
     textAlign: 'center',
   },
 });

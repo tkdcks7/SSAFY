@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext, useCallback} from 'react';
-import {View, StyleSheet, Alert, FlatList} from 'react-native';
+import {View, Text, StyleSheet, Alert, FlatList} from 'react-native';
 import RNFS from 'react-native-fs';
 import {useNavigation, useFocusEffect} from '@react-navigation/native'; // useFocusEffect 추가
 import MainHeader from '../../components/MainHeader';
@@ -161,7 +161,7 @@ const LibraryPage: React.FC = () => {
           btnSize={1}
           onPress={() => navigation.navigate('DatabaseViewer')}
         />
-      </View> */}
+      </View>
       <FlatList
         data={books}
         keyExtractor={item => item.id.toString()}
@@ -179,7 +179,13 @@ const LibraryPage: React.FC = () => {
               />
             ) : (
               <View>
-                <CurrentReadingStatus book={getCurrentBookData()} />
+                {getCurrentBookData() ? (
+                  <CurrentReadingStatus book={getCurrentBookData()} />
+                ) : (
+                  <Text style={styles.noCurrentBookText}>
+                    현재 읽고 있는 도서가 없습니다
+                  </Text>
+                )}
                 <GeneralBookList books={books} />
               </View>
             )}
@@ -217,6 +223,12 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingBottom: 100,
+  },
+  noCurrentBookText: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });
 
