@@ -44,14 +44,14 @@ const VoiceSelectModal: React.FC<Props> = ({closeModal}) => {
         <Btn
           title="완료"
           btnSize={0}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={handleChangeVoice}
         />
         <Btn
           isWhite={true}
           title="취소"
           btnSize={0}
-          style={{marginBottom: height * 0.02}}
+          style={{marginBottom: height * 0.02, width: '80%'}}
           onPress={closeModal}
         />
       </View>

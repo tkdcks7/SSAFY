@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, StyleSheet, Alert, FlatList } from 'react-native';
+import React, {useState, useEffect, useContext, useCallback} from 'react';
+import {View, Text, StyleSheet, Alert, FlatList} from 'react-native';
 import RNFS from 'react-native-fs';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // useFocusEffect 추가
+import {useNavigation, useFocusEffect} from '@react-navigation/native'; // useFocusEffect 추가
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
 import Tab from '../../components/Library/Tab';
@@ -10,20 +10,25 @@ import AccessibilityBookList from '../../components/Library/AccessibilityBookLis
 import GeneralBookList from '../../components/Library/GeneralBookList';
 import CurrentReadingStatus from '../../components/Library/CurrentReadingStatus';
 import Btn from '../../components/Btn';
-import { resetLocalDatabase } from '../../utils/readLocalDatabase';
-import { getAccessibilityMode } from '../../utils/accessibilityMode'; // 접근성 모드 함수
-import { LibraryContext } from '../../contexts/LibraryContext';
+import useEpubStore from '../../store/epubStore';
+import {resetLocalDatabase} from '../../utils/readLocalDatabase';
+import {getAccessibilityMode} from '../../utils/accessibilityMode'; // 접근성 모드 함수
+import {LibraryContext} from '../../contexts/LibraryContext';
 
 const LibraryPage: React.FC = () => {
   const navigation = useNavigation();
-  const { allBooks, setAllBooks } = useContext(LibraryContext)!;
+  const {allBooks, setAllBooks} = useContext(LibraryContext)!;
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [filter, setFilter] = useState<'전체' | '출판도서' | '등록도서'>('전체');
+  const [filter, setFilter] = useState<'전체' | '출판도서' | '등록도서'>(
+    '전체',
+  );
   const [selectedFilter, setSelectedFilter] = useState('다운로드 순');
   const [searchText, setSearchText] = useState('');
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
+
+  const {lastAccessedBookId} = useEpubStore();
 
   const loadBooks = async () => {
     try {
@@ -32,13 +37,17 @@ const LibraryPage: React.FC = () => {
 
       if (fileExists) {
         const fileContent = await RNFS.readFile(dbPath, 'utf8');
-        const parsedBooks = JSON.parse(fileContent).map((book: any, index: number) => ({
-          ...book,
-          id: book.bookId || index,
-        }));
+        const parsedBooks = JSON.parse(fileContent).map(
+          (book: any, index: number) => ({
+            ...book,
+            id: book.bookId || index,
+          }),
+        );
         setAllBooks(parsedBooks);
 
-        const uniqueCategories = Array.from(new Set(parsedBooks.map((book) => book.category)));
+        const uniqueCategories = Array.from(
+          new Set(parsedBooks.map(book => book.category)),
+        );
         setCategories(uniqueCategories);
       } else {
         Alert.alert('알림', '로컬 데이터베이스에 저장된 도서가 없습니다.');
@@ -54,7 +63,9 @@ const LibraryPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const uniqueCategories = Array.from(new Set(allBooks.map((book) => book.category)));
+    const uniqueCategories = Array.from(
+      new Set(allBooks.map(book => book.category)),
+    );
     setCategories(uniqueCategories);
     applyFilterAndSearch(filter, searchText, selectedFilter);
   }, [allBooks, filter, searchText, selectedFilter]);
@@ -62,32 +73,38 @@ const LibraryPage: React.FC = () => {
   const applyFilterAndSearch = (
     filterType: '전체' | '출판도서' | '등록도서',
     searchText: string,
-    selectedFilter: string
+    selectedFilter: string,
   ) => {
     let filteredBooks = [...allBooks];
 
     if (filterType === '출판도서') {
-      filteredBooks = filteredBooks.filter((book) => book.dtype === 'PUBLISHED');
+      filteredBooks = filteredBooks.filter(book => book.dtype === 'PUBLISHED');
     } else if (filterType === '등록도서') {
-      filteredBooks = filteredBooks.filter((book) => book.dtype === 'REGISTERED');
+      filteredBooks = filteredBooks.filter(book => book.dtype === 'REGISTERED');
     }
 
     if (searchText) {
       const lowercasedSearch = searchText.toLowerCase().trim();
       filteredBooks = filteredBooks.filter(
-        (book) =>
+        book =>
           book.title.toLowerCase().includes(lowercasedSearch) ||
           book.author.toLowerCase().includes(lowercasedSearch) ||
-          book.publisher.toLowerCase().includes(lowercasedSearch)
+          book.publisher.toLowerCase().includes(lowercasedSearch),
       );
     }
 
     if (selectedFilter === '다운로드 순') {
-      filteredBooks.sort((a, b) => new Date(b.downloadDate).getTime() - new Date(a.downloadDate).getTime());
+      filteredBooks.sort(
+        (a, b) =>
+          new Date(b.downloadDate).getTime() -
+          new Date(a.downloadDate).getTime(),
+      );
     } else if (selectedFilter === '사전 순') {
       filteredBooks.sort((a, b) => a.title.localeCompare(b.title));
     } else if (categories.includes(selectedFilter)) {
-      filteredBooks = filteredBooks.filter((book) => book.category === selectedFilter);
+      filteredBooks = filteredBooks.filter(
+        book => book.category === selectedFilter,
+      );
     }
 
     setBooks(filteredBooks);
@@ -100,12 +117,11 @@ const LibraryPage: React.FC = () => {
         setIsAccessibilityMode(mode);
       };
       fetchAccessibilityMode();
-    }, [])
+    }, []),
   );
 
-
   const toggleSidebar = () => {
-    setIsSidebarVisible((prev) => !prev);
+    setIsSidebarVisible(prev => !prev);
   };
 
   const handleDatabaseReset = async () => {
@@ -116,6 +132,16 @@ const LibraryPage: React.FC = () => {
     } catch (error) {
       Alert.alert('오류', '로컬 데이터베이스 초기화 중 문제가 발생했습니다.');
     }
+  };
+
+  const getCurrentBookData = (): any | null => {
+    const val: any | null = books.find(
+      book => book.bookId === lastAccessedBookId,
+    );
+    if (val) {
+      return val;
+    }
+    return null;
   };
 
   return (
@@ -138,17 +164,30 @@ const LibraryPage: React.FC = () => {
       </View>
       <FlatList
         data={books}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         ListHeaderComponent={
           <View style={styles.contentContainer}>
-            <Tab onMenuPress={toggleSidebar} onTabClick={setFilter} onSearch={setSearchText} />
+            <Tab
+              onMenuPress={toggleSidebar}
+              onTabClick={setFilter}
+              onSearch={setSearchText}
+            />
             {isAccessibilityMode ? (
-              <AccessibilityBookList books={books} currentBook={books[0]}/>
+              <AccessibilityBookList
+                books={books}
+                currentBook={getCurrentBookData()}
+              />
             ) : (
-                <View>
-                  <CurrentReadingStatus />
-                  <GeneralBookList books={books} />
-                </View>
+              <View>
+                {getCurrentBookData() ? (
+                  <CurrentReadingStatus book={getCurrentBookData()} />
+                ) : (
+                  <Text style={styles.noCurrentBookText}>
+                    현재 읽고 있는 도서가 없습니다
+                  </Text>
+                )}
+                <GeneralBookList books={books} />
+              </View>
             )}
           </View>
         }
@@ -158,7 +197,7 @@ const LibraryPage: React.FC = () => {
       {isSidebarVisible && (
         <Sidebar
           onClose={toggleSidebar}
-          onFilterSelect={(filter) => {
+          onFilterSelect={filter => {
             setSelectedFilter(filter);
             toggleSidebar();
           }}
@@ -184,6 +223,12 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingBottom: 100,
+  },
+  noCurrentBookText: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });
 

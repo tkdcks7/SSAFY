@@ -5,7 +5,7 @@ import {IReadNote} from '../../services/ViewerPage/readNotes';
 
 type ProgressProps = {
   item: IReadNote;
-  goToLocation: (cfi: string) => void;
+  handleReadNotePress: (cfi: string) => void;
   toggleBookNote: () => void;
 };
 
@@ -14,7 +14,7 @@ const {width, height} = Dimensions.get('window');
 // onPress를 안받았을 시 아무것도 작동 안하는 빈 함수 실행
 const BookNoteContent: React.FC<ProgressProps> = ({
   item,
-  goToLocation,
+  handleReadNotePress,
   toggleBookNote,
 }) => {
   const {title, progressRate, sentence, sentenceId, createdAt} = item;
@@ -24,7 +24,7 @@ const BookNoteContent: React.FC<ProgressProps> = ({
       style={styles.noteBox}
       onPress={() => {
         toggleBookNote();
-        goToLocation(sentenceId);
+        handleReadNotePress(sentenceId);
       }}>
       <Text style={styles.noteTitle}>
         {sentence.length > 30 ? sentence.slice(0, 30) + '...' : sentence}

@@ -65,11 +65,11 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
           <View style={styles.bookItem}>
             <TouchableOpacity
               onPress={() => {
-                AccessibilityInfo.announceForAccessibility(`${item.title} 상세보기 페이지로 이동합니다.`);
+                AccessibilityInfo.announceForAccessibility(`${item.title} 뷰어 페이지로 이동합니다.`);
                 navigation.navigate('EBookViewer', { bookId: item.bookId });
               }}
               accessibilityLabel={`${item.title} 선택됨`}
-              accessibilityHint="상세 정보를 확인하려면 두 번 탭하세요."
+              accessibilityHint="뷰어로 이동하려면 두 번 탭하세요."
             >
               <Image
                 source={{ uri: item.cover.startsWith('http') ? item.cover : `file://${item.cover}` }}
