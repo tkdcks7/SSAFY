@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import {persist, createJSONStorage} from 'zustand/middleware';
 
 interface Book {
   bookId: number;
@@ -8,7 +8,7 @@ interface Book {
   cover: string;
   author: string;
   coverAlt?: string;
-  publisher?: string
+  publisher?: string;
   dtype?: string;
   story?: string;
   filePath?: string;
@@ -16,19 +16,28 @@ interface Book {
 
 interface EpubState {
   books: Book[];
-  addBook: (book: Partial<Book> & { bookId: number, title: string, cover: string, author: string }) => void;
+  lastAccessedBookId: number | null;
+  addBook: (
+    book: Partial<Book> & {
+      bookId: number;
+      title: string;
+      cover: string;
+      author: string;
+    },
+  ) => void;
   removeBook: (bookId: number) => void;
   updateFilePath: (bookId: number, newFilePath: string) => void;
+  updateLastAccessedBookId: (bookId: number) => void;
 }
 
 const useEpubStore = create<EpubState>()(
   persist(
-    (set) => ({
+    set => ({
       books: [],
-
+      lastAccessedBookId: null,
       // 책을 배열에 추가 (일부 속성이 비어 있어도 추가 가능)
-      addBook: (book) =>
-        set((state) => ({
+      addBook: book =>
+        set(state => ({
           books: [
             ...state.books,
             {
@@ -46,24 +55,27 @@ const useEpubStore = create<EpubState>()(
         })),
 
       // bookId로 책을 제거
-      removeBook: (bookId) =>
-        set((state) => ({
-          books: state.books.filter((book) => book.bookId !== bookId),
+      removeBook: bookId =>
+        set(state => ({
+          books: state.books.filter(book => book.bookId !== bookId),
         })),
-
+      updateLastAccessedBookId: bookId =>
+        set(() => ({
+          lastAccessedBookId: bookId,
+        })),
       // bookId로 파일 경로(filePath) 업데이트
       updateFilePath: (bookId, newFilePath) =>
-        set((state) => ({
-          books: state.books.map((book) =>
-            book.bookId === bookId ? { ...book, filePath: newFilePath } : book
+        set(state => ({
+          books: state.books.map(book =>
+            book.bookId === bookId ? {...book, filePath: newFilePath} : book,
           ),
         })),
     }),
     {
       name: 'epub-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 
 export default useEpubStore;

@@ -19,7 +19,7 @@ type SidebarProps = {
   bookNoteSideBarX: SharedValue<number>;
   toggleBookNote: () => void;
   readNoteArr: IReadNote[];
-  goToLocation: (cfi: string) => void;
+  handleReadNotePress: (cfi: string) => void;
 };
 
 const {width, height} = Dimensions.get('window');
@@ -28,7 +28,7 @@ const EbookBookNote: React.FC<SidebarProps> = ({
   bookNoteSideBarX,
   toggleBookNote,
   readNoteArr,
-  goToLocation,
+  handleReadNotePress,
 }) => {
   const animatedIndexStyle = useAnimatedStyle(() => ({
     transform: [{translateX: bookNoteSideBarX.value}],
@@ -52,7 +52,7 @@ const EbookBookNote: React.FC<SidebarProps> = ({
             <BookNoteContent
               key={index}
               item={item}
-              goToLocation={goToLocation}
+              handleReadNotePress={handleReadNotePress}
               toggleBookNote={toggleBookNote}
             />
           );
