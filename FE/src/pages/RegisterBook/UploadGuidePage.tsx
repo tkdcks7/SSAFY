@@ -49,7 +49,7 @@ const UploadGuidePage: React.FC = () => {
   const imageUploadSteps = [
     {
       title: '이미지 업로드',
-      description: '+ 버튼을 눌러 도서 페이지\n이미지를 업로드합니다.\nJPEG, JPG 파일만 가능합니다.',
+      description: '+ 버튼을 눌러 도서 페이지\n이미지를 업로드합니다.\nJPEG, JPG 파일만 가능합니다. \n 스캔한 이미지를 추천드립니다.',
       images: [
         require('../../assets/images/UploadGuide/imageUpload1.png'),
       ],
@@ -72,7 +72,7 @@ const UploadGuidePage: React.FC = () => {
     },
     {
       title: '도서 등록',
-      description: '등록버튼을 누르면 도서를 변환하고 앱에 다운로드합니다.     (짧게는 몇십초, 길게는 분단위의 시간이 필요합니다)',
+      description: '등록버튼을 누르면 도서를 \n 변환하고 앱에 다운로드합니다.   \n  (짧게는 몇십초, 길게는 분단위의 시간이 필요합니다)',
       images: [
         require('../../assets/images/UploadGuide/bookRegistration2.png'),
         require('../../assets/images/UploadGuide/bookRegistering.png'),
