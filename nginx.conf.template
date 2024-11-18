@@ -1,0 +1,87 @@
+events {
+    worker_connections 1024;
+}
+
+http  {
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    sendfile on; # 로컬에 저장된 파일 전송
+
+    gzip on;
+    gzip_comp_level 5;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    server {
+        listen 80;
+        server_name ${SERVER_NAME};
+
+        # Let's Encrypt 인증서 발급을 위한 설정
+        # Let's Encrypt가 도메인 소유권을 확인하는 데 사용
+        location /.well-known/acme-challenge/ {
+            allow all;
+            root /var/www/certbot;
+        }
+
+        # HTTP를 HTTPS로 리다이렉트
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+        server_name ${SERVER_NAME};
+        server_tokens off;
+
+		# 인증서 체인
+        ssl_certificate /etc/letsencrypt/live/${SERVER_NAME}/fullchain.pem;
+        # 개인키
+        ssl_certificate_key /etc/letsencrypt/live/${SERVER_NAME}/privkey.pem;
+        # SSL 추가 설정
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        # DH 파라미터
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+        # 보안 헤더
+        # HSTS(HTTP Strict Transport Security) 설정
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-Frame-Options DENY;
+        add_header X-XSS-Protection "1; mode=block";
+        # add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'";
+        add_header Referrer-Policy "no-referrer-when-downgrade";
+
+        # Spring Boot 외부 연결
+        location /${CONTEXT_PATH}/ {
+            proxy_pass http://${DOCKER_TAG_SPRING}:${BACKEND_PORT};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Django 외부 연결
+        location /${CONTEXT_PATH}/registration/ {
+            # 대용량 파일 전송 설정 / 타임아웃 설정
+            client_max_body_size 2G;
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+            proxy_send_timeout 300;
+
+            proxy_pass http://${DOCKER_TAG_DJANGO}:${DJANGO_PORT};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.html index.htm;
+            try_files $uri $uri/ /index.html;
+        }
+    }
+    
+}
