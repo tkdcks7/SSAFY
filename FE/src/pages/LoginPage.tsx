@@ -1,31 +1,39 @@
 // src/pages/LoginPage.tsx
-import React, { useState, useRef, useEffect } from 'react';
-import { Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {
+  Text,
+  StyleSheet,
+  TextInput,
+  View,
+  Dimensions,
+  AccessibilityInfo,
+  Alert,
+} from 'react-native';
 
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/AppNavigator';
 import PageWrapper from '../components/PageWrapper';
 import Btn from '../components/Btn';
 import InputBox from '../components/InputBox';
 import apiAnonymous from '../utils/apiAnonymous';
 import useUserStore from '../store/userStore';
 
-
 type LoginPageNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+
+const {width, height} = Dimensions.get('window');
 
 type Props = {
   navigation: LoginPageNavigationProp;
 };
 
-const LoginPage: React.FC<Props> = ({ navigation }) => {
+const LoginPage: React.FC<Props> = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
-  const loginRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
 
-  const { setCookie } = useUserStore();
+  const {setCookie} = useUserStore();
 
   // 진입 시 포커스 자동 설정
   useEffect(() => {
@@ -35,20 +43,25 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
   const isValidEmail = (): void => {
     // 이메일 유효성 검사용 정규표현식
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if(emailRegex.test(email)) {
+    if (emailRegex.test(email)) {
       passwordRef.current?.focus();
     } else {
       emailRef.current?.focus();
-      // 오류 tts 음성 작성
+      Alert.alert('오류', '이메일이 유효하지 않습니다. 다시 시도해주세요.');
+      AccessibilityInfo.announceForAccessibility(
+        '오류: 이메일이 유효하지 않습니다.',
+      );
     }
   };
 
   const isValidPassword = (): void => {
     const passwordRegex = /^[A-Za-z0-9!@#$\-_]{8,30}$/;
     if (passwordRegex.test(password)) {
-      loginRef.current?.focus();
     } else {
-      // 오류 tts 음성 출력
+      Alert.alert('오류', '비밀번호가 유효하지 않습니다. 다시 시도해주세요.');
+      AccessibilityInfo.announceForAccessibility(
+        '오류: 비밀번호가 유효하지 않습니다.',
+      );
       passwordRef.current?.focus();
     }
   };
@@ -58,23 +71,20 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
       email,
       password,
     };
-    apiAnonymous.post('/auth/login', data, { withCredentials: true })
-    .then(response => {
-      console.log(`email = ${email}, password = ${password}`);
-      // clearCookie();
-      console.log(`response.headers = ${response.headers}`);
-      const setCookieHeader = response.headers['set-cookie'];
-      // console.log(typeof setCookieHeader);
-      if (setCookieHeader) {
-        setCookie(setCookieHeader[0]);
-        navigation.navigate('Home');
-      }
-    })
-    .catch(error => {
-      console.error('로그인 요청 실패:', error);
-    });
+    apiAnonymous
+      .post('/auth/login', data, {withCredentials: true})
+      .then(response => {
+        // clearCookie();
+        const setCookieHeader = response.headers['set-cookie'];
+        if (setCookieHeader) {
+          setCookie(setCookieHeader[0]);
+          navigation.navigate('Home');
+        }
+      })
+      .catch(error => {
+        console.error('로그인 요청 실패:', error);
+      });
   };
-
 
   return (
     <PageWrapper>
@@ -94,15 +104,20 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
         secureTextEntry={true}
         ref={passwordRef}
       />
+      <View style={styles.innerContainer}>
+        <Text style={styles.noticeText}>
+          ※ 비밀번호는 8자리 이상으로 영어 대소문자, 숫자, 특수문자를 포함해야
+          합니다.
+        </Text>
+      </View>
       <Btn
-        title='로그인'
+        title="로그인"
         onPress={handleLogin}
-        ref={loginRef}
-        style={{ marginTop: 50, marginBottom: 30 }}
+        style={{marginTop: 50, marginBottom: 30}}
       />
       <Btn
         isWhite={true}
-        title='회원가입'
+        title="회원가입"
         onPress={() => navigation.navigate('Signup')}
       />
     </PageWrapper>
@@ -116,7 +131,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3943B7',
   },
+  innerContainer: {
+    // padding: width * 0.1,
+    marginTop: height * 0,
+    alignSelf: 'flex-start',
+  },
+  noticeText: {
+    fontSize: width * 0.045,
+    alignSelf: 'flex-start',
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: height * 0.02,
+    // textAlign: 'center',
+  },
 });
-
 
 export default LoginPage;
