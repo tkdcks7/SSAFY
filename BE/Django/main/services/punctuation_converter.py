@@ -64,5 +64,11 @@ class PunctuationConverter:
 
         # 결과 반환 
         sequences = [item["sequence"] for item in data_list]
-        corrected_texts = [item["text"] for item in processed_sentence_list]
+        # corrected_texts = [item["text"] for item in processed_sentence_list]
+        corrected_texts = []
+        for item in processed_sentence_list:
+            if isinstance(item, dict) and "text" in item:
+                corrected_texts.append(item["text"])
+            else:
+                logging.info(f"Item skipped: {item}")
         return sequences, corrected_texts
