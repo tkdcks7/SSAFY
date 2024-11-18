@@ -123,6 +123,7 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ books }) => {
 const styles = StyleSheet.create({
   bookContainer: {
     marginHorizontal: width * 0.03,
+    marginBottom: height * 0.2,
   },
   bookContainerTitleText: {
     fontSize: width * 0.06,
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.02,
   },
   bookItem: {
-    width: width * 0.3, // 각 아이템이 3분의 1 공간을 차지
+    width: width * 0.3,
     marginBottom: height * 0.02,
     marginRight: width * 0.02,
     alignItems: 'center',
