@@ -260,7 +260,7 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 - 문장 저장을 통한 독서노트 생성
 
 #### 도서 검색
-![도서 검색](https://github.com/user-attachments/assets/7e7099d2-4167-4654-9035-277d76d1a952)
+![도서 검색](https://github.com/user-attachments/assets/ca2a2f20-fd22-4936-a26a-0c6d7d868aa0)
 - 제목, 작가, 출판사 검색
 - 정확하지 않은 단어로도 원하는 도서 결과 확인 가능
 - 최신순, 가나다순으로 원하는 방식으로 정렬
@@ -275,7 +275,7 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 - 마이페이지에서 담은 도서, 좋아요한 도서 검색 가능
 
 #### 도서 추천
-![도서 추천](https://github.com/user-attachments/assets/7d740938-50da-48fd-9869-1ca6eebbdb73)
+![도서 추천](https://github.com/user-attachments/assets/d6eea62a-f28c-40b7-9586-e8c84b52038d)
 <!-- ![image](https://github.com/user-attachments/assets/3c587400-015a-4555-b631-538d7bb994df) -->
 - 사용자 성향 및 정보에 기반한 개인 맞춤형 도서 추천
 - 리뷰, 책장, 좋아요를 반영한 인기 도서 추천
