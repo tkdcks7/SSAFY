@@ -228,7 +228,7 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
 #### MongoDB
 
-![image](https://github.com/user-attachments/assets/b2ef25d0-a42e-457a-aaa0-41208373fa2e)
+![image](https://github.com/user-attachments/assets/9cbb84e5-aa57-4691-a353-d62ed61a2a1b)
 
 ---
 
