@@ -270,7 +270,7 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
 ![image](https://github.com/user-attachments/assets/5b331d7f-9d1d-4415-8530-be21b9a346bd)
 
-![image](https://github.com/user-attachments/assets/91b34aa7-331a-4d0a-87c5-4e989f474e64)
+![image](https://github.com/user-attachments/assets/c52d53f4-9cb7-4625-b17b-c9bd0c04f3c9)
 
 --- 
 
