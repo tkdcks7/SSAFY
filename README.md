@@ -2,7 +2,7 @@
 ---
 
 
-![appstore](https://github.com/user-attachments/assets/80bf5349-20a7-469a-b438-d819797e7907)
+![logo](https://github.com/user-attachments/assets/e90fadca-2249-43b6-ad62-2f22a99dc3cf){: width="120" height="120"}
 
 
 Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스입니다. 
@@ -77,10 +77,10 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
-✨ 우리의 목표 
+✨ **우리의 목표**
 > AI 기술을 활용하여 시각장애인을 위한 대체자료를 자동으로 제작하고, 이를 기반으로 접근성 중심의 독서 앱을 개발하는 것
 
-✨ Audisay 
+✨ **Audisay** 
 > Audio와 Say를 결합했습니다. TTS 기반 도서 뷰어를 제공하는 우리 서비스를 나타내고자 했습니다. 
 
 ---
