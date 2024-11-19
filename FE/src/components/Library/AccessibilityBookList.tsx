@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     marginRight: width * 0.02,
+    maxWidth: '80%',
     // marginBottom: height * 0.04,
   },
   deleteButton: {
