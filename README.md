@@ -9,11 +9,11 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 우리 서비스는 시각장애인이 쉽게 접근할 수 있는 도서 자료를 자동으로 제작하고, 사용자 친화적인 인터페이스를 제공하여 시각장애인 독서의 불편함을 해소하고자 합니다. 
 
 
-|   이예림          | 강동완          | 강상찬          | 김아름          | 안치숙          | 이지혜          |
-| ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
-| [이미지]     | [이미지]     | [이미지]     | [이미지]     | [이미지]     | [이미지]     |
-| 팀장 & Backend  | Frontend         | Frontend         | Backend         | Backend          | Backend          |
-|  [프로필 링크] | [프로필 링크] | [프로필 링크] | [프로필 링크] | [프로필 링크] | [프로필 링크] |
+| <img src="https://github.com/rime-y.png" width="100"> | <img src="https://github.com/Remnant1318.png" width="100"> | <img src="https://github.com/tkdcks7.png" width="100"> | <img src="https://github.com/aa001R.png" width="100">     | <img src="https://github.com/sook000.png" width="100">     | <img src="https://github.com/Elenaljh.png" width="100">     |
+| :-: | :-: | :-: | :-: | :-: | :-: |
+| 이예림 | 강동완 | 강상찬 | 김아름 | 안치숙 | 이지혜 |
+| 팀장 & Backend | Frontend | Frontend | Backend | Backend | Backend |
+|  [GitHub](https://github.com/rime-y) | [GitHub](https://github.com/Remnant1318) | [GitHub](https://github.com/tkdcks7) | [GitHub](https://github.com/aa001R) | [GitHub](https://github.com/sook000) | [GitHub](https://github.com/Elenaljh) |
 
 
 ---
@@ -100,7 +100,67 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
 ---
 
-## 2. 프로젝트 정보 
+## 2. 프로젝트 결과물 
+
+---
+
+### 🔮 주요 기능 
+
+
+#### 도서 등록
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/4f4f3fb2-b97c-43a4-80db-c44a72fa0674" alt="Image 1" width="700">
+  <img src="https://github.com/user-attachments/assets/9d539d3f-1771-428d-84aa-371fec422673" alt="Image 2" height="400">
+</div>
+
+- 다양한 파일 형식 업로드 지원(pdf, epub, jpeg, jpg)
+- 자동으로 접근성 적용된 EPUB 파일로 변환
+- 실시간 변환 진행 상황 확인 가능
+
+#### 도서 뷰어
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/72cdf3ad-fc88-416b-9bbd-86ee586b098f" alt="Image 1" width="700">
+  <img src="https://github.com/user-attachments/assets/68813218-1766-47bf-97a9-02f09da344d0" alt="도서 뷰어" height="400">
+</div>
+- TTS 배속 조절 기능
+- 이미지 설명 TTS 지원
+- 본문 내 키워드 검색
+- 문장 저장을 통한 독서노트 생성
+
+#### 도서 검색
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/b8ef11d9-cd5b-40d6-b3c2-28a317e3a5c3" alt="Image 1" width="700">
+  <img src="https://github.com/user-attachments/assets/ca2a2f20-fd22-4936-a26a-0c6d7d868aa0" alt="도서 검색" height="400">
+</div>
+
+- 제목, 작가, 출판사 검색
+- 정확하지 않은 단어로도 원하는 도서 결과 확인 가능
+- 최신순, 가나다순으로 원하는 방식으로 정렬
+
+#### 리뷰, 도서 담기, 좋아요 
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/00334938-2c5d-4288-875d-b67b345ce8cf" alt="Image 1" width="700">
+  <img src="https://github.com/user-attachments/assets/3b8689f5-6a4d-4608-bdba-77578b908aa0" alt="리뷰, 도서 담기, 좋아요" height="400">
+</div>
+
+- 리뷰 작성 및 다른 독자들의 리뷰와 평점 분포 확인
+- 관심 있는 도서 담기 기능
+- 좋아요로 도서에 대한 선호도 표현
+- 마이페이지에서 담은 도서, 좋아요한 도서 검색 가능
+
+#### 도서 추천
+<div style="display: flex; align-items: center; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/3c587400-015a-4555-b631-538d7bb994df" alt="Image 1" width="700">
+  <img src="https://github.com/user-attachments/assets/d6eea62a-f28c-40b7-9586-e8c84b52038d" alt="도서 추천" height="400">
+</div>
+
+- 사용자 성향 및 정보에 기반한 개인 맞춤형 도서 추천
+- 리뷰, 책장, 좋아요를 반영한 인기 도서 추천
+--- 
+
+
+
+## 3. 프로젝트 정보 
 
 ---
 
@@ -233,73 +293,32 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 
 ### 📝 컨벤션 
 
-작성중... (mr / mattermost 자동화 언급)
+<details>
+<summary>🔔 MR 알림 채널 구축</summary>
+
+GitLab의 Merge Request(MR) 이벤트 발생 시, 해당 정보를 Mattermost 채널에 자동으로 전달하는 Jenkins 기반의 자동화 스크립트 구축
+
+#### 동작 흐름
+
+1. **Merge Request 작성**: GitLab에서 새로운 MR이 생성됩니다.
+2. **Webhook 트리거**: MR 이벤트를 GitLab Webhook이 감지하고 Jenkins로 데이터를 전달합니다.
+3. **파이프라인 실행**: Jenkins 스크립트가 실행되어 MR 데이터를 기반으로 메시지를 생성합니다.
+4. **Mattermost 알림 전송**: MR 상태(`opened`, `merged`) 및 라벨 정보를 반영한 알림 메시지가 Mattermost에 전달됩니다.
+
+#### 주요 기능
+- MR 상태에 따라 알림 메시지 구성 (`opened`, `merged` 등).
+- MR 라벨에 따라 알림 색상을 다르게 설정.
+- GitLab, Jenkins, Mattermost 간 자동화된 연동.
+
+</details>
 
 ---
-
-## 3. 프로젝트 결과물 
-
----
-
-### 🔮 주요 기능 
-
-
-#### 도서 등록
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://github.com/user-attachments/assets/4f4f3fb2-b97c-43a4-80db-c44a72fa0674" alt="Image 1" width="700">
-  <img src="https://github.com/user-attachments/assets/9d539d3f-1771-428d-84aa-371fec422673" alt="Image 2" height="400">
-</div>
-
-- 다양한 파일 형식 업로드 지원(pdf, epub, jpeg, jpg)
-- 자동으로 접근성 적용된 EPUB 파일로 변환
-- 실시간 변환 진행 상황 확인 가능
-
-#### 도서 뷰어
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://github.com/user-attachments/assets/72cdf3ad-fc88-416b-9bbd-86ee586b098f" alt="Image 1" width="700">
-  <img src="https://github.com/user-attachments/assets/68813218-1766-47bf-97a9-02f09da344d0" alt="도서 뷰어" height="400">
-</div>
-- TTS 배속 조절 기능
-- 이미지 설명 TTS 지원
-- 본문 내 키워드 검색
-- 문장 저장을 통한 독서노트 생성
-
-#### 도서 검색
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://github.com/user-attachments/assets/b8ef11d9-cd5b-40d6-b3c2-28a317e3a5c3" alt="Image 1" width="700">
-  <img src="https://github.com/user-attachments/assets/ca2a2f20-fd22-4936-a26a-0c6d7d868aa0" alt="도서 검색" height="400">
-</div>
-
-- 제목, 작가, 출판사 검색
-- 정확하지 않은 단어로도 원하는 도서 결과 확인 가능
-- 최신순, 가나다순으로 원하는 방식으로 정렬
-
-#### 리뷰, 도서 담기, 좋아요 
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://github.com/user-attachments/assets/00334938-2c5d-4288-875d-b67b345ce8cf" alt="Image 1" width="700">
-  <img src="https://github.com/user-attachments/assets/3b8689f5-6a4d-4608-bdba-77578b908aa0" alt="리뷰, 도서 담기, 좋아요" height="400">
-</div>
-
-- 리뷰 작성 및 다른 독자들의 리뷰와 평점 분포 확인
-- 관심 있는 도서 담기 기능
-- 좋아요로 도서에 대한 선호도 표현
-- 마이페이지에서 담은 도서, 좋아요한 도서 검색 가능
-
-#### 도서 추천
-<div style="display: flex; align-items: center; justify-content: center;">
-  <img src="https://github.com/user-attachments/assets/3c587400-015a-4555-b631-538d7bb994df" alt="Image 1" width="700">
-  <img src="https://github.com/user-attachments/assets/d6eea62a-f28c-40b7-9586-e8c84b52038d" alt="도서 추천" height="400">
-</div>
-
-- 사용자 성향 및 정보에 기반한 개인 맞춤형 도서 추천
-- 리뷰, 책장, 좋아요를 반영한 인기 도서 추천
---- 
 
 ### 🥰 팀원 소개 
 
 ![image](https://github.com/user-attachments/assets/5b331d7f-9d1d-4415-8530-be21b9a346bd)
 
-![image](https://github.com/user-attachments/assets/c52d53f4-9cb7-4625-b17b-c9bd0c04f3c9)
+![image](https://github.com/user-attachments/assets/f2fec54d-a4ee-4a61-bf2a-2b362e1b964b)
 
 --- 
 
@@ -308,10 +327,6 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 전체 UCC : https://youtu.be/8yqzWUyeM1c
 
 talkback 영상 : https://youtu.be/oGoeeEfu8DU 
-
-
----
-
 
 
 ---
