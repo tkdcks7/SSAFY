@@ -245,25 +245,40 @@ Audisay는 시각장애인을 위한 AI 기반 접근성 도서 지원 서비스
 ### 🔮 주요 기능 
 
 #### 도서 등록
-
-![image](https://github.com/user-attachments/assets/4f4f3fb2-b97c-43a4-80db-c44a72fa0674)
+![도서 등록](https://github.com/user-attachments/assets/9d539d3f-1771-428d-84aa-371fec422673)
+<!-- ![image](https://github.com/user-attachments/assets/4f4f3fb2-b97c-43a4-80db-c44a72fa0674) -->
+- 다양한 파일 형식 업로드 지원(pdf, epub, jpeg, jpg)
+- 자동으로 접근성 적용된 EPUB 파일로 변환
+- 실시간 변환 진행 상황 확인 가능
 
 #### 도서 뷰어
-
-![image](https://github.com/user-attachments/assets/72cdf3ad-fc88-416b-9bbd-86ee586b098f)
+![도서 뷰어](https://github.com/user-attachments/assets/68813218-1766-47bf-97a9-02f09da344d0)
+<!-- ![image](https://github.com/user-attachments/assets/72cdf3ad-fc88-416b-9bbd-86ee586b098f) -->
+- TTS 배속 조절 기능
+- 이미지 설명 TTS 지원
+- 본문 내 키워드 검색
+- 문장 저장을 통한 독서노트 생성
 
 #### 도서 검색
-
-![image](https://github.com/user-attachments/assets/b8ef11d9-cd5b-40d6-b3c2-28a317e3a5c3)
+![도서 검색](https://github.com/user-attachments/assets/7e7099d2-4167-4654-9035-277d76d1a952)
+- 제목, 작가, 출판사 검색
+- 정확하지 않은 단어로도 원하는 도서 결과 확인 가능
+- 최신순, 가나다순으로 원하는 방식으로 정렬
+<!-- ![image](https://github.com/user-attachments/assets/b8ef11d9-cd5b-40d6-b3c2-28a317e3a5c3) -->
 
 #### 리뷰, 도서 담기, 좋아요 
-
-![image](https://github.com/user-attachments/assets/00334938-2c5d-4288-875d-b67b345ce8cf)
+![리뷰, 도서 담기, 좋아요](https://github.com/user-attachments/assets/3b8689f5-6a4d-4608-bdba-77578b908aa0)
+<!-- ![image](https://github.com/user-attachments/assets/00334938-2c5d-4288-875d-b67b345ce8cf) -->
+- 리뷰 작성 및 다른 독자들의 리뷰와 평점 분포 확인
+- 관심 있는 도서 담기 기능
+- 좋아요로 도서에 대한 선호도 표현
+- 마이페이지에서 담은 도서, 좋아요한 도서 검색 가능
 
 #### 도서 추천
-
-![image](https://github.com/user-attachments/assets/3c587400-015a-4555-b631-538d7bb994df)
-
+![도서 추천](https://github.com/user-attachments/assets/7d740938-50da-48fd-9869-1ca6eebbdb73)
+<!-- ![image](https://github.com/user-attachments/assets/3c587400-015a-4555-b631-538d7bb994df) -->
+- 사용자 성향 및 정보에 기반한 개인 맞춤형 도서 추천
+- 리뷰, 책장, 좋아요를 반영한 인기 도서 추천
 --- 
 
 ### 🥰 팀원 소개 
