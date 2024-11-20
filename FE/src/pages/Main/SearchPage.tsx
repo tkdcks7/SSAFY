@@ -22,6 +22,8 @@ const { width, height } = Dimensions.get('window');
 const SearchPage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(false); // 접근성 모드 상태
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [isSortBy, setIsSortBy] = useState<'published_date' | 'title' | null>(null);
+  const [isSortOrder, setIsSortOrder] = useState<'asc' | 'desc'>('desc');
   const [bookList, setBookList] = useState<any[]>([]); // 검색 결과 리스트 상태
   const [lastSearchId, setLastSearchId] = useState<string | null>(null); // 추가 검색 위한 마지막 검색 ID
   const [hasSearched, setHasSearched] = useState(false);
