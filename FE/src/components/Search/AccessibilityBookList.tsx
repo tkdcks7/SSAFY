@@ -82,19 +82,33 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ bookList 
     <View style={styles.container}>
       <View style={styles.sortContainer}>
         <TouchableOpacity
-          style={[styles.sortButton, sortOrder === 'latest' && styles.selectedButton]}
-          onPress={() => handleSortChange('latest')}
+            style={[styles.sortButton, sortOrder === 'correct' && styles.selectedButton]}
+            onPress={() => handleSortChange('correct')}
+            accessibilityLabel={'정확도 기준 정렬 버튼.'}
+            accessibilityHint={'정확도 순으로 정렬 합니다.'}
         >
-          <Text style={styles.sortButtonText}>최신순</Text>
+          <Text style={styles.sortButtonText}
+          >정확도순</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.sortButton, sortOrder === 'alphabetical' && styles.selectedButton]}
-          onPress={() => handleSortChange('alphabetical')}
+          style={[styles.sortButton, sortOrder === 'published_date' && styles.selectedButton]}
+          onPress={() => handleSortChange('published_date')}
+          accessibilityLabel={`출판일 기준 정렬 버튼. 현재 ${isLastest ? '최신순' : '오래된순'}.`}
+          accessibilityHint={`활성화 시 ${sortOrder === 'published_date'?
+              !isLastest ? '최신순' : '오래된순' :
+              isLastest ? '최신순' : '오래된순'}으로 정렬 합니다.`}
         >
-          <Text style={styles.sortButtonText}>가나다순</Text>
+          <Text style={styles.sortButtonText}>{isLastest ? '최신순' : '오래된순'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>
-          <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />
+        <TouchableOpacity
+          style={[styles.sortButton, sortOrder === 'title' && styles.selectedButton]}
+          onPress={() => handleSortChange('title')}
+          accessibilityLabel={`제목순 기준 정렬 버튼. 현재 ${isAlpabetAsc ? '오름차순' : '내림차순'}.`}
+          accessibilityHint={`활성화 시 ${sortOrder === 'title'?
+              !isAlpabetAsc ? '오름차순' : '내림차순' :
+              isAlpabetAsc ? '오름차순' : '내림차순'}으로 정렬 합니다.`}
+        >
+          <Text style={styles.sortButtonText}>{isAlpabetAsc ? '제목순(ㄱ)' : '제목순(ㅎ)'}</Text>
         </TouchableOpacity>
         {/*<TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>*/}
         {/*  <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />*/}
