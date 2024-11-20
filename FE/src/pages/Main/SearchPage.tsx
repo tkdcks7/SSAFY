@@ -62,6 +62,7 @@ const SearchPage: React.FC = () => {
       setBookList(response.bookList);
       setLastSearchId(response.lastSearchId);
       setHasSearched(true);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true }); // 스크롤 초기화
     } catch (error) {
       Alert.alert('검색 실패', '검색 중 오류가 발생했습니다.');
       setBookList([]);
