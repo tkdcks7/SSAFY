@@ -63,7 +63,7 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 	}
 
 	private void setSortConditions(NativeQueryBuilder queryBuilder, SearchSort userSort) {
-		queryBuilder.withSort(Sort.by(Sort.Direction.DESC, "_score"))
+		queryBuilder
 			.withSort(Sort.by(userSort.sortOrder(), userSort.sortBy()))
 			.withSort(Sort.by(Sort.Direction.DESC, "bookId"));
 	}
