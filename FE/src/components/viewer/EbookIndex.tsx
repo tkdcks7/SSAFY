@@ -44,8 +44,6 @@ const EbookIndex: React.FC<SidebarProps> = ({
   }));
 
   const handleIndexPress = (tocHref: string) => {
-    console.log('눌림눌림');
-    console.log(`tocHref=${tocHref}`);
     tocDisPlay(tocHref);
     toggleIndex();
   };

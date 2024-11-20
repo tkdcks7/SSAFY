@@ -17,6 +17,7 @@ import {
   Reader,
   useReader,
   Themes,
+  ReaderProvider,
   Annotation,
   Location,
   ReaderProps,
@@ -27,32 +28,37 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import RNFS from 'react-native-fs';
+import Tts from 'react-native-tts';
+
+// Store
+import useSettingStore, {fontSizeTable} from '../../store/settingStore';
+
 import {
   getReadNote,
   createReadNote,
   ICreateNote,
   IReadNote,
 } from '../../services/ViewerPage/readNotes';
-import useSettingStore, {fontSizeTable} from '../../store/settingStore';
-import leftarrowicon from '../../assets/icons/leftarrow.png';
-import searchicon from '../../assets/icons/search.png';
-import ProgressBar from '../../components/viewer/ProgressBar';
-import EbookSearch from '../../components/viewer/EbookSearch';
-import Tts from 'react-native-tts';
-import RNFS from 'react-native-fs';
+
+// service 및 utils
 import {
   compareCFIStrings,
   getCurrentDate,
   timeParser,
 } from '../../utils/cfiManager';
 import useEpubStore from '../../store/epubStore';
-import {ReaderProvider} from '@epubjs-react-native/core';
+import {injectedScrpt} from '../../utils/injectedScript';
 
 // 모달 등
 import EbookIndex from '../../components/viewer/EbookIndex';
 import EbookBookNote from '../../components/viewer/EbookBootNote';
 import EbookSetting from '../../components/viewer/EbookSetting';
 import EbookTTSSetting from '../../components/viewer/EbookTTSSetting';
+
+import ProgressBar from '../../components/viewer/ProgressBar';
+import EbookSearch from '../../components/viewer/EbookSearch';
+import EbookIcon from '../../components/viewer/EbookIcon';
 
 // 아이콘
 import noteicon from '../../assets/icons/notes.png';
@@ -62,7 +68,10 @@ import headphoneicon from '../../assets/icons/headphone.png';
 import prevbuttonicon from '../../assets/icons/pervbutton.png';
 import playbuttonicon from '../../assets/icons/playbutton.png';
 import pausebuttonicon from '../../assets/icons/pausebutton.png';
+import leftarrowicon from '../../assets/icons/leftarrow.png';
+import searchicon from '../../assets/icons/search.png';
 
+// Type
 type EBookViewerPageRouteProp = RouteProp<RootStackParamList, 'EBookViewer'>;
 type EBookViewerPageNavigateProp = StackNavigationProp<
   RootStackParamList,
@@ -87,6 +96,7 @@ type TocContent = {
   subitems?: any;
 };
 
+// 음성 종류 매직 테이블
 const voiceMagicTable: any = {
   여성1: 'ko-kr-x-ism-local',
   여성2: 'ko-kr-x-kob-local',
@@ -109,12 +119,13 @@ const Component: React.FC<Props> = ({route}) => {
   const [readNoteArr, setReadNoteArr] = useState<IReadNote[]>([]);
   const [title, setTitle] = useState<string>('');
   const [bookSrc, setBookSrc] = useState<string>('');
-  const [isCustomBook, setIsCustomBook] = useState<boolean>(false);
+  const [isCustomBook, setIsCustomBook] = useState<boolean>(true);
   const [hasUsedInitialCfi, setHasUsedInitialCfi] = useState(false);
-  const [isSwipable, setIsSwipable] = useState<boolean>(true);
 
   // 검색어 관리
   const [searchInput, setSearchInput] = useState('');
+
+  // 목차 정보
   const [tocArr, setTocArr] = useState<TocContent[]>([]);
 
   // 타이머 설정
@@ -127,10 +138,11 @@ const Component: React.FC<Props> = ({route}) => {
   const ttsIdxRef = useRef<number>(ttsIdx);
   const isTTSPlayingRef = useRef(isTTSPlaying);
 
+  // store에서 메소드 꺼내기
   const {fontSizeSetting, isDarkMode, ttsSpeedSetting, ttsVoiceIndex} =
     useSettingStore();
-  const navigation = useNavigation();
   const {updateLastAccessedBookId} = useEpubStore();
+  const navigation = useNavigation();
 
   // epubjs-react-native/core 라이브러리 제공 메서드 사용
   const {
@@ -170,11 +182,15 @@ const Component: React.FC<Props> = ({route}) => {
           if (bookData.currentCfi) {
             setInitialCfi(bookData.currentCfi);
           }
-          if (bookData.myTtsFlag) {
-            setIsCustomBook(true);
+          if (bookData.myTtsFlag === false) {
+            setIsCustomBook(false);
           }
           if (bookData.progressRate) {
-            setProgress(Number((bookData.progressRate / 100).toFixed(2)));
+            const initalProgress: number =
+              bookData.progressRate > 1
+                ? bookData.progressRate / 100
+                : bookData.progressRate;
+            setProgress(initalProgress);
           }
         } else {
           throw new Error('Failed to read book metadata:');
@@ -192,6 +208,8 @@ const Component: React.FC<Props> = ({route}) => {
     });
     BackHandler.addEventListener('hardwareBackPress', handlegoBack);
   }, []);
+
+  Tts.setDefaultLanguage('ko-KR'); // tts 한국어로
 
   // 타이머 관련 인터벌
   function useInterval(callback: () => void, delay: number | null) {
@@ -222,6 +240,26 @@ const Component: React.FC<Props> = ({route}) => {
     isTimerOn && !isTimerPaused && timeLeft > 0 ? 1000 : null,
   );
 
+  // 타이머 관련 useEffect
+  useEffect(() => {
+    if (timeLeft === 0) {
+      handleTTSModeClose();
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timerId);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
   // 화면 크기를 상태로 관리
   const [screenDimensions, setScreenDimensions] = useState(
     Dimensions.get('window'),
@@ -251,10 +289,6 @@ const Component: React.FC<Props> = ({route}) => {
   const settingSideBarX = useSharedValue(width);
   const settingTTSSideBarX = useSharedValue(width);
 
-  // 나중에 한국어 모드 할거면 모드를 한국어로 변경
-  // Tts.setDefaultLanguage('en-US');
-  Tts.setDefaultLanguage('ko-KR');
-
   // 네비게이션 바의 표시 여부 상태
   const isVisible = useSharedValue(false);
   // Nav 애니메이션 스타일
@@ -265,12 +299,6 @@ const Component: React.FC<Props> = ({route}) => {
   const animatedStyleFoot = useAnimatedStyle(() => {
     return {transform: [{translateY: translateYFoot.value}]};
   });
-
-  // 검색창에서 결과 선택
-  const handleLocationSelect = cfi => {
-    goToLocation(cfi); // 선택된 위치로 이동
-    setIsSearchingOn(false); // EbookSearch 닫기
-  };
 
   // 네비게이션 바 표시/숨기기 핸들러
   const toggleNav = useCallback(() => {
@@ -312,30 +340,37 @@ const Component: React.FC<Props> = ({route}) => {
         : withTiming(0, {duration: 200});
   }, []);
 
-  // 현재 Section의 데이터를 긁어 formArr에 주입하는 로직을 Javascript inject
-  const getFormArr = () => {
-    injectJavascript(`getFormArr();`);
-  };
-
-  // 현재 Section의 데이터를 긁어 formArr에 주입하는 로직을 Javascript inject. 커스텀북용
-  const getFormArrForCustomBook = () => {
-    injectJavascript(`getFormArrForCustomBook();`);
-  };
-
   // 커스텀북일 시 발동시켜 페이지 위치 이동 시 로직이 잘 작동하도록 만듦
-  const switchCustomBookMode = () => {
-    injectJavascript(`isCustomBook = true; getFormArrForCustomBook(); `);
+  const getFormArrForCustomBook = () => {
+    injectJavascript(`getFormArrForCustomBook(); `);
   };
 
   // 목차 클릭 시 페이지 이동 지원
   const tocDisPlay = (tocHref: string) => {
-    injectJavascript(`
-      const tempString = "${tocHref}".split('/')[1]
-      window.ReactNativeWebView.postMessage(JSON.stringify({ msggs: tempString }));
-      rendition.display(tempString);
-      `);
+    const hrefString: string = tocHref.split('/')[1];
+    goToLocation(hrefString);
   };
 
+  // annotation 제거를 Javascript를 주입하여 해결
+  const handleRemoveAnnotation = (cfiRangeOfAnnotation: string) => {
+    const functionString: string = `rendition.annotations.remove('${cfiRangeOfAnnotation}', 'highlight');`;
+    injectJavascript(functionString);
+  };
+
+  // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입
+  // cfisRange에 해당하는 문자열이 현재 페이지에 있는지 판별 후 페이지 이동
+  const handlePageMoving = (cfisRange: string): void => {
+    const functionString: string = `handlePageMove('${cfisRange}');`;
+    injectJavascript(functionString);
+  };
+
+  // 검색창에서 결과 선택
+  const handleLocationSelect = (cfi: string) => {
+    goToLocation(cfi); // 선택된 위치로 이동
+    setIsSearchingOn(false); // EbookSearch 닫기
+  };
+
+  // 다음 문장으로 이동
   const ttsIdxToNext = (): void => {
     if (formArrRef.current.length - 1 > ttsIdxRef.current) {
       Tts.stop();
@@ -343,6 +378,7 @@ const Component: React.FC<Props> = ({route}) => {
     }
   };
 
+  // 이전 문장으로 이동
   const ttsIdxToPrev = (): void => {
     if (
       ttsIdxRef.current > 1 &&
@@ -386,24 +422,6 @@ const Component: React.FC<Props> = ({route}) => {
     return;
   };
 
-  // annotation 제거를 Javascript를 주입하여 해결
-  const handleRemoveAnnotation = (cfiRangeOfAnnotation: string) => {
-    const functionString: string =
-      'rendition.annotations.remove(' +
-      "'" +
-      cfiRangeOfAnnotation +
-      "'" +
-      ", 'highlight');";
-    injectJavascript(functionString);
-  };
-
-  // inject된 script에서 정의된 handlePageMove(cfisRange)를 주입
-  // cfisRange에 해당하는 문자열이 현재 페이지에 있는지 판별 후 페이지 이동
-  const handlePageMoving = (cfisRange: string): void => {
-    const allString: string = 'handlePageMove(' + "'" + cfisRange + "'" + ')';
-    injectJavascript(allString);
-  };
-
   const setTtsReset = () => {
     setIsSectionMoving(false);
     if (formArr.length > 0) {
@@ -418,10 +436,14 @@ const Component: React.FC<Props> = ({route}) => {
         return prevIdx;
       }
 
-      if (ttsIdxRef.current >= formArrRef.current.length - 1) {
-        handleRemoveAnnotation(
-          formArrRef.current[ttsIdxRef.current - 1].cfisRange,
-        );
+      if (prevIdx >= formArrRef.current.length - 1) {
+        handleRemoveAnnotation(formArrRef.current[prevIdx - 1].cfisRange);
+        if (!getCurrentLocation()?.atEnd) {
+          setTimeout(() => {
+            handlegoBack();
+          }, 3000);
+          return prevIdx;
+        }
         setFormArr([]); // formArr 초기화
         setIsSectionMoving(true);
         goNext();
@@ -491,43 +513,29 @@ const Component: React.FC<Props> = ({route}) => {
     }
   }, [isTTSPlaying]);
 
-  // 타이머 관련
   useEffect(() => {
-    if (timeLeft === 0) {
-      handleTTSModeClose();
-      return;
+    formArrRef.current = formArr;
+    // formArr이 비어있지 않을 때만 TTS를 시작하도록
+    if (formArr.length > 0 && isTTSPlaying) {
+      playTextSequentially();
     }
-
-    const timerId = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          clearInterval(timerId);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, []);
+  }, [formArr]);
 
   // TTS 시작 함수
   const handleTTSPlay = (): void => {
     if (isTTSPlaying) {
       Tts.stop();
       setIsTimerPaused(true);
-      setIsSwipable(true);
       if (ttsIdx > 0) {
         handleRemoveAnnotation(formArrRef.current[ttsIdx - 1].cfisRange);
       }
     } else {
       setIsTimerPaused(false);
-      setIsSwipable(false);
     }
     setIsTTSPlaying(prev => !prev);
   };
 
-  //
+  // cfisRange가 현재 저장된 formArr의 몇 번째 index인지 반환
   const indexOfCfis = (cfiRange: string): number => {
     const idx: number = formArrRef.current.findIndex(formItem => {
       return formItem.cfisRange === cfiRange;
@@ -565,8 +573,11 @@ const Component: React.FC<Props> = ({route}) => {
     });
   };
 
+  // Ebook이 준비됐을 시 작동
   const handleOnReady = (): void => {
-    isCustomBook ? switchCustomBookMode() : getFormArr();
+    if (isCustomBook) {
+      getFormArrForCustomBook();
+    }
     changeFontSize(fontSizeTable[fontSizeSetting]);
     Tts.setDefaultVoice(voiceMagicTable[ttsVoiceIndex]);
     Tts.setDefaultRate(ttsSpeedSetting / 2);
@@ -585,7 +596,10 @@ const Component: React.FC<Props> = ({route}) => {
   };
 
   // 특정 bookId를 가진 책의 currentCfi를 수정하는 함수
-  const updateLibraryInfoOfBook = async (newCfi: string) => {
+  const updateLibraryInfoOfBook = async (
+    newCfi: string,
+    currentProgressRate?: number,
+  ) => {
     try {
       // JSON 파일 읽기
       const dbPath = `${RNFS.DocumentDirectoryPath}/library.json`;
@@ -599,16 +613,19 @@ const Component: React.FC<Props> = ({route}) => {
       }
       // currentCfi 값 수정
       library[bookIndex].currentCfi = newCfi;
-      library[bookIndex].progressRate = Number((progress * 100).toFixed(2));
-
+      if (currentProgressRate) {
+        library[bookIndex].progressRate = Number(
+          (currentProgressRate * 100).toFixed(2),
+        );
+      }
       // 수정된 데이터를 JSON 파일에 다시 저장
       await RNFS.writeFile(dbPath, JSON.stringify(library), 'utf8');
     } catch (error) {
-      console.error('Error updating currentCfi:', error);
+      console.error('library.json 정보 수정 중 에러 발생', error);
     }
   };
 
-  // 뒤로갈 떄 작동. library.json의 cfi 갱신. true를 반환해 BackHandler 작동 시 기본 동작을 막음.
+  // 뒤로 갈 떄 작동. library.json의 cfi 갱신. true를 반환해 BackHandler 작동 시 기본 동작을 막음.
   const handlegoBack = (): boolean => {
     if (
       ttsIdxRef?.current &&
@@ -617,8 +634,9 @@ const Component: React.FC<Props> = ({route}) => {
     ) {
       const currentCfi: string | undefined =
         formArr[ttsIdxRef.current]?.cfisRange;
+      const currentProgressRate: number | undefined = progress;
       if (currentCfi) {
-        updateLibraryInfoOfBook(currentCfi);
+        updateLibraryInfoOfBook(currentCfi, currentProgressRate);
       }
     }
     navigation.goBack();
@@ -651,7 +669,7 @@ const Component: React.FC<Props> = ({route}) => {
     }, 1000);
   };
 
-  // TTSModoe 종료
+  // TTSMode 종료
   const handleTTSModeClose = (): void => {
     Tts.stop();
     if (isTimerOn) {
@@ -681,20 +699,22 @@ const Component: React.FC<Props> = ({route}) => {
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity onPress={handlegoBack}>
-              <Image source={leftarrowicon} style={styles.icon} />
-            </TouchableOpacity>
+            <EbookIcon
+              source={leftarrowicon}
+              onPress={handlegoBack}
+              style={{tintColor: 'white'}}
+            />
             <Text style={styles.navBarText} numberOfLines={1}>
               {title ? title : '책 타이틀'}
             </Text>
-            {/* 검색 및 검색 결과 */}
-            <TouchableOpacity onPress={() => setIsSearchingOn(true)}>
-              <Image source={searchicon} style={styles.icon} />
-            </TouchableOpacity>
+            <EbookIcon
+              source={searchicon}
+              onPress={() => setIsSearchingOn(true)}
+              style={{tintColor: 'white'}}
+            />
           </>
         )}
       </Animated.View>
-      {/*{ isSearching ? <EbookSearch /> : null}*/}
       {isSearchingOn ? (
         <EbookSearch
           onClose={() => setIsSearchingOn(false)}
@@ -707,7 +727,7 @@ const Component: React.FC<Props> = ({route}) => {
           clearSearchResults={clearSearchResults}
         />
       ) : null}
-      {/* 사이드바 */}
+      {/* 목차 */}
       <EbookIndex
         indexSidebarX={indexSidebarX}
         toggleIndex={toggleIndex}
@@ -743,18 +763,16 @@ const Component: React.FC<Props> = ({route}) => {
           flow="paginated"
           onSwipeRight={() => {
             setHasUsedInitialCfi(true);
-            console.log('swiperight됨');
           }}
           onSwipeLeft={() => {
             setHasUsedInitialCfi(true);
-            console.log('swipeleft됨');
           }}
           onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
           onLocationsReady={() => {
             setTocArr(toc);
           }}
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
-          enableSwipe={isSwipable}
+          enableSwipe={!isTTSMode}
           onWebViewMessage={message => {
             console.log(message);
             if (message?.formArr) {
@@ -770,126 +788,7 @@ const Component: React.FC<Props> = ({route}) => {
               setProgress(message.reloc);
             }
           }}
-          injectedJavascript={`
-let nowIndex = 0;
-let isCustomBook = false;
-window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "시작" }));
-
-const handlePageMove = async (cfisRange) => {
-  const currentLoc = await rendition.currentLocation();
-  const currentLocEnd = currentLoc.end.cfi;
-  const vallnum = rendition.epubcfi.compare(cfisRange, currentLocEnd);
-  if (vallnum > -1) {
-    window.ReactNativeWebView.postMessage(JSON.stringify({ gonextpage: 1 }));
-  }
-};
-
-const currentPageFirstIndex = async (startCfi, arr) => {
-  const arrParse = JSON.parse(arr);
-  rendition.epubcfi.compare(startCfi, formItem.cfisRange);
-  const updateIdx = arrParse.findIndex((formItem) => {
-    const vall = rendition.epubcfi.compare(startCfi, formItem.cfisRange);
-    return vall < 1
-  });
-  window.ReactNativeWebView.postMessage(JSON.stringify({ updateIdx }));
-}
-
-const getFormArr = async () => {
-window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "formArr 시작" }));
-  const currentLoc = await rendition.currentLocation();
-  const formArr = [];
-  const contentt = rendition.getContents();
-  const contents = contentt[0];
-  const currentView = rendition.manager.current();
-  const currentSection = currentView.section;
-  const paragraphs = contents.document.querySelectorAll("title, h1, h2, h3, p");
-
-  for (const element of paragraphs) {
-    const sentences = element.textContent.match(/[^.!?]+[.!?]+|[^.!?]+$/g);
-    for (const sentenceRan of sentences) {
-      const sentence = sentenceRan.trim();
-      const range = document.createRange();
-      const startOffset = element.textContent.indexOf(sentence);
-      const endOffset = startOffset + sentence.length;
-
-      try {
-        range.setStart(element.firstChild, startOffset);
-        range.setEnd(element.firstChild, endOffset);
-      } catch (error) {
-        continue;
-      }
-
-      const cfisRange = currentSection.cfiFromRange(range);
-      const tempObj = { sentence, cfisRange };
-      formArr.push(tempObj);
-    }
-  }
-  window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
-};
-
-rendition.on("relocated", (location) => {
-const locPercentage =  book.locations.percentageFromCfi(location.start.cfi)
-window.ReactNativeWebView.postMessage(JSON.stringify({ reloc: locPercentage }));
-  window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "리로케이트", pvi: nowIndex, ci: location.start.index }));
-  if (location.start.index !== nowIndex) {
-    nowIndex = location.start.index;
-    if (isCustomBook) { getFormArrForCustomBook(); }
-    else { getFormArr(); }
-  }
-});
-
-
-// getFormArrForCustomBook에서 Range를 생성하고 cfisRange를 계산하는 함수
-const createCfiObject = (currentSection, sentence, element, isNode) => {
-  const range = document.createRange();
-  try {
-    if (isNode) {
-      range.selectNodeContents(element);
-    } else {
-      const startOffset = element.textContent.indexOf(sentence);
-      const endOffset = startOffset + sentence.length;
-      range.setStart(element.firstChild, startOffset);
-      range.setEnd(element.firstChild, endOffset);
-    }
-    const cfisRange = currentSection.cfiFromRange(range);
-    return { sentence, cfisRange };
-  } catch (error) {
-    window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "에러남" }));
-    return null;
-  }
-};
-
-
-// 커스텀북의 태그별로 처리하여 formArr 생성해 전송하는 함수
-const getFormArrForCustomBook = () => {
-  window.ReactNativeWebView.postMessage(
-    JSON.stringify({ msgg: "CustomBook 로직 시작" })
-  );
-
-  const formArr = [];
-  const contentt = rendition.getContents();
-  const contents = contentt[0];
-  const currentView = rendition.manager.current();
-  const currentSection = currentView.section;
-  const elements = contents.document.querySelectorAll(
-    "img, p, h1, h2, h3, span"
-  );
-  // 요소별 로직 처리
-  for (const element of elements) {
-    const tagName = element.tagName.toLowerCase();
-    if (tagName === "img") {
-      const sentence = element.alt;
-      const tempObj = createCfiObject(currentSection, sentence, element, true);
-      if (tempObj) formArr.push(tempObj);
-    } else if (["h1", "h2", "h3", "span"].includes(tagName)) {
-      const sentence = element.textContent;
-      const tempObj = createCfiObject(currentSection, sentence, element, false);
-      if (tempObj) formArr.push(tempObj);
-    }
-  }
-  window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
-};
-        `}
+          injectedJavascript={injectedScrpt}
         />
       </TouchableOpacity>
       {/* 네비게이션 바 */}
@@ -916,46 +815,33 @@ const getFormArrForCustomBook = () => {
           style={[styles.progressview, {borderTopWidth: 2, paddingTop: 20}]}>
           {isTTSMode ? (
             <>
-              <TouchableOpacity onPress={ttsIdxToPrev}>
-                <Image source={prevbuttonicon} style={styles.footericon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleTTSPlay}>
-                {isTTSPlaying ? (
-                  <Image source={pausebuttonicon} style={styles.footericon} />
-                ) : (
-                  <Image source={playbuttonicon} style={styles.footericon} />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={ttsIdxToNext}>
-                <Image
-                  source={prevbuttonicon}
-                  style={[styles.footericon, {transform: [{scaleX: -1}]}]}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => (isTTSPlaying ? {} : toggleTTSSetting())}>
-                <Image
-                  source={settingicon}
-                  style={
-                    isTTSPlaying ? styles.footericonDisable : styles.footericon
-                  }
-                />
-              </TouchableOpacity>
+              <EbookIcon source={prevbuttonicon} onPress={ttsIdxToPrev} />
+              <EbookIcon
+                source={isTTSPlaying ? pausebuttonicon : playbuttonicon}
+                onPress={handleTTSPlay}
+              />
+              <EbookIcon
+                source={prevbuttonicon}
+                onPress={ttsIdxToNext}
+                style={{transform: [{scaleX: -1}]}}
+              />
+              <EbookIcon
+                source={settingicon}
+                onPress={() => (isTTSPlaying ? {} : toggleTTSSetting())}
+                style={
+                  isTTSPlaying ? {tintColor: 'gray', opacity: 0.2} : undefined
+                }
+              />
             </>
           ) : (
             <>
-              <TouchableOpacity onPress={toggleIndex}>
-                <Image source={indexmenuicon} style={styles.footericon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsTTSMode(true)}>
-                <Image source={headphoneicon} style={styles.footericon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={toggleBookNote}>
-                <Image source={noteicon} style={styles.footericon} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={toggleSetting}>
-                <Image source={settingicon} style={styles.footericon} />
-              </TouchableOpacity>
+              <EbookIcon source={indexmenuicon} onPress={toggleIndex} />
+              <EbookIcon
+                source={headphoneicon}
+                onPress={() => setIsTTSMode(true)}
+              />
+              <EbookIcon source={noteicon} onPress={toggleBookNote} />
+              <EbookIcon source={settingicon} onPress={toggleSetting} />
             </>
           )}
         </View>
@@ -970,7 +856,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: height * 0.1, // 상대적인 높이 (화면 높이의 10%)
+    height: height * 0.1,
     backgroundColor: '#3943B7',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -980,35 +866,19 @@ const styles = StyleSheet.create({
   },
   navBarText: {
     color: 'white',
-    fontSize: width * 0.06, // 상대적인 글꼴 크기 0.1 > 0.04로 수정
+    fontSize: width * 0.06,
     fontWeight: 'bold',
     maxWidth: '75%',
   },
   button: {
-    marginTop: height * 0.2, // 상대적인 마진
-    padding: width * 0.03, // 상대적인 패딩
+    marginTop: height * 0.2,
+    padding: width * 0.03,
     backgroundColor: '#3943B7',
     borderRadius: 5,
   },
   buttonText: {
     color: 'white',
-    fontSize: width * 0.04, // 상대적인 글꼴 크기
-  },
-  icon: {
-    width: width * 0.1, // 화면 너비의 10%
-    height: width * 0.1, // 화면 너비의 10% (정사각형)
-    tintColor: 'white',
-  },
-  footericon: {
-    width: width * 0.1, // 화면 너비의 10%
-    height: width * 0.1, // 화면 너비의 10% (정사각형)
-    tintColor: 'black',
-  },
-  footericonDisable: {
-    width: width * 0.1, // 화면 너비의 10%
-    height: width * 0.1, // 화면 너비의 10% (정사각형)
-    tintColor: 'gray',
-    opacity: 0.2,
+    fontSize: width * 0.04,
   },
   footer: {
     position: 'absolute',

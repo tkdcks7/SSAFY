@@ -116,9 +116,10 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                       {currentBook.title}
                     </Text>
                     <View style={styles.container}>
-                      <Text style={styles.containerText}>{`진행률: ${
-                        currentBook.progressRate * 100
-                      }%`}</Text>
+                      <Text
+                        style={
+                          styles.containerText
+                        }>{`진행률: ${currentBook.progressRate}%`}</Text>
                     </View>
                     <Text
                       style={styles.bookAuthor}
