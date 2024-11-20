@@ -50,7 +50,7 @@ public record SearchAfterValues(
 		}
 		// 정렬값들을 comma로 구분하고 Base64 인코딩
 		String searchAfterString = String.format("%s~|%s",
-			lastHit.getSortValues().get(DATA_SORT_IDX),    // data
+			lastHit.getSortValues().getFirst(),    // data
 			lastHit.getSortValues().get(BOOKID_SORT_IDX)    // bookId
 		);
 		// URL 에선 + 가 공백으로 인식되어 URL-safe Base64 인코딩/디코딩 적용
