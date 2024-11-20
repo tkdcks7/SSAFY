@@ -121,6 +121,8 @@ const SearchPage: React.FC = () => {
           placeholder="제목, 저자, 출판사 검색"
           value={searchKeyword}
           onChangeText={setSearchKeyword}
+          onSubmitEditing={() => { // 엔터 키 이벤트 처리
+            Keyboard.dismiss(); // 키보드 닫기
             resetSortState(); // 정렬 상태 초기화
             handleSearch(null, 'desc'); // 검색 실행
 
@@ -129,7 +131,10 @@ const SearchPage: React.FC = () => {
             }
           }}
         />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+        <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => {
+              Keyboard.dismiss();
               resetSortState(); // 정렬 상태 초기화
               handleSearch(null, 'desc');   // 검색 실행
               // AccessibilityBookList 상태 초기화
