@@ -213,12 +213,12 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
         if (setCookieHeader) {
           setCookie(setCookieHeader[0]);
           const tempData = {
-            name: 'temp',
+            name,
             email,
-            nickname: 'temp',
+            nickname,
             birthdate: '1995-11-22',
-            isDisabled: true,
-            isMaile: true,
+            isDisabled,
+            isMale: isMan,
           };
           login({tempData});
           setTimeout(() => {
@@ -287,6 +287,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           style={
             isDisabledSelected ? styles.visibleStyle : styles.invisibleStyle
           }
+          disabled={!isDisabledSelected}
         />
 
         <View
@@ -308,6 +309,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsDisabledSelected(true);
             }}
             style={{marginBottom: 20, width: '45%', height: '100%'}}
+            disabled={!isGenderSelected}
           />
           <Btn
             isWhite={isDisabled === null ? true : isDisabled}
@@ -318,6 +320,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsDisabledSelected(true);
             }}
             style={{marginBottom: 20, width: '45%', height: '100%'}}
+            disabled={!isGenderSelected}
           />
         </View>
 
@@ -335,6 +338,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsGenderSelected(true);
             }}
             style={{marginBottom: 20, width: '45%', height: '100%'}}
+            disabled={!isbirthEntered}
           />
           <Btn
             isWhite={isMan === null ? true : isMan}
@@ -345,6 +349,7 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
               setIsGenderSelected(true);
             }}
             style={{marginBottom: 20, width: '45%', height: '100%'}}
+            disabled={!isbirthEntered}
           />
         </View>
 
@@ -354,6 +359,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           placeholder="생년월일"
           ref={birthRef}
           onSubmitEditing={isValidbirth}
+          onBlur={() => {
+            if (birth) {
+              isValidbirth();
+            }
+          }}
           style={
             isPasswordConfirmEntered
               ? styles.visibleStyle
@@ -373,6 +383,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           secureTextEntry={true}
           ref={passwordConfirmRef}
           onSubmitEditing={isValidPasswordConfirm}
+          onBlur={() => {
+            if (passwordConfirm) {
+              isValidPasswordConfirm();
+            }
+          }}
           style={{
             position: isPasswordEntered ? 'relative' : 'absolute',
             opacity: isPasswordEntered ? 1 : 0,
@@ -388,6 +403,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           secureTextEntry={true}
           ref={passwordRef}
           onSubmitEditing={isValidPassword}
+          onBlur={() => {
+            if (password) {
+              isValidPassword();
+            }
+          }}
           style={
             isNicknameEntered ? styles.visibleStyle : styles.invisibleStyle
           }
@@ -404,6 +424,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           onChangeText={setNickname}
           placeholder="닉네임"
           onSubmitEditing={isValidNickname}
+          onBlur={() => {
+            if (nickname) {
+              isValidNickname();
+            }
+          }}
           ref={nicknameRef}
           style={isEmailChecked ? styles.visibleStyle : styles.invisibleStyle}
         />
@@ -419,6 +444,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           placeholder="이메일"
           ref={emailRef}
           onSubmitEditing={isValidEmail}
+          onBlur={() => {
+            if (email) {
+              isValidEmail();
+            }
+          }}
           style={isNameEntered ? styles.visibleStyle : styles.invisibleStyle}
         />
 
@@ -428,6 +458,11 @@ const SignupPage: React.FC<Props> = ({navigation}) => {
           placeholder="이름"
           ref={nameRef}
           onEndEditing={isValidName}
+          onBlur={() => {
+            if (name) {
+              isValidName();
+            }
+          }}
         />
         <Text style={styles.noticeText}>
           ※ 비밀번호는 8자리 이상으로 영어 대소문자, 숫자, 특수문자를 포함해야
