@@ -37,7 +37,9 @@ public record SearchAfterValues(
 	private static Object parseUserSortByValue(String sortBy, String value) {
 		// 'publishedDate' 기준으로 timestamp로 변환
 		// 'publishedDate' 이 아닌 title.keyword 라면 string으로 반환
-		return "publishedDate".equals(sortBy) ? Long.parseLong(value) : value;
+		return "_score".equals(sortBy) ? Double.parseDouble(value) :
+			"publishedDate".equals(sortBy) ? Long.parseLong(value) :
+				value;
 	}
 
 	public static String generateNextSearchId(SearchHit<BookIndex> lastHit) {
