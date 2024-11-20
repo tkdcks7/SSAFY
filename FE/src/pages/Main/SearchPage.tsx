@@ -115,8 +115,12 @@ const SearchPage: React.FC = () => {
           value={searchKeyword}
           onChangeText={setSearchKeyword}
             resetSortState(); // 정렬 상태 초기화
+            handleSearch(null, 'desc'); // 검색 실행
+
         />
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+              resetSortState(); // 정렬 상태 초기화
+              handleSearch(null, 'desc');   // 검색 실행
           <Text style={styles.searchButtonText}>검색</Text>
         </TouchableOpacity>
         {searchKeyword.length > 0 && (
