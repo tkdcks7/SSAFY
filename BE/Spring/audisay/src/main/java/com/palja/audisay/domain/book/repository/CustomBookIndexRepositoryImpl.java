@@ -16,6 +16,7 @@ import com.palja.audisay.domain.book.entity.BookIndex;
 import com.palja.audisay.global.util.StringUtil;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -72,6 +73,42 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 		if (lastSearchId != null) {
 			SearchAfterValues searchAfter = SearchAfterValues.parse(userSort.sortBy(), lastSearchId);
 			queryBuilder.withSearchAfter(searchAfter.values());
+		}
+	}
+
+	// 멀티 매칭 빌더
+	private static class MultiMatchQueryBuilder {
+		private final List<String> fieldsWithBoost = new ArrayList<>();
+		private TextQueryType queryType = TextQueryType.BestFields;  // 기본값
+		private Double tieBreaker;
+
+		// 기본 필드 추가 메서드
+		public MultiMatchQueryBuilder addField(String field, float boost) {
+			fieldsWithBoost.add("%s^%f".formatted(field, boost));
+			return this;
+		}
+
+		// 검색 타입 설정
+		public MultiMatchQueryBuilder setQueryType(TextQueryType type) {
+			this.queryType = type;
+			return this;
+		}
+
+		// tie_breaker 설정
+		public MultiMatchQueryBuilder setTieBreaker(Double tieBreaker) {
+			this.tieBreaker = tieBreaker;
+			return this;
+		}
+
+		public Query build(String keyword) {
+			return Query.of(q -> q
+				.multiMatch(m -> m
+					.query(keyword)
+					.fields(fieldsWithBoost)
+					.type(queryType)
+					.tieBreaker(tieBreaker)
+				)
+			);
 		}
 	}
 }
