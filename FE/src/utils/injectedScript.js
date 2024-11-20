@@ -2,44 +2,34 @@ export const injectedScrpt = `
 let nowIndex = 0;
 window.ReactNativeWebView.postMessage(JSON.stringify({ msgg: "시작" }));
 
+// 페이지 이동 여부를 판별하는 함수
 const handlePageMove = async (cfisRange) => {
   const currentLoc = await rendition.currentLocation();
   const currentLocEnd = currentLoc.end.cfi;
   const vallnum = rendition.epubcfi.compare(cfisRange, currentLocEnd);
-  if (vallnum > -1) {
+  if (vallnum > 0) {
     window.ReactNativeWebView.postMessage(JSON.stringify({ gonextpage: 1 }));
   }
 };
 
-const currentPageFirstIndex = async (startCfi, arr) => {
-  const arrParse = JSON.parse(arr);
-  rendition.epubcfi.compare(startCfi, formItem.cfisRange);
-  const updateIdx = arrParse.findIndex((formItem) => {
-    const vall = rendition.epubcfi.compare(startCfi, formItem.cfisRange);
-    return vall < 1;
-  });
-  window.ReactNativeWebView.postMessage(JSON.stringify({ updateIdx }));
-};
-
 rendition.on("relocated", (location) => {
-  const locPercentage = book.locations.percentageFromCfi(location.start.cfi);
-  window.ReactNativeWebView.postMessage(
-    JSON.stringify({ reloc: locPercentage })
-  );
   const currentLocIdx = location.start.index;
-  window.ReactNativeWebView.postMessage(
-    JSON.stringify({
-      msgg: "리로케이트",
-      prevIndex: nowIndex,
-      currentLocIdx,
-      stCfi: location.start.cfi,
-      edCfi: location.end.cfi
-    })
-  );
-  if (currentLocIdx !== nowIndex) {
-    nowIndex = location.start.index;
-    getFormArrForCustomBook();
-  }
+    window.ReactNativeWebView.postMessage(JSON.stringify({ bookEnd: 1 }));
+    const locPercentage = book.locations.percentageFromCfi(location.start.cfi);
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        msgg: "리로케이트",
+        reprogress: locPercentage,
+        prevIndex: nowIndex,
+        currentLocIdx,
+        stCfi: location.start.cfi,
+        edCfi: location.end.cfi,
+      })
+    );
+    if (currentLocIdx !== nowIndex) {
+      nowIndex = currentLocIdx;
+      getFormArrForCustomBook();
+    }
 });
 
 // getFormArrForCustomBook에서 Range를 생성하고 cfisRange를 계산하는 함수
@@ -73,7 +63,9 @@ const getFormArrForCustomBook = () => {
   const contents = contentt[0];
   const currentView = rendition.manager.current();
   const currentSection = currentView.section;
-  const elements = contents.document.querySelectorAll("img, h1, h2, h3, span");
+  const elements = contents.document.querySelectorAll(
+    "img, a, h1, h2, h3, span"
+  );
   // 요소별 로직 처리
   for (const element of elements) {
     const tagName = element.tagName.toLowerCase();
@@ -81,7 +73,7 @@ const getFormArrForCustomBook = () => {
       const sentence = element.alt;
       const tempObj = createCfiObject(currentSection, sentence, element, true);
       if (tempObj) formArr.push(tempObj);
-    } else if (["h1", "h2", "h3", "span"].includes(tagName)) {
+    } else if (["h1", "h2", "h3", "span", "a"].includes(tagName)) {
       const sentence = element.textContent;
       const tempObj = createCfiObject(currentSection, sentence, element, false);
       if (tempObj) formArr.push(tempObj);
@@ -89,4 +81,5 @@ const getFormArrForCustomBook = () => {
   }
   window.ReactNativeWebView.postMessage(JSON.stringify({ formArr }));
 };
+
         `;

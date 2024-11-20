@@ -436,13 +436,11 @@ const Component: React.FC<Props> = ({route}) => {
         return prevIdx;
       }
 
-      if (prevIdx >= formArrRef.current.length - 1) {
+      if (prevIdx >= formArrRef.current.length) {
         handleRemoveAnnotation(formArrRef.current[prevIdx - 1].cfisRange);
-        if (!getCurrentLocation()?.atEnd) {
-          setTimeout(() => {
-            handlegoBack();
-          }, 3000);
-          return prevIdx;
+        if (getCurrentLocation()?.atEnd) {
+          handlegoBack();
+          return 0;
         }
         setFormArr([]); // formArr 초기화
         setIsSectionMoving(true);
@@ -473,7 +471,7 @@ const Component: React.FC<Props> = ({route}) => {
     const onTtsFinish = () => {
       if (
         isTTSPlayingRef.current &&
-        ttsIdxRef.current < formArrRef.current.length
+        ttsIdxRef.current <= formArrRef.current.length
       ) {
         playTextSequentially();
       }
@@ -488,10 +486,6 @@ const Component: React.FC<Props> = ({route}) => {
 
   useEffect(() => {
     formArrRef.current = formArr;
-    // formArr이 비어있지 않을 때만 TTS를 시작하도록
-    if (formArr.length > 0 && isTTSPlaying) {
-      playTextSequentially();
-    }
   }, [formArr]);
 
   useEffect(() => {
@@ -590,7 +584,10 @@ const Component: React.FC<Props> = ({route}) => {
       });
     }
     if (initialCfi) {
-      goToLocation(initialCfi);
+      goNext();
+      setTimeout(() => {
+        goToLocation(initialCfi);
+      }, 1500);
     }
     updateLastAccessedBookId(bookId);
   };
@@ -692,6 +689,8 @@ const Component: React.FC<Props> = ({route}) => {
             onPress={() => {
               isTimerOn ? handleTimerOff() : handleTTSModeClose();
             }}
+            accessible={true}
+            accessibilityRole="button"
             style={styles.ttsEndBox}>
             <Text style={[styles.navBarText, {color: 'black'}]}>
               {isTimerOn ? timeParser(timeLeft) : 'TTS 모드 종료'}
@@ -702,6 +701,7 @@ const Component: React.FC<Props> = ({route}) => {
             <EbookIcon
               source={leftarrowicon}
               onPress={handlegoBack}
+              accessibilitylabel="뷰어 나가기"
               style={{tintColor: 'white'}}
             />
             <Text style={styles.navBarText} numberOfLines={1}>
@@ -710,6 +710,7 @@ const Component: React.FC<Props> = ({route}) => {
             <EbookIcon
               source={searchicon}
               onPress={() => setIsSearchingOn(true)}
+              accessibilitylabel="검색"
               style={{tintColor: 'white'}}
             />
           </>
@@ -756,7 +757,12 @@ const Component: React.FC<Props> = ({route}) => {
         toggleTTSSetting={toggleTTSSetting}
         handleTimerOn={handleTimerOn}
       />
-      <TouchableOpacity style={{flex: 1}} onPress={toggleNav}>
+      <TouchableOpacity
+        style={{flex: 1}}
+        onPress={toggleNav}
+        accessible={true}
+        accessibilityLabel={'뷰어 화면'}
+        accessibilityHint={isVisible ? '네비게이션 닫기' : '네비게이션 열기'}>
         <Reader
           src={bookSrc}
           fileSystem={useFileSystem}
@@ -774,7 +780,7 @@ const Component: React.FC<Props> = ({route}) => {
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
           enableSwipe={!isTTSMode}
           onWebViewMessage={message => {
-            console.log(message);
+            // console.log(message);
             if (message?.formArr) {
               if (formArr) {
                 setFormArr(() => [...message.formArr]);
@@ -783,9 +789,8 @@ const Component: React.FC<Props> = ({route}) => {
               setttsIdx(message.updateIdx);
             } else if (message?.gonextpage) {
               goNext();
-            }
-            if (message?.reloc) {
-              setProgress(message.reloc);
+            } else if (message?.reprogress) {
+              setProgress(message.reprogress);
             }
           }}
           injectedJavascript={injectedScrpt}
@@ -801,7 +806,9 @@ const Component: React.FC<Props> = ({route}) => {
         {isTTSMode ? (
           <TouchableOpacity
             style={styles.saveNote}
-            onPress={handleReadNoteSave}>
+            onPress={handleReadNoteSave}
+            accessible={true}
+            accessibilityRole="button">
             <Text style={styles.saveNoteText}>읽고 있는 문장 저장</Text>
           </TouchableOpacity>
         ) : null}
@@ -815,19 +822,26 @@ const Component: React.FC<Props> = ({route}) => {
           style={[styles.progressview, {borderTopWidth: 2, paddingTop: 20}]}>
           {isTTSMode ? (
             <>
-              <EbookIcon source={prevbuttonicon} onPress={ttsIdxToPrev} />
+              <EbookIcon
+                source={prevbuttonicon}
+                onPress={ttsIdxToPrev}
+                accessibilitylabel={'이전 문장으로 이동'}
+              />
               <EbookIcon
                 source={isTTSPlaying ? pausebuttonicon : playbuttonicon}
                 onPress={handleTTSPlay}
+                accessibilitylabel={isTTSPlaying ? 'TTS 중지' : 'TTS 시작'}
               />
               <EbookIcon
                 source={prevbuttonicon}
                 onPress={ttsIdxToNext}
+                accessibilitylabel={'다음 문장으로 이동'}
                 style={{transform: [{scaleX: -1}]}}
               />
               <EbookIcon
                 source={settingicon}
                 onPress={() => (isTTSPlaying ? {} : toggleTTSSetting())}
+                accessibilitylabel={'TTS 설정 토글'}
                 style={
                   isTTSPlaying ? {tintColor: 'gray', opacity: 0.2} : undefined
                 }
@@ -835,13 +849,26 @@ const Component: React.FC<Props> = ({route}) => {
             </>
           ) : (
             <>
-              <EbookIcon source={indexmenuicon} onPress={toggleIndex} />
+              <EbookIcon
+                source={indexmenuicon}
+                onPress={toggleIndex}
+                accessibilitylabel={'목차 토글'}
+              />
               <EbookIcon
                 source={headphoneicon}
                 onPress={() => setIsTTSMode(true)}
+                accessibilitylabel={'TTS 모드 시작'}
               />
-              <EbookIcon source={noteicon} onPress={toggleBookNote} />
-              <EbookIcon source={settingicon} onPress={toggleSetting} />
+              <EbookIcon
+                source={noteicon}
+                onPress={toggleBookNote}
+                accessibilitylabel={'독서노트 목록 토글'}
+              />
+              <EbookIcon
+                source={settingicon}
+                onPress={toggleSetting}
+                accessibilitylabel={'뷰어 설정창 토글'}
+              />
             </>
           )}
         </View>
