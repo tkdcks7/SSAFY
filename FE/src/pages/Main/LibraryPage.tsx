@@ -124,15 +124,15 @@ const LibraryPage: React.FC = () => {
     setIsSidebarVisible(prev => !prev);
   };
 
-  // const handleDatabaseReset = async () => {
-  //   try {
-  //     await resetLocalDatabase();
-  //     setAllBooks([]);
-  //     Alert.alert('성공', '로컬 데이터베이스가 초기화되었습니다.');
-  //   } catch (error) {
-  //     Alert.alert('오류', '로컬 데이터베이스 초기화 중 문제가 발생했습니다.');
-  //   }
-  // };
+  const handleDatabaseReset = async () => {
+    try {
+      await resetLocalDatabase();
+      setAllBooks([]);
+      Alert.alert('성공', '로컬 데이터베이스가 초기화되었습니다.');
+    } catch (error) {
+      Alert.alert('오류', '로컬 데이터베이스 초기화 중 문제가 발생했습니다.');
+    }
+  };
 
   const getCurrentBookData = (): any | null => {
     const val: any | null = books.find(
@@ -151,18 +151,6 @@ const LibraryPage: React.FC = () => {
           isSidebarVisible ? 'no-hide-descendants' : 'auto'
         }>
         <MainHeader title="내 서재" />
-        {/* <View style={styles.buttonContainer}>
-          <Btn
-            title="로컬 DB 초기화"
-            btnSize={1}
-            onPress={handleDatabaseReset}
-          />
-          <Btn
-            title="로컬 DB 보기"
-            btnSize={1}
-            onPress={() => navigation.navigate('DatabaseViewer')}
-          />
-        </View> */}
         <FlatList
           data={books}
           keyExtractor={item => item.id.toString()}
