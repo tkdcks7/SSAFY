@@ -24,6 +24,7 @@ interface Book {
 
 interface GeneralBookListProps {
   bookList: Book[];
+  updateSortAndFetch: (sortBy: 'published_date' | 'title' | null, sortOrder: 'asc' | 'desc') => void
 }
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
@@ -31,10 +32,37 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
   const [sortOrder, setSortOrder] = useState<'latest' | 'alphabetical'>('latest');
   const [isAscending, setIsAscending] = useState(true);
+  const [sortOrder, setSortOrder] = useState<'correct' | 'published_date' | 'title'>('correct');
+  const [isLastest, setIsLastest] = useState<boolean>(true);
+  const [isAlpabetAsc, setIsAlpabetAsc] = useState<boolean>(true);
   // const [isAscending, setIsAscending] = useState(true);
   const navigation = useNavigation<NavigationProp>();
 
   const handleSortChange = (order: 'latest' | 'alphabetical') => {
+  const handleSortChange = (order: 'correct' | 'published_date' | 'title') => {
+    if(order === 'published_date'){
+      if(sortOrder === order) {
+        setIsLastest((prev) => {
+          const nextLastest = !prev;
+          updateSortAndFetch('published_date', nextLastest ? 'desc' : 'asc');
+          return nextLastest;
+        });
+      } else {
+        updateSortAndFetch('published_date', isLastest ? 'desc' : 'asc');
+      }
+    }else if(order === 'title'){
+      if(sortOrder === order) {
+        setIsAlpabetAsc((prev) => {
+          const nextAlpabetAsc = !prev;
+          updateSortAndFetch('title', nextAlpabetAsc ? 'asc' : 'desc');
+          return nextAlpabetAsc;
+        });
+      } else {
+        updateSortAndFetch('title', isAlpabetAsc ? 'asc' : 'desc');
+      }
+    } else {
+      updateSortAndFetch(null, 'desc'); // 정확도순은 기본값
+    }
     setSortOrder(order);
   };
 

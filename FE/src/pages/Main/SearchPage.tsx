@@ -76,6 +76,13 @@ const SearchPage: React.FC = () => {
     setIsSortOrder('desc'); // 기본 정렬 방향 초기화
   };
 
+  const updateSortAndFetch = (sortBy: 'published_date' | 'title' | null, sortOrder: 'asc' | 'desc') => {
+    setIsSortBy(sortBy);
+    setIsSortOrder(sortOrder);
+    setLastSearchId(null); // 이전 커서를 초기화
+    handleSearch(sortBy, sortOrder); // 새로운 정렬 조건으로 검색 실행
+  };
+
   const handleFetchMore = async () => {
     if (isFetchingMore || !lastSearchId) { return; }
     setIsFetchingMore(true);
