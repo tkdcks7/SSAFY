@@ -41,7 +41,10 @@ const SearchPage: React.FC = () => {
     }, [])
   );
 
-  const handleSearch = async () => {
+  const handleSearch = async (
+      sortBy: 'published_date' | 'title' | null = isSortBy,
+      sortOrder: 'asc' | 'desc' = isSortOrder
+  ) => {
     if (searchKeyword.trim() === '') {
       setBookList([]);
       setLastSearchId(null);
@@ -53,7 +56,8 @@ const SearchPage: React.FC = () => {
       const response = await searchBooks({
         keyword: searchKeyword,
         pageSize: 10,
-        sortBy: isAccessibilityMode ? 'title' : 'published_date',
+        sortBy,       // 현재 정렬 기준
+        sortOrder, // 현재 정렬 방향
       });
       setBookList(response.bookList);
       setLastSearchId(response.lastSearchId);
