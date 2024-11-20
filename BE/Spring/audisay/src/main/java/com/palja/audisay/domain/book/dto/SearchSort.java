@@ -15,13 +15,16 @@ public record SearchSort(
 	);
 
 	public static SearchSort setSort(String sortBy, String sortOrder) {
+		// sortBy에 대한 유효성 검사 및 변환
+		String dbField = FIELD_MAP.getOrDefault(sortBy.toLowerCase(), "_score");
+		if (dbField.equals("_score")) {
+			return new SearchSort("_score", Sort.Direction.DESC);
+		}
+
 		// sortOrder 문자열에 따라 방향 설정 (기본값: DESC)
 		Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
 			? Sort.Direction.ASC
 			: Sort.Direction.DESC;
-
-		// sortBy에 대한 유효성 검사 및 변환
-		String dbField = FIELD_MAP.getOrDefault(sortBy.toLowerCase(), "publishedDate");
 		return new SearchSort(dbField, direction);
 	}
 }
