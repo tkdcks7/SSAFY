@@ -112,11 +112,11 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList, updateSortA
             <Defs>
               <LinearGradient id={`grad${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? '100%' : `${partialStar * 100}%`}
                   stopColor="#3943B7"
                 />
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? '100%' : `${partialStar * 100}%`}
                   stopColor="#DDDDDD"
                 />
               </LinearGradient>
@@ -147,7 +147,7 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList, updateSortA
             style={[styles.sortButton, sortOrder === 'published_date' && styles.selectedButton]}
             onPress={() => handleSortChange('published_date')}
             accessibilityLabel={`출판일 기준 정렬 버튼. 현재 ${isLastest ? '최신순' : '오래된순'}.`}
-            accessibilityHint={`활성화 시 ${sortOrder === 'published_date'?
+            accessibilityHint={`활성화 시 ${sortOrder === 'published_date' ?
                 !isLastest ? '최신순' : '오래된순' :
                 isLastest ? '최신순' : '오래된순'}으로 정렬 합니다.`}
         >
@@ -157,7 +157,7 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList, updateSortA
             style={[styles.sortButton, sortOrder === 'title' && styles.selectedButton]}
             onPress={() => handleSortChange('title')}
             accessibilityLabel={`제목순 기준 정렬 버튼. 현재 ${isAlpabetAsc ? '오름차순' : '내림차순'}.`}
-            accessibilityHint={`활성화 시 ${sortOrder === 'title'?
+            accessibilityHint={`활성화 시 ${sortOrder === 'title' ?
                 !isAlpabetAsc ? '오름차순' : '내림차순' :
                 isAlpabetAsc ? '오름차순' : '내림차순'}으로 정렬 합니다.`}
         >
