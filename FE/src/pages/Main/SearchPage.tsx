@@ -8,6 +8,7 @@ import {
   ScrollView,
   Dimensions,
   Alert,
+  Keyboard,
 } from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
@@ -29,6 +30,7 @@ const SearchPage: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null); // 스크롤뷰 참조 설정
+  const resetAccessibilityBookListStatesRef = useRef<(() => void) | null>(null);
 
   // 페이지가 포커스될 때마다 접근성 모드 상태를 최신화
   useFocusEffect(
@@ -69,8 +71,13 @@ const SearchPage: React.FC = () => {
     }
   };
 
+  const resetSortState = () => {
+    setIsSortBy(null); // 정렬 기준 초기화
+    setIsSortOrder('desc'); // 기본 정렬 방향 초기화
+  };
+
   const handleFetchMore = async () => {
-    if (isFetchingMore || !lastSearchId) return;
+    if (isFetchingMore || !lastSearchId) { return; }
     setIsFetchingMore(true);
 
     try {
@@ -78,7 +85,8 @@ const SearchPage: React.FC = () => {
         keyword: searchKeyword,
         lastSearchId,
         pageSize: 10,
-        sortBy: isAccessibilityMode ? 'title' : 'published_date',
+        sortBy: isSortBy,
+        sortOrder: isSortOrder, // 현재 정렬 방향 유지
       });
 
       setBookList((prevBooks) => [...prevBooks, ...response.bookList]);
@@ -106,6 +114,7 @@ const SearchPage: React.FC = () => {
           placeholder="제목, 저자, 출판사 검색"
           value={searchKeyword}
           onChangeText={setSearchKeyword}
+            resetSortState(); // 정렬 상태 초기화
         />
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchButtonText}>검색</Text>
@@ -131,9 +140,21 @@ const SearchPage: React.FC = () => {
             <Text style={styles.noResultsText}>검색 결과가 없습니다.</Text>
           ) : hasSearched ? (
             isAccessibilityMode ? (
-              <AccessibilityBookList bookList={bookList} />
+                <AccessibilityBookList
+                    bookList={bookList}
+                    updateSortAndFetch={updateSortAndFetch}
+                    onResetStates={(resetFunction: () => void) => {
+                      resetAccessibilityBookListStatesRef.current = resetFunction;
+                    }}
+                />
             ) : (
-              <GeneralBookList bookList={bookList} />
+              <GeneralBookList
+                  bookList={bookList}
+                  updateSortAndFetch={updateSortAndFetch}
+                  onResetStates={(resetFunction: () => void) => {
+                    resetAccessibilityBookListStatesRef.current = resetFunction;
+                  }}
+              />
             )
           ) : null}
         </View>
