@@ -1,6 +1,7 @@
 package com.palja.audisay.domain.book.repository;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -44,12 +45,12 @@ public class CustomBookIndexRepositoryImpl implements CustomBookIndexRepository 
 		if (StringUtil.isEmpty(keyword)) {
 			queryBuilder.withQuery(q -> q.matchAll(m -> m));
 		} else {
-			Query query = Query.of(q -> q
-				.multiMatch(m -> m
-					.query(keyword)
-					.fields(Arrays.asList("title", "author", "publisher"))
-				)
-			);
+			Query query = new MultiMatchQueryBuilder()
+				.addField("title", 3.0f)      // 부스팅 값을 문자열로 직접 지정
+				.addField("author", 2.0f)
+				.addField("publisher", 1.0f)
+				.setTieBreaker(0.3)
+				.build(keyword);
 			queryBuilder.withQuery(query)
 				.withMinScore(minScore); // 검색 최소 일치도
 		}
