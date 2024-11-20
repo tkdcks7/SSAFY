@@ -31,31 +31,32 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
   const [sortOrder, setSortOrder] = useState<'latest' | 'alphabetical'>('latest');
   const [isAscending, setIsAscending] = useState(true);
+  // const [isAscending, setIsAscending] = useState(true);
   const navigation = useNavigation<NavigationProp>();
 
   const handleSortChange = (order: 'latest' | 'alphabetical') => {
     setSortOrder(order);
   };
 
-  const toggleSortDirection = () => {
-    setIsAscending((prev) => !prev);
-  };
+  // const toggleSortDirection = () => {
+  //   setIsAscending((prev) => !prev);
+  // };
 
   const handleBookClick = (bookId: number) => {
     navigation.navigate('BookDetail', { bookId });
   };
 
-  const sortedBooks = [...bookList].sort((a, b) => {
-    if (sortOrder === 'latest') {
-      return isAscending
-        ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
-        : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-    } else {
-      return isAscending
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
-    }
-  });
+  // const sortedBooks = [...bookList].sort((a, b) => {
+  //   if (sortOrder === 'latest') {
+  //     return isAscending
+  //       ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
+  //       : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  //   } else {
+  //     return isAscending
+  //       ? a.title.localeCompare(b.title)
+  //       : b.title.localeCompare(a.title);
+  //   }
+  // });
 
   const renderStars = (rating: number) => {
     const filledStars = Math.floor(rating);
@@ -107,12 +108,12 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
         >
           <Text style={styles.sortButtonText}>가나다순</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>
-          <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />
-        </TouchableOpacity>
+        {/*<TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>*/}
+        {/*  <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />*/}
+        {/*</TouchableOpacity>*/}
       </View>
       <ScrollView>
-        {sortedBooks.map((book) => (
+        {bookList.map((book) => (
           <TouchableOpacity key={book.bookId} onPress={() => handleBookClick(book.bookId)} style={styles.bookItem}>
             <Image source={{ uri: book.cover }} style={styles.bookImage} />
             <View style={styles.bookInfo}>
