@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 public class SearchPaginationReqDto extends CursorPaginationReqDto {
 	private String keyword;
 	@Builder.Default
-	private String sortBy = "published_date";
+	private String sortBy = "_score";
 	@Builder.Default
 	private String sortOrder = "desc";
 }
