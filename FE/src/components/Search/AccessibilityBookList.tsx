@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -17,20 +17,30 @@ interface Book {
 interface AccessibilityBookListProps {
   bookList: Book[];
   updateSortAndFetch: (sortBy: 'published_date' | 'title' | null, sortOrder: 'asc' | 'desc') => void
+  onResetStates?: (resetFunction: () => void) => void;
 }
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 
-const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ bookList }) => {
-  const [sortOrder, setSortOrder] = useState<'latest' | 'alphabetical'>('latest');
-  const [isAscending, setIsAscending] = useState(true);
+const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({ bookList, updateSortAndFetch, onResetStates }) => {
   const [sortOrder, setSortOrder] = useState<'correct' | 'published_date' | 'title'>('correct');
   const [isLastest, setIsLastest] = useState<boolean>(true);
   const [isAlpabetAsc, setIsAlpabetAsc] = useState<boolean>(true);
   // const [isAscending, setIsAscending] = useState(true);
   const navigation = useNavigation<NavigationProp>();
 
-  const handleSortChange = (order: 'latest' | 'alphabetical') => {
+  const resetStates = () => {
+    setSortOrder('correct');
+    setIsLastest(true);
+    setIsAlpabetAsc(true);
+  };
+
+  useEffect(() => {
+    if (onResetStates) {
+      onResetStates(resetStates); // 초기화 함수 전달
+    }
+  }, [onResetStates]);
+
   const handleSortChange = (order: 'correct' | 'published_date' | 'title') => {
     if(order === 'published_date'){
       if(sortOrder === order) {
