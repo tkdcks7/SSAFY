@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: width * 0.03,
     alignItems: 'center',
-    marginHorizontal: width * 0.01,
+    marginHorizontal: width * 0.005,
   },
   selectedButton: {
     backgroundColor: '#3943B7',
