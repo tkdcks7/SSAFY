@@ -11,13 +11,23 @@ type Props = {
   source: any;
   onPress: () => void;
   style?: ImageStyle | ImageStyle[];
+  accessibilitylabel?: string;
 };
 
 const {width} = Dimensions.get('window');
 
-const EbookIcon: React.FC<Props> = ({source, onPress, style}) => {
+const EbookIcon: React.FC<Props> = ({
+  source,
+  onPress,
+  style,
+  accessibilitylabel,
+}) => {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity
+      onPress={onPress}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilitylabel}>
       <Image source={source} style={[styles.icon, style]} />
     </TouchableOpacity>
   );
