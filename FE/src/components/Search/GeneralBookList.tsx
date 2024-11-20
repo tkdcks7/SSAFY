@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -24,38 +24,77 @@ interface Book {
 
 interface GeneralBookListProps {
   bookList: Book[];
+  updateSortAndFetch: (sortBy: 'published_date' | 'title' | null, sortOrder: 'asc' | 'desc') => void
+  onResetStates?: (resetFunction: () => void) => void;
 }
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'BookDetail'>;
 
-const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
-  const [sortOrder, setSortOrder] = useState<'latest' | 'alphabetical'>('latest');
-  const [isAscending, setIsAscending] = useState(true);
+const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList, updateSortAndFetch, onResetStates }) => {
+  const [sortOrder, setSortOrder] = useState<'correct' | 'published_date' | 'title'>('correct');
+  const [isLastest, setIsLastest] = useState<boolean>(true);
+  const [isAlpabetAsc, setIsAlpabetAsc] = useState<boolean>(true);
+  // const [isAscending, setIsAscending] = useState(true);
   const navigation = useNavigation<NavigationProp>();
 
-  const handleSortChange = (order: 'latest' | 'alphabetical') => {
+  const resetStates = () => {
+    setSortOrder('correct');
+    setIsLastest(true);
+    setIsAlpabetAsc(true);
+  };
+
+  useEffect(() => {
+    if (onResetStates) {
+      onResetStates(resetStates); // 초기화 함수 전달
+    }
+  }, [onResetStates]);
+
+  const handleSortChange = (order: 'correct' | 'published_date' | 'title') => {
+    if(order === 'published_date'){
+      if(sortOrder === order) {
+        setIsLastest((prev) => {
+          const nextLastest = !prev;
+          updateSortAndFetch('published_date', nextLastest ? 'desc' : 'asc');
+          return nextLastest;
+        });
+      } else {
+        updateSortAndFetch('published_date', isLastest ? 'desc' : 'asc');
+      }
+    }else if(order === 'title'){
+      if(sortOrder === order) {
+        setIsAlpabetAsc((prev) => {
+          const nextAlpabetAsc = !prev;
+          updateSortAndFetch('title', nextAlpabetAsc ? 'asc' : 'desc');
+          return nextAlpabetAsc;
+        });
+      } else {
+        updateSortAndFetch('title', isAlpabetAsc ? 'asc' : 'desc');
+      }
+    } else {
+      updateSortAndFetch(null, 'desc'); // 정확도순은 기본값
+    }
     setSortOrder(order);
   };
 
-  const toggleSortDirection = () => {
-    setIsAscending((prev) => !prev);
-  };
+  // const toggleSortDirection = () => {
+  //   setIsAscending((prev) => !prev);
+  // };
 
   const handleBookClick = (bookId: number) => {
     navigation.navigate('BookDetail', { bookId });
   };
 
-  const sortedBooks = [...bookList].sort((a, b) => {
-    if (sortOrder === 'latest') {
-      return isAscending
-        ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
-        : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-    } else {
-      return isAscending
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
-    }
-  });
+  // const sortedBooks = [...bookList].sort((a, b) => {
+  //   if (sortOrder === 'latest') {
+  //     return isAscending
+  //       ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime()
+  //       : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  //   } else {
+  //     return isAscending
+  //       ? a.title.localeCompare(b.title)
+  //       : b.title.localeCompare(a.title);
+  //   }
+  // });
 
   const renderStars = (rating: number) => {
     const filledStars = Math.floor(rating);
@@ -73,11 +112,11 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
             <Defs>
               <LinearGradient id={`grad${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? '100%' : `${partialStar * 100}%`}
                   stopColor="#3943B7"
                 />
                 <Stop
-                  offset={i < filledStars ? "100%" : `${partialStar * 100}%`}
+                  offset={i < filledStars ? '100%' : `${partialStar * 100}%`}
                   stopColor="#DDDDDD"
                 />
               </LinearGradient>
@@ -96,23 +135,40 @@ const GeneralBookList: React.FC<GeneralBookListProps> = ({ bookList }) => {
     <View style={styles.container}>
       <View style={styles.sortContainer}>
         <TouchableOpacity
-          style={[styles.sortButton, sortOrder === 'latest' && styles.selectedButton]}
-          onPress={() => handleSortChange('latest')}
+            style={[styles.sortButton, sortOrder === 'correct' && styles.selectedButton]}
+            onPress={() => handleSortChange('correct')}
+            accessibilityLabel={'정확도 기준 정렬 버튼.'}
+            accessibilityHint={'정확도 순으로 정렬 합니다.'}
         >
-          <Text style={styles.sortButtonText}>최신순</Text>
+          <Text style={styles.sortButtonText}
+          >정확도순</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.sortButton, sortOrder === 'alphabetical' && styles.selectedButton]}
-          onPress={() => handleSortChange('alphabetical')}
+            style={[styles.sortButton, sortOrder === 'published_date' && styles.selectedButton]}
+            onPress={() => handleSortChange('published_date')}
+            accessibilityLabel={`출판일 기준 정렬 버튼. 현재 ${isLastest ? '최신순' : '오래된순'}.`}
+            accessibilityHint={`활성화 시 ${sortOrder === 'published_date' ?
+                !isLastest ? '최신순' : '오래된순' :
+                isLastest ? '최신순' : '오래된순'}으로 정렬 합니다.`}
         >
-          <Text style={styles.sortButtonText}>가나다순</Text>
+          <Text style={styles.sortButtonText}>{isLastest ? '최신순' : '오래된순'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>
-          <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />
+        <TouchableOpacity
+            style={[styles.sortButton, sortOrder === 'title' && styles.selectedButton]}
+            onPress={() => handleSortChange('title')}
+            accessibilityLabel={`제목순 기준 정렬 버튼. 현재 ${isAlpabetAsc ? '오름차순' : '내림차순'}.`}
+            accessibilityHint={`활성화 시 ${sortOrder === 'title' ?
+                !isAlpabetAsc ? '오름차순' : '내림차순' :
+                isAlpabetAsc ? '오름차순' : '내림차순'}으로 정렬 합니다.`}
+        >
+          <Text style={styles.sortButtonText}>{isAlpabetAsc ? '제목순(ㄱ)' : '제목순(ㅎ)'}</Text>
         </TouchableOpacity>
+        {/*<TouchableOpacity style={styles.reverseButton} onPress={toggleSortDirection}>*/}
+        {/*  <Image source={require('../../assets/icons/reverse.png')} style={styles.reverseIcon} />*/}
+        {/*</TouchableOpacity>*/}
       </View>
       <ScrollView>
-        {sortedBooks.map((book) => (
+        {bookList.map((book) => (
           <TouchableOpacity key={book.bookId} onPress={() => handleBookClick(book.bookId)} style={styles.bookItem}>
             <Image source={{ uri: book.cover }} style={styles.bookImage} />
             <View style={styles.bookInfo}>
@@ -153,7 +209,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: width * 0.03,
     alignItems: 'center',
-    marginHorizontal: width * 0.01,
+    marginHorizontal: width * 0.005,
   },
   selectedButton: {
     backgroundColor: '#3943B7',

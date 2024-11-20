@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
   Dimensions,
   Alert,
+  Keyboard,
 } from 'react-native';
 import MainHeader from '../../components/MainHeader';
 import MainFooter from '../../components/MainFooter';
@@ -23,11 +23,14 @@ const { width, height } = Dimensions.get('window');
 const SearchPage: React.FC = () => {
   const [isAccessibilityMode, setIsAccessibilityMode] = useState<boolean>(false); // 접근성 모드 상태
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [isSortBy, setIsSortBy] = useState<'published_date' | 'title' | null>(null);
+  const [isSortOrder, setIsSortOrder] = useState<'asc' | 'desc'>('desc');
   const [bookList, setBookList] = useState<any[]>([]); // 검색 결과 리스트 상태
   const [lastSearchId, setLastSearchId] = useState<string | null>(null); // 추가 검색 위한 마지막 검색 ID
   const [hasSearched, setHasSearched] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null); // 스크롤뷰 참조 설정
+  const resetAccessibilityBookListStatesRef = useRef<(() => void) | null>(null);
 
   // 페이지가 포커스될 때마다 접근성 모드 상태를 최신화
   useFocusEffect(
@@ -40,7 +43,10 @@ const SearchPage: React.FC = () => {
     }, [])
   );
 
-  const handleSearch = async () => {
+  const handleSearch = async (
+      sortBy: 'published_date' | 'title' | null = isSortBy,
+      sortOrder: 'asc' | 'desc' = isSortOrder
+  ) => {
     if (searchKeyword.trim() === '') {
       setBookList([]);
       setLastSearchId(null);
@@ -52,19 +58,33 @@ const SearchPage: React.FC = () => {
       const response = await searchBooks({
         keyword: searchKeyword,
         pageSize: 10,
-        sortBy: isAccessibilityMode ? 'title' : 'published_date',
+        sortBy,       // 현재 정렬 기준
+        sortOrder, // 현재 정렬 방향
       });
       setBookList(response.bookList);
       setLastSearchId(response.lastSearchId);
       setHasSearched(true);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true }); // 스크롤 초기화
     } catch (error) {
       Alert.alert('검색 실패', '검색 중 오류가 발생했습니다.');
       setBookList([]);
     }
   };
 
+  const resetSortState = () => {
+    setIsSortBy(null); // 정렬 기준 초기화
+    setIsSortOrder('desc'); // 기본 정렬 방향 초기화
+  };
+
+  const updateSortAndFetch = (sortBy: 'published_date' | 'title' | null, sortOrder: 'asc' | 'desc') => {
+    setIsSortBy(sortBy);
+    setIsSortOrder(sortOrder);
+    setLastSearchId(null); // 이전 커서를 초기화
+    handleSearch(sortBy, sortOrder); // 새로운 정렬 조건으로 검색 실행
+  };
+
   const handleFetchMore = async () => {
-    if (isFetchingMore || !lastSearchId) return;
+    if (isFetchingMore || !lastSearchId) { return; }
     setIsFetchingMore(true);
 
     try {
@@ -72,7 +92,8 @@ const SearchPage: React.FC = () => {
         keyword: searchKeyword,
         lastSearchId,
         pageSize: 10,
-        sortBy: isAccessibilityMode ? 'title' : 'published_date',
+        sortBy: isSortBy,
+        sortOrder: isSortOrder, // 현재 정렬 방향 유지
       });
 
       setBookList((prevBooks) => [...prevBooks, ...response.bookList]);
@@ -100,8 +121,28 @@ const SearchPage: React.FC = () => {
           placeholder="제목, 저자, 출판사 검색"
           value={searchKeyword}
           onChangeText={setSearchKeyword}
+          onSubmitEditing={() => { // 엔터 키 이벤트 처리
+            Keyboard.dismiss(); // 키보드 닫기
+            resetSortState(); // 정렬 상태 초기화
+            handleSearch(null, 'desc'); // 검색 실행
+
+            if (resetAccessibilityBookListStatesRef.current) {
+              resetAccessibilityBookListStatesRef.current(); // 초기화 함수 호출
+            }
+          }}
         />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+        <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => {
+              Keyboard.dismiss();
+              resetSortState(); // 정렬 상태 초기화
+              handleSearch(null, 'desc');   // 검색 실행
+              // AccessibilityBookList 상태 초기화
+              if (resetAccessibilityBookListStatesRef.current) {
+                resetAccessibilityBookListStatesRef.current();
+              }
+            }}
+        >
           <Text style={styles.searchButtonText}>검색</Text>
         </TouchableOpacity>
         {searchKeyword.length > 0 && (
@@ -125,9 +166,21 @@ const SearchPage: React.FC = () => {
             <Text style={styles.noResultsText}>검색 결과가 없습니다.</Text>
           ) : hasSearched ? (
             isAccessibilityMode ? (
-              <AccessibilityBookList bookList={bookList} />
+                <AccessibilityBookList
+                    bookList={bookList}
+                    updateSortAndFetch={updateSortAndFetch}
+                    onResetStates={(resetFunction: () => void) => {
+                      resetAccessibilityBookListStatesRef.current = resetFunction;
+                    }}
+                />
             ) : (
-              <GeneralBookList bookList={bookList} />
+              <GeneralBookList
+                  bookList={bookList}
+                  updateSortAndFetch={updateSortAndFetch}
+                  onResetStates={(resetFunction: () => void) => {
+                    resetAccessibilityBookListStatesRef.current = resetFunction;
+                  }}
+              />
             )
           ) : null}
         </View>

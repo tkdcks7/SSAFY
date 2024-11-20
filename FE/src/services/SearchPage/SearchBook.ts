@@ -4,7 +4,7 @@ interface SearchParams {
   keyword?: string;
   lastSearchId?: string | null;
   pageSize?: number;
-  sortBy?: 'published_date' | 'title';
+  sortBy?: null | 'published_date' | 'title';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -36,7 +36,7 @@ export const searchBooks = async ({
     keyword = '',
     lastSearchId = null,
     pageSize = 10,
-    sortBy = 'published_date',
+    sortBy = null,
     sortOrder = 'desc',
   }: SearchParams): Promise<SearchResponse> => {
     try {
