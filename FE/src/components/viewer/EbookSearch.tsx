@@ -64,7 +64,7 @@ const EbookSearch: React.FC<EbookSearchProps> = ({
   }, [searchInput, page, clearSearchResults, search]);
 
   useEffect(() => {
-    if (searchInput.length > 2) {
+    if (searchInput.length >= 1) {
       executeSearch();
     }
   }, [searchInput, page, executeSearch]);
