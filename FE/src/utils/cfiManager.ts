@@ -86,6 +86,6 @@ export const timeParser = (seconds: number): string => {
       `${remainingSeconds}초`,
     ]
       .filter(Boolean)
-      .join(' ') + ' (눌러서 타이머 종료)'
+      .join(' ') + '(터치 시 종료)'
   );
 };

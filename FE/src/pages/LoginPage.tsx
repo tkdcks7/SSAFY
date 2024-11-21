@@ -48,6 +48,7 @@ const LoginPage: React.FC<Props> = () => {
     if (emailRegex.test(email)) {
       passwordRef.current?.focus();
     } else {
+      setEmail('');
       emailRef.current?.focus();
       Alert.alert('오류', '이메일이 유효하지 않습니다. 다시 시도해주세요.');
       AccessibilityInfo.announceForAccessibility(
@@ -60,6 +61,7 @@ const LoginPage: React.FC<Props> = () => {
     const passwordRegex = /^[A-Za-z0-9!@#$\-_]{8,30}$/;
     if (passwordRegex.test(password)) {
     } else {
+      setPassword('');
       Alert.alert('오류', '비밀번호가 유효하지 않습니다. 다시 시도해주세요.');
       AccessibilityInfo.announceForAccessibility(
         '오류: 비밀번호가 유효하지 않습니다.',
@@ -98,6 +100,11 @@ const LoginPage: React.FC<Props> = () => {
       })
       .catch(error => {
         console.error('로그인 요청 실패:', error);
+        setPassword('');
+        AccessibilityInfo.announceForAccessibility(
+          '오류: 이메일 또는 비밀번호가 유효하지 않습니다.',
+        );
+        emailRef.current?.focus();
       });
   };
 
@@ -109,6 +116,11 @@ const LoginPage: React.FC<Props> = () => {
         value={email}
         onChangeText={setEmail}
         onSubmitEditing={isValidEmail}
+        onBlur={() => {
+          if (email) {
+            isValidEmail();
+          }
+        }}
         ref={emailRef}
       />
       <InputBox
@@ -116,6 +128,11 @@ const LoginPage: React.FC<Props> = () => {
         value={password}
         onChangeText={setPassword}
         onSubmitEditing={isValidPassword}
+        onBlur={() => {
+          if (password) {
+            isValidPassword();
+          }
+        }}
         secureTextEntry={true}
         ref={passwordRef}
       />
@@ -147,7 +164,6 @@ const styles = StyleSheet.create({
     color: '#3943B7',
   },
   innerContainer: {
-    // padding: width * 0.1,
     marginTop: height * 0,
     alignSelf: 'flex-start',
   },
@@ -157,7 +173,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#666',
     marginBottom: height * 0.02,
-    // textAlign: 'center',
   },
 });
 

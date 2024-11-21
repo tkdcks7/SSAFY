@@ -6,9 +6,9 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
-  Image,
   Dimensions,
   BackHandler,
+  AccessibilityInfo,
 } from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '../../navigation/AppNavigator';
@@ -18,9 +18,6 @@ import {
   useReader,
   Themes,
   ReaderProvider,
-  Annotation,
-  Location,
-  ReaderProps,
 } from '@epubjs-react-native/core';
 import {useFileSystem} from '@epubjs-react-native/file-system';
 import Animated, {
@@ -59,15 +56,10 @@ import EbookTTSSetting from '../../components/viewer/EbookTTSSetting';
 import ProgressBar from '../../components/viewer/ProgressBar';
 import EbookSearch from '../../components/viewer/EbookSearch';
 import EbookIcon from '../../components/viewer/EbookIcon';
+import EbookTTSIconGroup from '../../components/viewer/EbookTTSIconGroup';
+import EbookReadIconGroup from '../../components/viewer/EbookReadIconGroup';
 
 // 아이콘
-import noteicon from '../../assets/icons/notes.png';
-import indexmenuicon from '../../assets/icons/indexmenu.png';
-import settingicon from '../../assets/icons/setting.png';
-import headphoneicon from '../../assets/icons/headphone.png';
-import prevbuttonicon from '../../assets/icons/pervbutton.png';
-import playbuttonicon from '../../assets/icons/playbutton.png';
-import pausebuttonicon from '../../assets/icons/pausebutton.png';
 import leftarrowicon from '../../assets/icons/leftarrow.png';
 import searchicon from '../../assets/icons/search.png';
 
@@ -109,17 +101,17 @@ const {width, height} = Dimensions.get('window');
 // ReaderProvider로 감싸기 위해 자식에서 실질적인 로직 처리
 const Component: React.FC<Props> = ({route}) => {
   const {bookId} = route.params;
-  const [progress, setProgress] = useState<number>(0);
-  const [isTTSMode, setIsTTSMode] = useState<boolean>(false);
-  const [isTTSPlaying, setIsTTSPlaying] = useState<boolean>(false);
-  const [isSearchingOn, setIsSearchingOn] = useState<boolean>(false);
-  const [formArr, setFormArr] = useState<FormContent[]>([]);
-  const [ttsIdx, setttsIdx] = useState<number>(-1);
   const [initialCfi, setInitialCfi] = useState<string | undefined>(undefined);
-  const [readNoteArr, setReadNoteArr] = useState<IReadNote[]>([]);
   const [title, setTitle] = useState<string>('');
   const [bookSrc, setBookSrc] = useState<string>('');
   const [isCustomBook, setIsCustomBook] = useState<boolean>(true);
+  const [isTTSMode, setIsTTSMode] = useState<boolean>(false);
+  const [isTTSPlaying, setIsTTSPlaying] = useState<boolean>(false);
+  const [isSearchingOn, setIsSearchingOn] = useState<boolean>(false);
+  const [ttsIdx, setttsIdx] = useState<number>(-1);
+  const [progress, setProgress] = useState<number>(0);
+  const [formArr, setFormArr] = useState<FormContent[]>([]);
+  const [readNoteArr, setReadNoteArr] = useState<IReadNote[]>([]);
   const [hasUsedInitialCfi, setHasUsedInitialCfi] = useState(false);
 
   // 검색어 관리
@@ -134,6 +126,7 @@ const Component: React.FC<Props> = ({route}) => {
   const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false); // 일시중지 상태
   const [isSectionMoving, setIsSectionMoving] = useState<boolean>(false); // 섹션 이동 대기 상태
 
+  // Ref 변수
   const formArrRef = useRef<FormContent[]>(formArr);
   const ttsIdxRef = useRef<number>(ttsIdx);
   const isTTSPlayingRef = useRef(isTTSPlaying);
@@ -393,6 +386,7 @@ const Component: React.FC<Props> = ({route}) => {
     }
   };
 
+  // 현재 페이지의 양 끝 cfi를 바탕으로 현재 ttsIdx에 해당하는 문장이 페이지 안에 있는지 판단
   const trackCurrentTtsIdx = (): void => {
     const startCfi: string | undefined = getCurrentLocation()?.start.cfi;
     const endCfi: string | undefined = getCurrentLocation()?.end.cfi;
@@ -422,6 +416,7 @@ const Component: React.FC<Props> = ({route}) => {
     return;
   };
 
+  // 섹션을 넘어가고 TTS를 이어서 실행하는 로직
   const setTtsReset = () => {
     setIsSectionMoving(false);
     if (formArr.length > 0) {
@@ -574,7 +569,7 @@ const Component: React.FC<Props> = ({route}) => {
     }
     changeFontSize(fontSizeTable[fontSizeSetting]);
     Tts.setDefaultVoice(voiceMagicTable[ttsVoiceIndex]);
-    Tts.setDefaultRate(ttsSpeedSetting / 2);
+    Tts.setDefaultRate(ttsSpeedSetting);
     if (readNoteArr.length > 0) {
       readNoteArr.forEach(note => {
         addAnnotation('underline', note.sentenceId, undefined, {
@@ -583,12 +578,15 @@ const Component: React.FC<Props> = ({route}) => {
         });
       });
     }
+    goNext();
     if (initialCfi) {
-      goNext();
       setTimeout(() => {
         goToLocation(initialCfi);
       }, 1500);
     }
+    AccessibilityInfo.announceForAccessibility(
+      `뷰어를 열어 도서 ${title}을 조회합니다. 중앙부를 터치하면 `,
+    );
     updateLastAccessedBookId(bookId);
   };
 
@@ -644,7 +642,6 @@ const Component: React.FC<Props> = ({route}) => {
   const handleTimerOn = (settingTime: number) => {
     setTimeLeft(settingTime);
     setIsTimerOn(true);
-    handleTTSPlay();
   };
 
   // 타이머 끄는 메소드
@@ -652,7 +649,9 @@ const Component: React.FC<Props> = ({route}) => {
     if (isTimerOn) {
       setIsTimerOn(false);
       setTimeLeft(0);
-      handleTTSPlay();
+      if (isTTSPlaying) {
+        handleTTSPlay();
+      }
     }
   };
 
@@ -773,14 +772,13 @@ const Component: React.FC<Props> = ({route}) => {
           onSwipeLeft={() => {
             setHasUsedInitialCfi(true);
           }}
-          onReady={handleOnReady} // 처음 책이 준비가 됐을 시 작동해서 formArr(아마도 cover img)를 받아옴
+          onReady={handleOnReady}
           onLocationsReady={() => {
             setTocArr(toc);
           }}
           defaultTheme={isDarkMode ? Themes.DARK : Themes.LIGHT}
           enableSwipe={!isTTSMode}
           onWebViewMessage={message => {
-            // console.log(message);
             if (message?.formArr) {
               if (formArr) {
                 setFormArr(() => [...message.formArr]);
@@ -796,7 +794,7 @@ const Component: React.FC<Props> = ({route}) => {
           injectedJavascript={injectedScrpt}
         />
       </TouchableOpacity>
-      {/* 네비게이션 바 */}
+      {/* Footer */}
       <Animated.View
         style={[
           styles.footer,
@@ -812,7 +810,12 @@ const Component: React.FC<Props> = ({route}) => {
             <Text style={styles.saveNoteText}>읽고 있는 문장 저장</Text>
           </TouchableOpacity>
         ) : null}
-        <View style={styles.progressview}>
+        <View
+          style={styles.progressview}
+          accessible={true}
+          accessibilityLabel={`진행도 ${(progress * 100)
+            .toString()
+            .slice(0, 4)} 퍼센트`}>
           <View>
             <Text>{(progress * 100).toString().slice(0, 4)}%</Text>
           </View>
@@ -821,55 +824,26 @@ const Component: React.FC<Props> = ({route}) => {
         <View
           style={[styles.progressview, {borderTopWidth: 2, paddingTop: 20}]}>
           {isTTSMode ? (
-            <>
-              <EbookIcon
-                source={prevbuttonicon}
-                onPress={ttsIdxToPrev}
-                accessibilitylabel={'이전 문장으로 이동'}
-              />
-              <EbookIcon
-                source={isTTSPlaying ? pausebuttonicon : playbuttonicon}
-                onPress={handleTTSPlay}
-                accessibilitylabel={isTTSPlaying ? 'TTS 중지' : 'TTS 시작'}
-              />
-              <EbookIcon
-                source={prevbuttonicon}
-                onPress={ttsIdxToNext}
-                accessibilitylabel={'다음 문장으로 이동'}
-                style={{transform: [{scaleX: -1}]}}
-              />
-              <EbookIcon
-                source={settingicon}
-                onPress={() => (isTTSPlaying ? {} : toggleTTSSetting())}
-                accessibilitylabel={'TTS 설정 토글'}
-                style={
-                  isTTSPlaying ? {tintColor: 'gray', opacity: 0.2} : undefined
-                }
-              />
-            </>
+            // 리딩 모드 시 나타나는 버튼 그룹
+            <EbookTTSIconGroup
+              handlerArr={[
+                ttsIdxToPrev,
+                handleTTSPlay,
+                ttsIdxToNext,
+                toggleTTSSetting,
+              ]}
+              isTTSPlaying={isTTSPlaying}
+            />
           ) : (
-            <>
-              <EbookIcon
-                source={indexmenuicon}
-                onPress={toggleIndex}
-                accessibilitylabel={'목차 토글'}
-              />
-              <EbookIcon
-                source={headphoneicon}
-                onPress={() => setIsTTSMode(true)}
-                accessibilitylabel={'TTS 모드 시작'}
-              />
-              <EbookIcon
-                source={noteicon}
-                onPress={toggleBookNote}
-                accessibilitylabel={'독서노트 목록 토글'}
-              />
-              <EbookIcon
-                source={settingicon}
-                onPress={toggleSetting}
-                accessibilitylabel={'뷰어 설정창 토글'}
-              />
-            </>
+            // TTS 모드 시 나타나는 버튼 그룹
+            <EbookReadIconGroup
+              handlerArr={[
+                toggleIndex,
+                () => setIsTTSMode(true),
+                toggleBookNote,
+                toggleSetting,
+              ]}
+            />
           )}
         </View>
       </Animated.View>
@@ -896,16 +870,6 @@ const styles = StyleSheet.create({
     fontSize: width * 0.06,
     fontWeight: 'bold',
     maxWidth: '75%',
-  },
-  button: {
-    marginTop: height * 0.2,
-    padding: width * 0.03,
-    backgroundColor: '#3943B7',
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: width * 0.04,
   },
   footer: {
     position: 'absolute',
