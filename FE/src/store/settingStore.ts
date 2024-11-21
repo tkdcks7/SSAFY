@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import {persist, createJSONStorage} from 'zustand/middleware';
 
 interface SettingState {
   brightSetting: number;
@@ -23,7 +23,7 @@ export const fontSizeTable = ['12pt', '16pt', '20pt', '24pt', '36pt'];
 
 const useSettingStore = create<SettingState>()(
   persist(
-    (set) => ({
+    set => ({
       brightSetting: 5,
       fontSizeSetting: 0,
       lineHeightSetting: 2,
@@ -32,19 +32,19 @@ const useSettingStore = create<SettingState>()(
       ttsVoiceIndex: 0,
       isAccessibilityMode: false,
 
-      setBrightSetting: (value) => set({ brightSetting: value }),
-      setFontSizeSetting: (value) => set({ fontSizeSetting: value }),
-      setLineHeightSetting: (value) => set({ lineHeightSetting: value }),
-      setIsDarkMode: (value) => set({ isDarkMode: value }),
-      setTtsSpeedSetting: (value) => set({ ttsSpeedSetting: value }),
-      setTtsVoiceIndex: (value) => set({ ttsVoiceIndex: value }),
-      setIsAccessibilityMode: (value) => set({ isAccessibilityMode: value }),
+      setBrightSetting: value => set({brightSetting: value}),
+      setFontSizeSetting: value => set({fontSizeSetting: value}),
+      setLineHeightSetting: value => set({lineHeightSetting: value}),
+      setIsDarkMode: value => set({isDarkMode: value}),
+      setTtsSpeedSetting: value => set({ttsSpeedSetting: value}),
+      setTtsVoiceIndex: value => set({ttsVoiceIndex: value}),
+      setIsAccessibilityMode: value => set({isAccessibilityMode: value}),
     }),
     {
       name: 'setting-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 
 export default useSettingStore;
