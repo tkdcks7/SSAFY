@@ -122,19 +122,20 @@ export const styles = StyleSheet.create({
     minHeight: height * 0.3,
   },
   loadingText: {
-    fontSize: width * 0.045,
+    fontSize: width * 0.06, // 기존보다 크게 설정
     fontWeight: 'bold',
     marginBottom: height * 0.02,
     textAlign: 'center',
   },
   progressText: {
-    fontSize: width * 0.045,
+    fontSize: width * 0.09, // 로딩 텍스트보다 더 크게 설정
+    color: '#3943B7',
     marginBottom: height * 0.01,
     textAlign: 'center',
   },
   activityIndicator: {
     marginVertical: height * 0.02,
-    transform: [{ scale: 1.5 }],
+    transform: [{ scale: 5 }],
   },
   statusMessage: {
     fontSize: width * 0.045,
