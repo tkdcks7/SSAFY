@@ -1,3 +1,23 @@
+// 환경 변수 로드를 위한 import 추가
+import java.util.Properties
+import java.io.FileInputStream
+
+// .env 파일 로드 로직 추가
+def loadEnvProperties() {
+    def envFile = rootProject.file("../.env")
+    if (envFile.exists()) {
+        Properties props = new Properties()
+        props.load(new FileInputStream(envFile))
+        props.each { key, value ->
+            ext[key] = value
+        }
+    }
+    else {
+        throw new GradleException(".env file not found at project root.")
+    }
+}
+loadEnvProperties()
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -86,12 +106,31 @@ android {
         versionName "1.0"
     }
     signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+        release {
+
+                if (project.ext.has('MYAPP_UPLOAD_STORE_FILE') &&
+                    project.ext.has('MYAPP_UPLOAD_STORE_PASSWORD') &&
+                    project.ext.has('MYAPP_UPLOAD_KEY_ALIAS') &&
+                    project.ext.has('MYAPP_UPLOAD_KEY_PASSWORD')) {
+
+                    // rootProject를 기준으로 절대 경로 생성
+                    def keystorePath = new File(rootProject.projectDir, project.ext.MYAPP_UPLOAD_STORE_FILE).absolutePath
+                    storeFile file(keystorePath)
+                    storePassword project.ext.MYAPP_UPLOAD_STORE_PASSWORD
+                    keyAlias project.ext.MYAPP_UPLOAD_KEY_ALIAS
+                    keyPassword project.ext.MYAPP_UPLOAD_KEY_PASSWORD
+                } else {
+                    throw new GradleException("Keystore properties are missing or invalid in .env file")
+                }
+
         }
+        // debug {
+        //     storeFile file('debug.keystore')
+        //     storePassword 'android'
+        //     keyAlias 'androiddebugkey'
+        //     keyPassword 'android'
+        // }
+        
     }
     buildTypes {
         debug {
@@ -100,7 +139,8 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+            // signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
