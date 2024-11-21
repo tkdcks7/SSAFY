@@ -147,7 +147,7 @@ const RegisterBookImageModal: React.FC<RegisterBookImageModalProps> = ({
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>{loadingMessage}</Text>
-              <ActivityIndicator size="large" color="#3943B7" />
+              <ActivityIndicator size={80} color="#3943B7" />
               <Text style={styles.progressText}>진행률: {progress}%</Text>
             </View>
           ) : (
