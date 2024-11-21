@@ -116,9 +116,10 @@ const AccessibilityBookList: React.FC<AccessibilityBookListProps> = ({
                       {currentBook.title}
                     </Text>
                     <View style={styles.container}>
-                      <Text style={styles.containerText}>{`진행률: ${
-                        currentBook.progressRate * 100
-                      }%`}</Text>
+                      <Text
+                        style={
+                          styles.containerText
+                        }>{`진행률: ${currentBook.progressRate}%`}</Text>
                     </View>
                     <Text
                       style={styles.bookAuthor}
@@ -306,6 +307,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
     marginRight: width * 0.02,
+    maxWidth: '80%',
     // marginBottom: height * 0.04,
   },
   deleteButton: {

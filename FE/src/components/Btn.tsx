@@ -15,6 +15,7 @@ interface CustomButtonProps {
   onPress: () => void;
   style?: ViewStyle; // 추가 스타일
   textStyle?: TextStyle; // 텍스트 추가 스타일
+  disabled?: boolean;
 }
 
 const Btn = forwardRef(
@@ -26,6 +27,7 @@ const Btn = forwardRef(
       onPress,
       style,
       textStyle,
+      disabled = false,
       ...props
     }: CustomButtonProps,
     ref,
@@ -69,6 +71,7 @@ const Btn = forwardRef(
         accessible={true}
         accessibilityRole="button"
         accessibilityLabel={title}
+        disabled={disabled}
         {...props}>
         <Text
           style={[
