@@ -140,9 +140,16 @@ class Integration:
         # SSE 메세지 보내기
         send_sse_message(channel, '글자 추출 완료', 60)
 
+        
+        # 띄어쓰기 교정 
+        corrected_data = async_to_sync(PunctuationConverter.fix_punctuation_by_list)(ocr_processed_data)
+        # SSE 메세지 보내기
+        send_sse_message(channel, f'띄어쓰기 교정 완료', 65)
+
+
         # ebook 변환
         ebook_maker = InitialEbookConverter()
-        new_book = ebook_maker.make_book(ocr_processed_data)
+        new_book = ebook_maker.make_book(corrected_data)
 
         # SSE 메세지 보내기
         send_sse_message(channel, 'ebook 변환 완료', 70)
@@ -166,11 +173,6 @@ class Integration:
         # ebook span태그에 index 붙이기
         indexed_book = EpubReader.set_sentence_index(formatted_book)
 
-        # 띄어쓰기 교정 
-        corrected_book = PunctuationConverter.fix_punctuation(indexed_book)
-        # SSE 메세지 보내기
-        send_sse_message(channel, '띄어쓰기 교정 완료', 95)
-
         # mysql에 정보 저장
         dbutil = MysqlUtil()
         saved_book = dbutil.save_book(
@@ -191,7 +193,7 @@ class Integration:
         # SSE 메세지 보내기
         send_sse_message(channel, '완료', 100)
 
-        return (corrected_book, metadata)    
+        return (indexed_book, metadata)    
     
 
     def epub_to_ebook(self, metadata: Dict, file: UploadedFile, file_name: str, channel: int) -> Tuple[epub.EpubBook, Dict]:
